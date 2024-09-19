@@ -1,0 +1,86 @@
+﻿@model IEnumerable<Codepad>
+@{
+}
+
+
+<table id="listcodepad" class="table table-hover table-border table-striped ml-5 mr-3">
+    <thead>
+        <tr class="table-dark">
+            <th class="col1">ID</th>
+            <th class="col2">Tên</th>
+            <th class="col3">Ngôn ngữ</th>
+            <th class="col4">Thời gian tạo</th>
+            <th class="col5">Quyền truy cập</th>
+            <th class="col6">Chức năng</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.ToList().Count() > 0)
+        {
+            @foreach (var codepad in Model)
+            {
+                <tr data-value="@codepad.Id">
+                    <td>@codepad.Id</td>
+                    <td>@codepad.FileName</td>
+                    <td>@codepad.ProgramLanguage.ProgramLanguageName</td>
+                    <td>@(codepad.CreateDate.ToString("dd/MM/yyyy HH:mm:ss")) </td>
+                    <td data-value="@codepad.AccessId">@codepad.Access.AccessName</td>
+                    <td class="detail">
+                        <div class="w-100 btn-group" role="group">
+                            <a class="btn btn-outline-primary mx-2" title="Chỉnh sửa" asp-action="Code" asp-controller="CodePad" asp-route-id="@codepad.Id">
+                                <span class="material-symbols-outlined mt-1">edit</span>
+                            </a>
+                            <button class="share-code btn btn-info mx-2" onclick="shareCode(this)" role="button" title="Chia sẻ" data-toggle="modal" data-target="#share-code-popup">
+                                <span class="material-symbols-outlined  mt-1" style="font-size:23px;">share</span>
+                            </button>
+                            <button class="delete-code btn btn-danger mx-2" onclick="deleteCode(this)" role="button" title="Xóa Codepad">
+                                <span class="material-symbols-outlined  mt-1">delete</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="6" style="align-items: center;justify-content:center;">
+                    <h3 style="text-align:center;">Codepad Rỗng</h3>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<div class="flex gap-2">
+    <select class="form-control-sm p-1" id="pageSizeSelector" onchange="changePageSize(this)">
+        @foreach (var size in ViewBag.AvailablePageSizes)
+        {
+            if (size == ViewBag.PageSize)
+            {
+                <option value="@size" selected>@size</option>
+            }
+            else
+            {
+                <option value="@size">@size</option>
+            }
+
+        }
+    </select>
+    <ul class="pagination pagination-lg">
+        <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+            <button class="page-link" onclick="setPage(@(ViewBag.CurrentPage - 1))">&laquo;</button>
+        </li>
+
+        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+        {
+            <li class="page-item @(ViewBag.CurrentPage == i ? "active" : "")">
+                <button class="page-link" onclick="setPage(@i)">@i</button>
+            </li>
+        }
+        <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+            <button class="page-link" onclick="setPage(@(ViewBag.CurrentPage + 1))">&raquo;</button>
+        </li>
+    </ul>
+</div>
+
+

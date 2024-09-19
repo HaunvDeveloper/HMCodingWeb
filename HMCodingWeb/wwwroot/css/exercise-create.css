@@ -1,0 +1,131 @@
+#main {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+
+#cke_ex-content {
+    min-width: 80%;
+    border: 2px solid black;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#header-content {
+    width: 80%;
+    max-width: 80%;
+    border: 2px solid black;
+    border-radius: 20px;
+    box-shadow: 0.1rem 0.4rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 16px;
+    padding: 16px;
+}
+.required{
+    color:red;
+}
+
+
+.header-content-child {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px;
+    position: relative;
+    box-sizing: border-box;
+}
+
+
+label {
+    cursor: pointer;
+}
+
+.ellipsis {
+    text-overflow: ellipsis;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.apply-selection {
+    display: none;
+    width: 100%;
+    margin: 0;
+    padding: 5px 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.checkboxes {
+    display: none;
+    position: absolute;
+    top: 100%;
+    /* Đặt dưới nút */
+    left: 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    /* Đảm bảo rằng nó ở trên cùng */
+    width: 100%;
+    /* Điều chỉnh chiều rộng nếu cần */
+}
+
+.inner-wrap {
+    padding: 5px 10px;
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    overflow-y: auto;
+}
+
+.inner-wrap>label {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    padding: 5px;
+    border-radius: 10px;
+    margin: 0;
+}
+.inner-wrap>label:hover{
+    background-color: #ccc;
+}
+#textcase-content{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#testcase-table{
+    max-width: 80%;
+    width: 80%;
+
+}
+#testcase-table tr td{
+    text-align: center;
+    align-content: center;
+}
+th, td{
+    text-align: center;
+    align-content: center;
+    vertical-align:middle;
+}
+
+
+#testcase-table tr th{
+    text-align: center;
+}
+.testcase-io-input{
+    padding: 10px;
+    border: 1px solid black;
+    border-radius: 10px;
+}

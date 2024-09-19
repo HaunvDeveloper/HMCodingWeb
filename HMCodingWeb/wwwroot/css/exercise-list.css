@@ -1,0 +1,45 @@
+#main {
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+#title h1{
+    font-weight: 800;
+    margin-top: 0.7rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+#filter{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    width: 80%;
+}
+
+#ex-list-table{
+    width: 80%;
+}
+
+
+th, td{
+    text-align: center;
+    align-content: center;
+    font-weight: 600;
+}
+
+#searching-zone{
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.7rem;
+    width: 40%;
+    align-items: center;
+}
+a{
+    text-decoration: none !important;
+    color: inherit;
+}

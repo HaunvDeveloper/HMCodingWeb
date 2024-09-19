@@ -1,0 +1,301 @@
+@model IEnumerable<Codepad>
+@{
+  ViewData["Title"] = "Codepad";
+  var listProgramLanguage = ViewBag.ProgramLanguageList as List<ProgramLanguage>;
+  var listAccess = ViewBag.AccessList as List<AccessRole>;
+  int index = 1;
+}
+
+<div id="codepad" class="mr-3 flex-center flex-column">
+  <section class="content-header mt-4 mb-2  ml-5 mr-3 flex-center flex-column" style="width: 78rem; max-width:90%;">
+    <div class="container-fluid flex-center" style="width: 100%">
+      <h1 style="
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            width: 100%;
+            text-align: center;
+          ">
+        <b>DANH SÁCH CODEPAD</b>
+      </h1>
+    </div>
+    <div style="display: flex; justify-content: space-between; width:100%; align-items:center; flex-wrap: wrap;">
+      <a class=" mt-3 ml-3" asp-action="Code" asp-controller="CodePad"><button id="create-code" class="button-29"
+          role="button" style="height: 40px;">Soạn Code</button></a>
+      <div class="flex-center  mr-3 mt-4" style="width: 38%; gap:0.7rem">
+        <span><b>Tìm kiếm:</b></span>
+        <input type="text" id="searchInput" placeholder="Nhập để tìm kiếm..." class="form-control" style="width:80%;">
+      </div>
+    </div>
+  </section>
+  <div id="scroll-table">
+    <table id="listcodepad" class="table table-hover table-border collapsed ml-5 mr-3">
+      <thead>
+        <tr>
+          <th class="col1">STT</th>
+          <th class="col2">Tên</th>
+          <th class="col3">Ngôn ngữ</th>
+          <th class="col4">Thời gian tạo</th>
+          <th class="col5">Quyền truy cập</th>
+          <th class="col6">Chức năng</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (Model != null && Model.Any())
+        {
+          @foreach (var codepad in Model)
+          {
+            <tr data-value="@codepad.Id">
+              <td class="col1">@index</td>
+              <td class="col2">@codepad.FileName</td>
+              <td class="col3">@listProgramLanguage?.Where(p => p.Id == codepad.ProgramLanguageId).Select(p =>
+            p.ProgramLanguageName).First()</td>
+              <td class="col4">@(codepad.CreateDate.ToString("dd/MM/yyyy HH:mm:ss")) </td>
+              <td class="col5" data-value="@codepad.AccessId">@listAccess?.Where(a => a.Id == codepad.AccessId).Select(a =>
+            a.AccessName).First()</td>
+              <td class="col6 detail">
+                <button class="view-code detail-button button-30" role="button" title="Xem Codepad"><span
+                    class="material-symbols-outlined">visibility</span></button>
+                <a href="/CodePad/Code?id=@codepad.Id"><button role="button" class="button-30 edit-code detail-button"
+                    title="Chỉnh sửa"><span class="material-symbols-outlined">edit</span></button></a>
+                <button class="share-code detail-button button-30-b" role="button" title="Chia sẻ" data-toggle="modal"
+                  data-target="#share-code-popup"><span class="material-symbols-outlined"
+                    style="font-size:23px;">share</span></button>
+                <button class="delete-code detail-button button-30-r" role="button" title="Xóa Codepad"><span
+                    class="material-symbols-outlined">delete</span></button>
+              </td>
+            </tr>
+            index++;
+          }
+        }
+        else
+        {
+          <tr>
+            <td colspan="6" style="align-items: center;justify-content:center;">
+              <h3 style="text-align:center;">Codepad Rỗng</h3>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal fade" id="share-code-popup" tabindex="-1" role="dialog" aria-labelledby="share-code-popup-label"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="share-code-popup-label">Quyền truy cập</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="select-role-list">
+          @foreach (var role in listAccess)
+          {
+            <div class="access-role">
+              <label for="@role.AccessCode" style="width: 100%; display: flex; flex-wrap:nowrap; gap: 0.4rem;">
+                <div class="checkbox-wrapper-31">
+                  <input class="access-role-radio" type="radio" id="@role.AccessCode" name="select-role" value="@role.Id">
+                  <svg viewBox="0 0 35.6 35.6">
+                    <circle class="background" cx="17.8" cy="17.8" r="17.8"></circle>
+                    <circle class="stroke" cx="17.8" cy="17.8" r="14.37"></circle>
+                    <polyline class="check" points="11.78 18.12 15.55 22.23 25.17 12.87"></polyline>
+                  </svg>
+                </div>
+                <div style="display:flex;width: 95%; flex-wrap: nowrap; gap: 0.4rem;">
+                  <span style="width: 40%;">@role.AccessName</span>
+                  <div style="width: 60%; font-weight: 500;">@role.Description</div>
+                </div><br>
+              </label>
+
+            </div>
+          }
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn button-30" style="height: 3rem;" data-dismiss="modal">Đóng</button>
+        <button type="button" class="btn button-30-b" style="height: 3rem;" id="btn-save-role">Lưu</button>
+        <div class="loader"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Links {
+  <link rel="stylesheet" href="~/css/codepad-index.css">
+  <link rel="stylesheet" href="~/assets/styles/button-extend.css">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+}
+
+@section Scripts {
+
+  @*Event Listening*@
+
+  <script>
+    $(".delete-code").on("click", function () {
+      Swal.fire({
+        title: "Bạn có chắc muốn xóa?",
+        text: "Không thể phục hồi sau khi xóa!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, delete it!"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          var tr = $(this).closest("tr");
+          $.ajax({
+            url: "/CodePad/Delete",
+            method: "post",
+            data: { id: tr.attr("data-value") },
+            success: function (response) {
+              if (response.status) {
+                Swal.fire({
+                  toast: true,
+                  position: "top-end",
+                  showConfirmButton: false,
+                  timer: 3000,
+                  timerProgressBar: true,
+                  didOpen: (toast) => {
+                    toast.onmouseenter = Swal.stopTimer;
+                    toast.onmouseleave = Swal.resumeTimer;
+                  },
+                  icon: "success",
+                  title: "Xóa thành công"
+                });
+                tr.remove();
+              }
+              else {
+                Swal.fire({
+                  toast: true,
+                  position: "top-end",
+                  showConfirmButton: false,
+                  timer: 3000,
+                  timerProgressBar: true,
+                  didOpen: (toast) => {
+                    toast.onmouseenter = Swal.stopTimer;
+                    toast.onmouseleave = Swal.resumeTimer;
+                  },
+                  icon: "error",
+                  title: "Xóa thất bại"
+                });
+                console.log(response.error);
+              }
+            },
+            error: function (error) {
+              Swal.fire({
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                  toast.onmouseenter = Swal.stopTimer;
+                  toast.onmouseleave = Swal.resumeTimer;
+                },
+                icon: "error",
+                title: "Xóa thất bại"
+              });
+              console.log(error);
+            }
+          });
+        }
+      });
+    });
+
+
+    document.getElementById('searchInput').addEventListener('input', function () {
+      var filter = this.value.toLowerCase();
+      var rows = document.querySelectorAll('#listcodepad tbody tr');
+
+      rows.forEach(function (row) {
+        var fileName = row.querySelector('.col2').textContent.toLowerCase() + row.querySelector('.col3').textContent.toLowerCase() + row.querySelector('.col4').textContent.toLowerCase();
+        if (fileName.includes(filter)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    });
+
+    $(".share-code").on('click', function () {
+      var id = $(this).closest('tr').find('.col5').data('value');
+      var codepadId = $(this).closest('tr').data('value');
+      var accessRole = document.getElementsByName("select-role");
+      for (var role of accessRole) {
+        if (role.value == id) {
+          role.checked = true;
+          document.getElementById('btn-save-role').dataset.value = codepadId;
+          break;
+        }
+      }
+    });
+
+    $('#btn-save-role').on('click', async function () {
+      var codepadId = $(this).data('value');
+      var accessId = document.querySelector('input[name="select-role"]:checked').value;
+      console.log(codepadId, accessId);
+      $(this).hide();
+      $(".loader").show();
+      await $.ajax({
+        url: '/CodePad/ChangeAccessRole',
+        method: 'post',
+        data: { codepadId: codepadId, accessId: accessId },
+        success: function (response) {
+          $('#share-code-popup').modal('hide');
+          if (response.status) {
+            $('tr[data-value="'+codepadId+'"]').find('.col5').text(response.accessName);
+            Swal.fire({
+              toast: true,
+              position: "top-end",
+              showConfirmButton: false,
+              timer: 3000,
+              timerProgressBar: true,
+              didOpen: (toast) => {
+                toast.onmouseenter = Swal.stopTimer;
+                toast.onmouseleave = Swal.resumeTimer;
+              },
+              icon: "success",
+              title: "Thay đổi thành công"
+            });
+          }else{
+             Swal.fire({
+              toast: true,
+              position: "top-end",
+              showConfirmButton: false,
+              timer: 3000,
+              timerProgressBar: true,
+              didOpen: (toast) => {
+                toast.onmouseenter = Swal.stopTimer;
+                toast.onmouseleave = Swal.resumeTimer;
+              },
+              icon: "error",
+              title: "Thay đổi thất bại!"
+            });
+          }
+        },
+        error: function(err){
+          $('#share-code-popup').modal('hide');
+          Swal.fire({
+              toast: true,
+              position: "top-end",
+              showConfirmButton: false,
+              timer: 3000,
+              timerProgressBar: true,
+              didOpen: (toast) => {
+                toast.onmouseenter = Swal.stopTimer;
+                toast.onmouseleave = Swal.resumeTimer;
+              },
+              icon: "error",
+              title: "Thay đổi thất bại!"
+            });
+        }
+      });
+      $(this).show();
+      $(".loader").hide();
+    });
+
+  </script>
+}

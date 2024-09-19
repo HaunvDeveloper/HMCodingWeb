@@ -1,0 +1,471 @@
+﻿@model Codepad
+@{
+    var listTheme = ViewBag.ListTheme as List<Theme>;
+    var programLanguageList = ViewBag.ProgramLanguageList as List<ProgramLanguage>;
+    var userInfo = ViewBag.UserInfo as User;
+    bool isOwn = Model?.UserId == userInfo?.Id;
+}
+
+
+<section id="main-content" class="container" style="
+    --bs-gutter-x: 0;
+    padding: 0;
+">
+    <div class="row m-0">
+        <div id="codepad" class="col-9 mt-2 flex flex-column">
+            <div id="code-div">
+                <div id="code-head" class="m-2  ">
+                    @if (Model != null)
+                    {
+                        @if (isOwn)
+                        {
+                            <div class="form-floating w-75">
+                                <input type="text" class="form-control w-75" placeholder="Name" name="file-name" id='file-name' value="@Model.FileName" />
+                                <label for="file-name">Tên Codepad</label>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-floating w-75">
+                                <input type="text" class="form-control w-75" placeholder="Name" name="user-name" id="user-name"
+                                       value="@Model.User.Username" disabled readonly />
+                                <label for="user-name">Tên người dùng</label>
+                            </div>
+                        }
+
+                    }
+
+                    <button id="copy-code" class="btn btn-outline-secondary" role="button">Sao chép</button>
+                </div>
+                <div id="editor">@if (Model != null)
+                    {
+                        @Model.CodeContent
+                    }</div>
+                <div id="import-code">
+                    <button id="import-file" class="btn btn-info" role="button">Chọn tệp</button>
+                </div>
+            </div>
+            <div class="io-div">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#input" aria-selected="false" role="tab" tabindex="-1">INPUT</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link " data-bs-toggle="tab" href="#output" aria-selected="true" role="tab">OUTPUT</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" data-bs-toggle="tab" href="#erroralert" aria-selected="true" role="tab">ERROR</a>
+                    </li>
+                </ul>
+                <div id="myTabContent" class="tab-content">
+                    <div class="tab-pane fade w-100  active show" id="input" role="tabpanel">
+                        <div id="input-div" class="io-child-div border-primary p-3">
+                            <div id="ioput-file-area">
+                                <div>
+                                    @if (Model != null)
+                                    {
+                                        <input type="text" id="input-file" name="input-file" placeholder="Nhập tên file hoặc bỏ trống"
+                                               value="@Model.InputFile" class="form-control p-2" />
+                                    }
+                                    else
+                                    {
+                                        <input type="text" id="input-file" name="input-file"
+                                               placeholder="Nhập tên file hoặc bỏ trống" class="form-control p-2" />
+                                    }
+                                </div>
+                                <div>
+                                    @if (Model != null)
+                                    {
+                                        <input type="text" id="output-file" name="output-file" placeholder="Nhập tên file hoặc bỏ trống"
+                                               value="@Model.OutputFile" class="form-control p-2" />
+                                    }
+                                    else
+                                    {
+                                        <input type="text" id="output-file" name="output-file"
+                                               placeholder="Nhập tên file hoặc bỏ trống" class="form-control p-2" />
+                                    }
+                                </div>
+                            </div>
+
+                            <div id="input-data-area" class="px-3 mt-3">
+                                <span>NHẬP DỮ LIỆU VÀO</span>
+                                <textarea id="input-data" class="form-control"></textarea>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="output" role="tabpanel">
+                        <div id="output-div" class="io-child-div mt-2">
+                            <div class="flex align-center mt-2">
+                                <span>Thời gian thực thi:</span>
+                                <input class="run-time ml-2 form-control p-2 w-50" type="text" placeholder="Thời gian thực thi (giây)" readonly>
+                            </div>
+                            <div id="output-area" class="p-4">
+                                <div id="output-data-area">
+                                    <span>DỮ LIỆU RA</span>
+                                    <textarea id="output-data" class="form-control" readonly></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="erroralert" role="tabpanel">
+                        <div id="alert-error" class="io-child-div mt-2">
+                            <div class="flex align-center mt-2">
+                                <span>Thời gian thực thi:</span>
+                                <input class="run-time ml-2 form-control p-2 w-50" type="text" placeholder="Thời gian thực thi (giây)" readonly>
+                            </div>
+                            <div id="error" class="m-3"></div>
+                        </div>
+                    </div>
+                    <div id="run-button" class="mt-3">
+                        <button id="run" class="btn btn-primary btn-lg p-3 px-5">
+                            RUN
+                        </button>
+                        <div class="loader"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="right-side" class="mt-5 mb-5 pt-4 pb-4 col-3 bg-dark">
+            <h3 class="text-light">Cài đặt</h3>
+            <div class="line"></div>
+            <div class="cfg-option px-3">
+                <div class="cfg-title">
+                    <b>Theme:</b>
+                </div>
+                <div class="cfg-content w-50 mr-3">
+                    <select id="theme-selector" class="form-control-sm w-100">
+                        @if (listTheme != null)
+                        {
+                            foreach (var i in listTheme)
+                            {
+                                @if (userInfo != null && i.Id == userInfo.ThemeCodeId)
+                                {
+                                    <option selected data-value="@i.Id" value="ace/theme/@i.ThemeCode">@i.ThemeCode</option>
+                                }
+                                else
+                                {
+                                    <option data-value="@i.Id" value="ace/theme/@i.ThemeCode">@i.ThemeCode</option>
+                                }
+                            }
+                        }
+
+                    </select>
+                </div>
+            </div>
+            <div class="cfg-option  px-3">
+                <div class="cfg-title">
+                    <b>Font size:</b>
+                </div>
+                <div class="cfg-content w-50 mr-3">
+                    <input id="fontsize-selector" class="form-control-sm w-100" type="number" value="18" max="72" min="2">
+                </div>
+            </div>
+            <div class="cfg-option px-3">
+                <div class="cfg-title">
+                    <b>Program Language:</b>
+                </div>
+                <div class="cfg-content w-50 mr-3">
+                    <select id="programlanguage-selector" class="form-control-sm w-100">
+                        @if (programLanguageList != null)
+                        {
+                            foreach (var i in programLanguageList)
+                            {
+                                @if (userInfo != null && ((Model == null && i.Id == userInfo.Id) || (Model != null && i.Id ==
+                               Model.ProgramLanguageId)))
+                                {
+                                    <option selected data-value="@i.Id" value="@i.ProgramLanguageCode">@i.ProgramLanguageName</option>
+                                }
+                                else
+                                {
+                                    <option data-value="@i.Id" value="@i.ProgramLanguageCode">@i.ProgramLanguageName</option>
+                                }
+                            }
+                        }
+
+                    </select>
+                </div>
+            </div>
+            <div class="cfg-option px-3">
+                <div class="cfg-title">
+                    <b>Time limit:</b>
+                </div>
+                <div class="cfg-content w-50 mr-3">
+                    <input max="10" min="1" type="number" id="time-limit" class="form-control-sm w-100" value="1">
+                </div>
+            </div>
+
+            @if (Model != null && isOwn)
+            {
+                <div class="btn-group w-100" role="group">
+                    <button id="save" data-value="@Model.Id" class="btn btn-success mx-2 w-50" role="button">
+                        LƯU
+                    </button>
+                    <button id="save-as" class="btn btn-outline-info mx-2 w-50" role="button">Lưu mới</button>
+                </div>
+            }
+            else
+            {
+                <button id="save-as" class="btn btn-success w-75" role="button">
+                    LƯU
+                </button>
+            }
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+@section Links {
+    <link rel="stylesheet" href="~/css/codepad-code.css">
+}
+
+@section Scripts {
+    @*ACE EDITOR*@
+    <script src="~/lib/ace-builds/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="~/lib/ace-builds/src-min-noconflict/ext-language_tools.js"></script>
+    <script>
+        // CODE SECTION
+        function getProgramLanguageMode(proLanguageCode) {
+            if (proLanguageCode == "cpp")
+                return "ace/mode/c_cpp";
+            else if (proLanguageCode == "py")
+                return "ace/mode/python";
+            else if (proLanguageCode == "pas")
+                return "ace/mode/pascal";
+            else
+                return "ace/mode/javascript";
+        }
+
+        var editor = ace.edit("editor");
+        editor.setTheme($('#theme-selector').val());
+        editor.session.setMode(getProgramLanguageMode($('#programlanguage-selector').val()));
+        ace.require("ace/ext/language_tools");
+        editor.setOptions({
+            autoScrollEditorIntoView: true,
+            copyWithEmptySelection: true,
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: true,
+            enableSnippets: true
+        });
+        $('#theme-selector').on('change', function (event) {
+            const theme = event.target.value;
+            editor.setTheme(theme);
+        });
+        $('#fontsize-selector').on('change', function (event) {
+            var fontSize = $(this).val();
+            editor.setFontSize(fontSize + "px");
+        });
+        $('#programlanguage-selector').on('change', function (event) {
+            editor.session.setMode(getProgramLanguageMode($(this).val()));
+        });
+
+
+
+    </script>
+
+
+    <script>
+        var baoloi = ace.edit("error");
+        baoloi.setTheme("ace/theme/kuroir");
+        baoloi.setShowPrintMargin(false);
+        baoloi.setDisplayIndentGuides(false);
+        baoloi.setReadOnly(true);
+        baoloi.getSession().setMode("ace/mode/c_cpp");
+    </script>
+
+    @*Event Listening*@
+    <script>
+        document.getElementById("import-code").addEventListener("click", async function () {
+            const { value: file } = await Swal.fire({
+                title: "Chọn tệp",
+                input: "file",
+                inputAttributes: {
+                    "accept": ".cpp,.py,.pas,.js",
+                    "aria-label": "Tải tệp lên"
+                }
+            });
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const fileContent = e.target.result;
+                    console.log(fileContent);
+                    editor.setValue(fileContent);
+                };
+                reader.readAsText(file);
+            };
+        });
+
+
+        function executeCopy(text) {
+            let input = document.createElement('textarea');
+            document.body.appendChild(input);
+            input.value = text;
+            input.select();
+            document.execCommand('Copy');
+            input.remove();
+        }
+        document.getElementById("copy-code").addEventListener("click", function () {
+            const button = this;
+            button.innerText = "Đã sao chép";
+            setTimeout(function () {
+                button.innerText = "Sao chép";
+            }, 800);
+            const content = editor.getValue();
+            executeCopy(content);
+        });
+
+
+        document.getElementById("run").addEventListener("click", function () {
+            this.style.display = "none";
+            document.querySelector(".loader").style.display = "block";
+            let runProcess = {
+                "ProgramLanguageId": $("#programlanguage-selector option:selected").attr("data-value"),
+                "SourceCode": editor.getValue(),
+                "Input": $("#input-data").val(),
+                "Output": null,
+                "Error": null,
+                "InputFile": $("#input-file").val(),
+                "OutputFile": $("#output-file").val(),
+                "TimeLimit": ($("#time-limit").val() >= 0 ? $("#time-limit").val() : 1)
+            }
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("RunProcessCodepad", "CodePad")',
+                data: runProcess,
+                success: function (response) {
+                    if (response.isError) {
+                        let tabTriggerEl = document.querySelector('a[href="#erroralert"]');
+                        let tab = new bootstrap.Tab(tabTriggerEl);
+                        tab.show();
+                        baoloi.setValue(response.error);
+                        $(".run-time").val(response.runTime);
+                        showToast("error", "Đã có lỗi xảy ra", 1500);
+                    }
+                    else {
+                        let tabTriggerEl = document.querySelector('a[href="#output"]');
+                        let tab = new bootstrap.Tab(tabTriggerEl);
+                        tab.show();
+                        document.getElementById("output-data").innerHTML = response.output;
+                        $(".run-time").val(response.runTime);
+                        showToast("success", "Đã có kết quả output", 1500);
+                    }
+                    document.getElementById("run").style.display = "block";
+                    document.querySelector(".loader").style.display = "none";
+                },
+                error: function (err) {
+                    alert("Error to post request");
+                    document.getElementById("run").style.display = "block";
+                    document.querySelector(".loader").style.display = "none";
+                }
+            });
+        });
+
+        document.getElementById("save-as").addEventListener("click", async function () {
+            var { value: fileName } = await Swal.fire({
+                title: "NHẬP TÊN FILE CẦN LƯU",
+                input: "text",
+                inputAttributes: {
+                    placeholder: "Nhập tên file ở đây...",
+                    maxLength: 50
+                },
+                showCancelButton: true,
+                inputValidator: (value) => {
+                    if (!value) {
+                        return "Tên file không thể rỗng";
+                    }
+                },
+            });
+            if (fileName) {
+                const confirm = await confirmAction("Bạn có chắc muốn lưu", "", "", "Lưu", "#1f9bcf");
+
+                if (confirm) {
+                    var model = {
+                        "FileName": fileName,
+                        "InputFile": $("#input-file").val(),
+                        "OutputFile": $("#output-file").val(),
+                        "ProgramLanguageId": $("#programlanguage-selector option:selected").attr("data-value"),
+                        "CodeContent": editor.getValue()
+                    }
+                    $.ajax({
+                        url: "/CodePad/SaveAs",
+                        method: 'POST',
+                        data: { model: model },
+                        success: function (response) {
+                            if (response.status) {
+                                showAlert("success", "Lưu thành công");
+                                setTimeout(function () {
+                                    window.location.href = response.redirect;
+                                }, 1500);
+                            } else {
+                                Swal.fire("Lưu thất bại!", response.error, "error");
+                            }
+                        },
+                        error: function () {
+                            Swal.fire("Lưu thất bại!", "Đã có lỗi xảy ra", "error");
+                        }
+                    });
+
+
+
+                }
+            }
+        });
+
+        var saveBtn = document.getElementById("save");
+        if (saveBtn != undefined) {
+            saveBtn.addEventListener("click", async function () {
+                let id = this.dataset.value;
+
+                let model = {
+                    "Id": id,
+                    "FileName": $("#file-name").val(),
+                    "InputFile": $("#input-file").val(),
+                    "OutputFile": $("#output-file").val(),
+                    "ProgramLanguageId": $("#programlanguage-selector option:selected").attr("data-value"),
+                    "CodeContent": editor.getValue()
+                }
+                await $.ajax({
+                    url: '@Url.Action("Save", "CodePad")',
+                    method: "post",
+                    data: { model: model },
+                    success: function (response) {
+                        if (response.status) {
+                            showToast("success", "Lưu thành công");
+                        }
+                        else {
+                            showAlert("error", "Lưu thất bại", response.error);
+                        }
+                    },
+                    error: function (error) {
+                        showAlert("error", "Lưu thất bại", error);
+                    }
+                });
+
+
+            });
+        }
+
+    </script>
+
+    @*Init code add*@
+    @if (Model == null)
+    {
+        <script>
+            $(document).ready(function () {
+                editor.getSession().on('change', function () {
+                    localStorage.setItem('saveCodepad', editor.getValue());
+                });
+                var storedContent = localStorage.getItem('saveCodepad');
+                if (storedContent) {
+                    editor.setValue(storedContent, -1);
+                }
+            });
+        </script>
+    }
+
+}

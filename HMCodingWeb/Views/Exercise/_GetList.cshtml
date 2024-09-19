@@ -1,0 +1,76 @@
+﻿@model IEnumerable<Exercise>
+
+
+<table id="listcodepad" class="table table-sm table-hover table-border table-striped ml-5 mr-3">
+    <thead>
+        <tr class="table-dark">
+            <th class="col1">ID</th>
+            <th class="col2">Mã bài</th>
+            <th class="col3">Tên bài</th>
+            <th class="col4">Độ khó</th>
+            <th class="col5">Dạng bài</th>
+            <th class="col6">Bài làm đúng</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var item in Model)
+            {
+                <tr data-value="@item.Id">
+                    <td><a asp-action="Code" asp-controller="Exercise" asp-route-id="@item.Id">@item.Id</a></td>
+                    <td><a asp-action="Code" asp-controller="Exercise" asp-route-id="@item.Id">@item.ExerciseCode</a></td>
+                    <td><a asp-action="Code" asp-controller="Exercise" asp-route-id="@item.Id">@item.ExerciseName</a></td>
+                    <td><a asp-action="Code" asp-controller="Exercise" asp-route-id="@item.Id">@item.Difficulty.DifficultyName</a></td>
+                    <td>
+                        @string.Join(", ", @item.ExerciseBelongTypes.Select(ebt => ebt.ExerciseType.TypeName).ToList())
+                    </td>
+                    <td class="detail">
+                        
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="6" style="align-items: center;justify-content:center;">
+                    <h3 style="text-align:center;">Danh sách rỗng</h3>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<div class="flex gap-2">
+    <select class="form-control-sm p-1" id="pageSizeSelector" onchange="changePageSize(this)">
+        @foreach (var size in ViewBag.AvailablePageSizes)
+        {
+            if (size == ViewBag.PageSize)
+            {
+                <option value="@size" selected>@size</option>
+            }
+            else
+            {
+                <option value="@size">@size</option>
+            }
+
+        }
+    </select>
+    <ul class="pagination pagination-lg">
+        <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+            <button class="page-link" onclick="setPage(@(ViewBag.CurrentPage - 1))">&laquo;</button>
+        </li>
+
+        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+        {
+            <li class="page-item @(ViewBag.CurrentPage == i ? "active" : "")">
+                <button class="page-link" onclick="setPage(@i)">@i</button>
+            </li>
+        }
+        <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+            <button class="page-link" onclick="setPage(@(ViewBag.CurrentPage + 1))">&raquo;</button>
+        </li>
+    </ul>
+</div>
+
+

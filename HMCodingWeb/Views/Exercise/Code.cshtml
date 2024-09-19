@@ -1,0 +1,424 @@
+@using HMCodingWeb.ViewModels;
+@model HMCodingWeb.Models.Exercise;
+@{
+    var listTheme = ViewBag.ListTheme as List<Theme>;
+    var userInfo = ViewBag.UserInfo as User;
+    var programLanguageList = ViewBag.ProgramLanguageList as List<ProgramLanguage>;
+    var exerciseId = Model?.Id ?? 0;
+}
+
+<div id="select-tab">
+    <span id="view-title" class="active"><b>Xem bài</b></span>
+    <div class="checkbox-wrapper-63 mt-2">
+        <label class="switch">
+            <input type="checkbox" id="input-tab">
+            <span class="slider"></span>
+        </label>
+    </div>
+    <span id="code-title"><b>Làm bài</b></span>
+</div>
+
+<div id="content-section" class="mt-3 mb-4">
+    <div id="content-container">
+        <div id="header-content">
+            <div class="header-content-child">
+                <span><b>Mã bài:</b></span>
+                <p class="header-content-value">@Model.ExerciseCode</p>
+            </div>
+            <div class="header-content-child">
+                <span><b>Tên bài:</b></span>
+                <p class="header-content-value">@Model.ExerciseName</p>
+            </div>
+            <div class="header-content-child">
+                <span><b>Thể loại chấm:</b></span>
+                <p class="header-content-value">@Model.KindMarking</p>
+            </div>
+            <div class="header-content-child">
+                <span><b>Thời gian:</b></span>
+                <p class="header-content-value">@(Model.RuntimeLimit) giây</p>
+            </div>
+            <div class="header-content-child">
+                <span><b>Đăng bởi:</b></span>
+                <p class="header-content-value">@(Model.UserCreated.Username)</p>
+            </div>
+            <div class="header-content-child">
+                <span><b>Độ khó:</b></span>
+                <p class="header-content-value">@(Model.Difficulty.DifficultyName)</p>
+            </div>
+            <div class="header-content-child">
+                <span><b>Dạng nhập:</b></span>
+                <p class="header-content-value">@(Model.InputFile != null ? Model.InputFile : "stdin")</p>
+            </div>
+            <div class="header-content-child">
+                <span><b>Dạng xuất:</b></span>
+                <p class="header-content-value">@(Model.OutputFile != null ? Model.OutputFile : "stdout")</p>
+            </div>
+        </div>
+        @* <iframe id="content-iframe" style="width: 90%; border: none;" onload="resizeIframe(this)"></iframe> *@
+        <div id="inner-content"></div>
+    </div>
+</div>
+
+<div id="code-section" class="row mr-0 mt-2 d-none">
+    <div id="codepad" class="col-sm-9 mt-4 flex flex-column">
+        <div id="code-head">
+            <div class="form__group field">
+                <input type="input" class="form__field" placeholder="Name" name="file-name" id='file-name'
+                    value="@(Model.ExerciseName ?? "None Name")" disabled readonly />
+                <label for="name" class="form__label">Tên bài</label>
+            </div>
+            <button id="copy-code" class="button-30" role="button">Sao chép</button>
+        </div>
+        <div id="code-div">
+            <div id="editor"></div>
+            <div id="import-code">
+                <button id="import-file" class="button-19" role="button">Chọn tệp</button>
+            </div>
+        </div>
+        <div id="input-div" class="mt-2">
+            <div id="input-header">
+                <span>Dữ liệu vào</span>
+            </div>
+            <div id="input-area" class="flex flex-column">
+                <div id="input-data-area">
+                    <span>NHẬP DỮ LIỆU VÀO</span>
+                    <textarea id="input-data"></textarea>
+                </div>
+                <div id="run-button">
+                    <button id="run">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <h1>RUN</h1>
+                    </button>
+                    <div class="loader"></div>
+                </div>
+            </div>
+        </div>
+        <div id="output-div" class="mt-2">
+            <div id="output-header">
+                <span>Dữ liệu ra</span>
+            </div>
+            <div class="flex align-center mt-2">
+                <span>Thời gian thực thi:</span>
+                <input class="run-time ml-2" type="text" readonly>
+            </div>
+            <div id="output-area" class="flex flex-column">
+                <div id="output-data-area">
+                    <textarea id="output-data" readonly></textarea>
+                </div>
+            </div>
+        </div>
+        <div id="alert-error" class="mt-2">
+            <div id="alert-error-head">
+                <span>Báo lỗi</span>
+            </div>
+            <div class="flex  align-center mt-2">
+                <span>Thời gian thực thi:</span>
+                <input class="run-time ml-2" type="text" readonly>
+            </div>
+            <div id="error"></div>
+        </div>
+    </div>
+
+    <div id="right-side" class="col-sm-3 col-12">
+        <div class="cfg-option">
+            <div class="cfg-title">
+                <b>Theme:</b>
+            </div>
+            <div class="cfg-content">
+                <select id="theme-selector" class="selector">
+                    @if(listTheme != null)
+                    {
+                        @foreach (var i in listTheme)
+                        {
+                            @if (userInfo != null && i.Id == userInfo.ThemeCodeId)
+                            {
+                                <option selected data-value="@i.Id" value="ace/theme/@i.ThemeCode">@i.ThemeCode</option>
+                            }
+                            else
+                            {
+                                <option data-value="@i.Id" value="ace/theme/@i.ThemeCode">@i.ThemeCode</option>
+                            }
+                        }
+                    }
+                    
+                </select>
+            </div>
+        </div>
+        <div class="cfg-option">
+            <div class="cfg-title">
+                <b>Font size:</b>
+            </div>
+            <div class="cfg-content">
+                <input id="fontsize-selector" class="selector" type="number" value="18" max="72" min="2">
+            </div>
+        </div>
+        <div class="cfg-option">
+            <div class="cfg-title">
+                <b>Program Language:</b>
+            </div>
+            <div class="cfg-content">
+                <select id="programlanguage-selector" class="selector">
+                    @if(programLanguageList != null)
+                    {
+                        @foreach (var i in programLanguageList)
+                        {
+                            @if (userInfo != null && i.Id == userInfo.Id)
+                            {
+                                <option selected data-value="@i.Id" value="@i.ProgramLanguageCode">@i.ProgramLanguageName
+                                </option>
+                            }
+                            else
+                            {
+                                <option data-value="@i.Id" value="@i.ProgramLanguageCode">@i.ProgramLanguageName</option>
+                            }
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+        <button id="submit" class="button-82-pushable" role="button">
+            <span class="button-82-shadow"></span>
+            <span class="button-82-edge"></span>
+            <span class="button-82-front text">
+                CHẤM BÀI
+            </span>
+        </button>
+    </div>
+</div>
+
+
+
+
+@section Links {
+    <link rel="stylesheet" href="~/css/exercise-code.css">
+    <link rel="stylesheet" href="~/css/button-extend.css">
+}
+
+@section Scripts {
+    
+
+
+    @*ACE EDITOR*@
+    <script src="~/assets/plugins/ace-builds/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="~/assets/plugins/ace-builds/src-min-noconflict/ext-language_tools.js"></script>
+    <script>
+        // CODE SECTION
+        function getProgramLanguageMode(proLanguageCode) {
+            if (proLanguageCode == "cpp")
+                return "ace/mode/c_cpp";
+            else if (proLanguageCode == "py")
+                return "ace/mode/python";
+            else if (proLanguageCode == "pas")
+                return "ace/mode/pascal";
+            else
+                return "ace/mode/javascript";
+        }
+
+        var editor = ace.edit("editor");
+        editor.setTheme($('#theme-selector').val());
+        editor.session.setMode(getProgramLanguageMode($('#programlanguage-selector').val()));
+        ace.require("ace/ext/language_tools");
+        editor.setOptions({
+            autoScrollEditorIntoView: true,
+            copyWithEmptySelection: true,
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: true,
+            enableSnippets: true
+        });
+        $('#theme-selector').on('change', function (event) {
+            const theme = event.target.value;
+            editor.setTheme(theme);
+        });
+        $('#fontsize-selector').on('change', function (event) {
+            var fontSize = $(this).val();
+            editor.setFontSize(fontSize + "px");
+        });
+        $('#programlanguage-selector').on('change', function (event) {
+            editor.session.setMode(getProgramLanguageMode($(this).val()));
+        });
+        
+    </script>
+    <script>
+        var baoloi = ace.edit("error");
+        baoloi.setTheme("ace/theme/kuroir");
+        baoloi.setShowPrintMargin(false);
+        baoloi.setDisplayIndentGuides(false);
+        baoloi.setReadOnly(true);
+        baoloi.getSession().setMode("ace/mode/c_cpp");
+    </script>
+
+    <script>
+        const exerciseId = parseInt('@(exerciseId.ToString())');
+        const host = document.querySelector('#inner-content');
+        const shadowRoot = host.attachShadow({ mode: 'open' });
+        const innerContent = `
+                    <style>#dependency{overflow: auto;}table{width: 100%;max-width: 100%;}</style>
+                    <div id="dependency">
+        @Html.Raw(Model.ExerciseContent)
+                    </div>
+                `;
+        shadowRoot.innerHTML = innerContent;
+    </script>
+
+
+    @*Event Listening*@
+    <script>
+        document.getElementById("import-code").addEventListener("click", async function () {
+            const { value: file } = await Swal.fire({
+                title: "Chọn tệp",
+                input: "file",
+                inputAttributes: {
+                    "accept": ".cpp,.py,.pas,.js",
+                    "aria-label": "Tải tệp lên"
+                }
+            });
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const fileContent = e.target.result;
+                    console.log(fileContent);
+                    editor.setValue(fileContent);
+                };
+                reader.readAsText(file);
+            };
+        });
+
+        function executeCopy(text) {
+            let input = document.createElement('textarea');
+            document.body.appendChild(input);
+            input.value = text;
+            input.select();
+            document.execCommand('Copy');
+            input.remove();
+        }
+        document.getElementById("copy-code").addEventListener("click", function () {
+            const button = this;
+            button.innerText = "Đã sao chép";
+            setTimeout(function () {
+                button.innerText = "Sao chép";
+            }, 800);
+            const content = editor.getValue();
+            executeCopy(content);
+        });
+        document.getElementById("run").addEventListener("click", function () {
+            this.style.display = "none";
+            document.querySelector(".loader").style.display = "block";
+            var runProcess = {
+                "UserId": 0,
+                "ProgramLanguageId": $("#programlanguage-selector option:selected").attr("data-value"),
+                "SourceCode": editor.getValue(),
+                "Input": $("#input-data").val(),
+                "Output": null,
+                "Error": null,
+                "InputFile": $("#input-file").val(),
+                "OutputFile": $("#output-file").val(),
+                "TimeLimit": ($("#time-limit").val() >= 0 ? $("#time-limit").val() : 1)
+            }
+            $.ajax({
+                type: 'POST',
+                url: '/CodePad/RunProcessCodepad',
+                data: runProcess,
+                success: function (response) {
+                    if (response.isError) {
+                        document.getElementById("alert-error").style.display = "flex";
+                        document.getElementById("output-div").style.display = "none";
+                        baoloi.setValue(response.error);
+                        $(".run-time").val(response.runTime);
+                    }
+                    else {
+                        document.getElementById("alert-error").style.display = "none";
+                        document.getElementById("output-div").style.display = "flex";
+                        document.getElementById("output-data").innerHTML = response.output;
+                        $(".run-time").val(response.runTime);
+                    }
+                    document.getElementById("run").style.display = "block";
+                    document.querySelector(".loader").style.display = "none";
+                },
+                error: function (err) {
+                    alert("Error to post request");
+                    document.getElementById("run").style.display = "block";
+                    document.querySelector(".loader").style.display = "none";
+                }
+            });
+        });
+    </script>
+
+    <script>
+        $("#input-tab").on('click', function (e) {
+            const checked = $(this).prop("checked");
+            if (checked) {
+                $("#view-title").toggleClass("active");
+                $("#code-title").toggleClass("active");
+                $("#content-section").slideUp(300, function () {
+                    $(this).addClass("d-none");
+                    $("#code-section").removeClass("d-none").slideDown(300);
+                });
+            } else {
+                $("#view-title").toggleClass("active");
+                $("#code-title").toggleClass("active");
+                $("#code-section").slideUp(300, function () {
+                    $(this).addClass("d-none");
+                    $("#content-section").removeClass("d-none").slideDown(300);
+                });
+            }
+        });
+
+    </script>
+
+    @if (userInfo.AuthId == 3 || userInfo.AuthId == 4)
+    {
+        <text>
+            <script>
+                document.getElementById("inner-content").addEventListener('copy', function (e) {
+                    let content = window.getSelection().toString();
+                    checkCopy(content, 'copy', 'exercise');
+                });
+
+                document.getElementById("inner-content").addEventListener('cut', function (e) {
+                    let content = window.getSelection().toString();
+                    checkCopy(content, 'cut', 'exercise');
+                });
+
+                document.getElementById("inner-content").addEventListener('paste', function (e) {
+                    let content = e.clipboardData.getData('text');;
+                    checkCopy(content, 'paste', 'exercise');
+                });
+                
+                editor.container.addEventListener('copy', function (e) {
+                    let content = window.getSelection().toString();
+                    checkCopy(content, 'copy', 'code');
+                });
+
+                editor.container.addEventListener('cut', function (e) {
+                    let content = window.getSelection().toString();
+                    checkCopy(content, 'cut', 'code');
+                });
+
+                editor.container.addEventListener('paste', function (e) {
+                    let content = e.clipboardData.getData('text');;
+                    checkCopy(content, 'paste', 'code');
+                });
+
+                function checkCopy(content, type, zone)
+                {
+                    $.ajax({
+                        url: '/Exercise/CheckCopy',
+                        method: 'post',
+                        data: {model:{Content: content, Type: type, Zone: zone, ExerciseId: exerciseId}} ,
+                        success: function(response){
+                            console.log(response);
+                        },
+                        error: function (err){
+                            console.log(err);
+                        }
+                    });
+                }
+                
+            </script>
+        </text> 
+    }
+
+}

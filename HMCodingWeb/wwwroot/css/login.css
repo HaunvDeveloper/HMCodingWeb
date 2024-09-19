@@ -1,0 +1,47 @@
+* {
+    padding: 0px;
+    margin: 0px;
+    box-sizing: border-box;
+    font-family: var(--primary-font);
+}
+
+:root {
+    --primary-color: #161616;
+    --primary-color_paragraph: rgb(18, 72, 116);
+    --primary-font: Inter, sans-serif;
+}
+
+.color_paragraph {
+    color: var(--primary-color_paragraph);
+}
+
+.title_login {
+    /* font-weight: 400; */
+
+    text-align: center;
+    color: var(--primary-color);
+    font-size: 1.6rem;
+    line-height: 1.6;
+    font-weight: 800;
+}
+
+.container_login {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    /* min-width: 40%; */
+    width: 400px;
+    transform: translate(-50%, -50%);
+}
+
+.form_login {
+    padding: 20px;
+    box-shadow: 0px 0px 30px 20px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+}
+
+    .form_login img {
+        width: 130px;
+    }
+
+

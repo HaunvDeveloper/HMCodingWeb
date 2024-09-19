@@ -1,0 +1,474 @@
+@{
+    var accessRoles = ViewBag.AccessRole as List<AccessRole>;
+    var difficulties = ViewBag.Difficulty as List<DifficultyLevel>;
+    var exerciseTypes = ViewBag.ExerciseType as List<ExerciseType>;
+    var chapters = ViewBag.Chapter as List<Chapter>;
+    var kindMarking = ViewBag.KindMarking as List<string>;
+    var typeMarking = ViewBag.TypeMarking as List<string>;
+}
+
+<form id="main" class="mb-3 mt-1" accept="" method="post">
+    <div id="title" class="mt-4">
+        <h1 style="font-weight: 700;">TẠO BÀI TẬP</h1>
+    </div>
+    <div id="header-content" class="mb-4">
+        <div class="header-content-child">
+            <span class="required"><b>Mã bài</b></span>
+            <input type="text" id="ExerciseCode" placeholder="Nhập mã bài...." class="form-control header-content-input"
+                required>
+        </div>
+        <div class="header-content-child">
+            <span><b>Tên bài</b></span>
+            <input type="text" id="ExerciseName" placeholder="Nhập tên bài...."
+                class="form-control header-content-input" required>
+        </div>
+        <div class="header-content-child">
+            <span><b>Độ khó</b></span>
+            <select name="Difficulty" id="Difficulty" class="form-control" required>
+                @if (difficulties != null)
+                {
+                    @foreach (var dif in difficulties)
+                    {
+                        <option class="select-option" value="@dif.Id" data-value="@dif.DifficultyCode">@dif.DifficultyName
+                        </option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="header-content-child">
+            <span><b>Chương</b></span>
+            <select name="Chapter" id="Chapter" class="form-control" required>
+                @if (chapters != null)
+                {
+                    @foreach (var chapter in chapters)
+                    {
+                        <option class="select-option" value="@chapter.Id" data-value="@chapter.ChapterCode">@chapter.ChapterName
+                        </option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="header-content-child select-types">
+            <span><b>Dạng bài</b></span>
+            <button class="form-control toggle-next ellipsis" type="button">Chọn dạng bài</button>
+            <div class="checkboxes" id="ExerciseType">
+                <label class="apply-selection">
+                    <input type="checkbox" value="" />
+                    &#x2714; apply selection
+                </label>
+
+                <div class="inner-wrap">
+                    @if (exerciseTypes != null)
+                    {
+                        @foreach (var type in exerciseTypes)
+                        {
+                            <label>
+                                <div class="checkbox-wrapper-18">
+                                    <div class="round">
+                                        <input id="ckkBox_@type.Id" type="checkbox" value="@type.Id" data-value="@type.TypeCode"
+                                            class="ckkBox" />
+                                        <label for="ckkBox_@type.Id"></label>
+                                    </div>
+                                </div>
+                                <span>@type.TypeName</span>
+                            </label>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="header-content-child">
+            <span><b>Quyền truy cập</b></span>
+            <select name="AccessRole" id="AccessRole" class="form-control" required>
+                @if (accessRoles != null)
+                {
+                    @foreach (var acc in accessRoles)
+                    {
+                        <option class="select-option access-option" value="@acc.Id" data-value="@acc.AccessCode"
+                            title="@acc.Description">
+                            @acc.AccessName</option>
+                    }
+                }
+            </select>
+
+        </div>
+        <div class="header-content-child">
+            <span><b>Thể loại chấm</b></span>
+            <select name="KindMarking" id="KindMarking" class="form-control" required>
+                @if (kindMarking != null)
+                {
+                    @foreach (var kind in kindMarking)
+                    {
+                        <option class="select-option" value="@kind">@kind</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="header-content-child">
+            <span><b>Cách chấm</b></span>
+            <select name="TypeMarking" id="TypeMarking" class="form-control" required>
+                @if (typeMarking != null)
+                {
+                    @foreach (var type in typeMarking)
+                    {
+                        <option class="select-option" value="@type">@type</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="header-content-child">
+            <span style="color: blue;"><b>Input File (nếu có)</b></span>
+            <input type="text" id="InputFile" placeholder="Nhập hoặc bỏ trống"
+                class="form-control header-content-input">
+        </div>
+        <div class="header-content-child">
+            <span style="color: blue;"><b>Output File (nếu có)</b></span>
+            <input type="text" id="OutputFile" placeholder="Nhập hoặc bỏ trống"
+                class="form-control header-content-input">
+        </div>
+        <div class="header-content-child">
+            <span><b>Thời gian thực thi giới hạn</b></span>
+            <input type="number" id="RuntimeLimit" class="form-control header-content-input" step="1" value="1" max="10"
+                min="1" required>
+        </div>
+        <div class="header-content-child" style="align-items: center; gap:2rem;">
+            <span class="mt-2" style="font-size: 24px;"><strong>Là bài kiểm tra:</strong></span>
+            <div class="checkbox-wrapper-19 mt-4">
+                <input type="checkbox" id="IsExam" />
+                <label for="IsExam" class="check-box">
+            </div>
+            <p class="mt-4" style="font-size: 13px;">(Bài kiểm tra sẽ ẩn cho đến khi kỳ thi bắt đầu)</p>
+        </div>
+    </div>
+    <textarea id="ex-content" name="ex-content"></textarea>
+
+    <div id="title" class="mt-5">
+        <h2 style="font-weight: 700;">TEST CASE</h2>
+    </div>
+
+    <div id="textcase-content">
+        <table id="testcase-table" class="table table-hover table-border">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>INPUT</th>
+                    <th>OUTPUT</th>
+                    <th>Chức năng</th>
+                </tr>
+            </thead>
+            <tbody id="testcase-row-list">
+                <tr data-value="1">
+                    <td class="mt-5">1</td>
+                    <td>
+                        <textarea class="testcase-io-input test-case-input form-control"
+                            name="testcase-input"></textarea>
+                    </td>
+                    <td>
+                        <textarea class="testcase-io-input test-case-output form-control"
+                            name="testcase-output"></textarea>
+                    </td>
+                    <td>
+                        <button type="button" onclick="deleteRow(this)"
+                            class="btn btn-danger test-case-delete">Delete</button>
+                    </td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3"></td>
+                    <td><button id="add-testcase-btn" type="button" class="btn btn-success">Thêm Testcase</button></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <button id="save" class="button-82-pushable" role="button" type="submit" style="width:20rem;">
+        <span class="button-82-shadow"></span>
+        <span class="button-82-edge"></span>
+        <span class="button-82-front text">
+            ĐĂNG BÀI
+        </span>
+    </button>
+
+</form>
+
+<table id="row-clone" style="display: none;">
+    <tr>
+        <td class="mt-5"></td>
+        <td>
+            <textarea class="testcase-io-input test-case-input form-control" name="testcase-input"></textarea>
+        </td>
+        <td>
+            <textarea class="testcase-io-input test-case-output form-control" name="testcase-output"></textarea>
+        </td>
+        <td>
+            <button type="button" onclick="deleteRow(this)" class="btn btn-danger test-case-delete">Delete</button>
+        </td>
+    </tr>
+</table>
+
+
+
+
+@section Links {
+    <link rel="stylesheet" href="~/css/exercise-create.css">
+    <link rel="stylesheet" href="~/css/checkbox-extend.css">
+    <link rel="stylesheet" href="~/css/button-extend.css">
+}
+
+
+@section Scripts {
+    <script src="https://cdn.ckeditor.com/4.22.1/full/ckeditor.js"></script>
+    <script>
+        CKEDITOR.replace('ex-content', {
+            extraPlugins: 'justify,table,link',
+            toolbar: [
+                { name: 'document', items: ['Source', '-', 'NewPage', 'Preview', 'Print', '-', 'Templates'] },
+                { name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'] },
+                { name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'SpellChecker', 'Scayt'] },
+                { name: 'forms', items: ['Form', 'Checkbox', 'Radio', 'TextField', 'Textarea', 'Select', 'Button', 'ImageButton', 'HiddenField'] },
+                '/',
+                { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat'] },
+                { name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl', 'Language'] },
+                { name: 'links', items: ['Link', 'Unlink', 'Anchor'] },
+                { name: 'insert', items: ['Image', 'Flash', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak', 'Iframe'] },
+                '/',
+                { name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize'] },
+                { name: 'colors', items: ['TextColor', 'BGColor'] },
+                { name: 'tools', items: ['Maximize', 'ShowBlocks'] },
+                { name: 'others', items: ['Ruler'] }
+            ]
+        });
+        CKEDITOR.instances['ex-content'].on('change', function () {
+            saveDataToLocalStorage();
+        });
+        function saveDataToLocalStorage() {
+            var editorData = CKEDITOR.instances['ex-content'].getData();
+            localStorage.setItem('ckeditor_data', editorData);
+        }
+
+        $(document).ready(function () {
+            var storedData = localStorage.getItem('ckeditor_data');
+            if (storedData) {
+                CKEDITOR.instances['ex-content'].setData(storedData);
+            }
+        });
+
+    </script>
+
+    @* Add or Remove Row Testcase *@
+    <script>
+        function resetIndexTable() {
+            var list = $("#testcase-row-list tr");
+            list.each(function (index, elem) {
+                $(elem).attr('data-value', index + 1);
+                $(elem).find('td').first().text(index + 1);
+            });
+        }
+        document.getElementById("add-testcase-btn").addEventListener('click', function () {
+            let newRow = $("#row-clone").find("tr").clone();
+            $("#testcase-row-list").append(newRow);
+            resetIndexTable();
+        });
+
+        function deleteRow(elem) {
+            if ($("#testcase-row-list tr").length > 1) {
+                $(elem).closest('tr').remove();
+                resetIndexTable();
+            } else {
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    showConfirmButton: false,
+                    timer: 1500,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.onmouseenter = Swal.stopTimer;
+                        toast.onmouseleave = Swal.resumeTimer;
+                    },
+                    icon: "error",
+                    title: "Phải tồn tại ít nhất 1 Testcase"
+                });
+            }
+        }
+
+        document.getElementById('ExerciseCode').addEventListener('input', function (e) {
+
+            const regex = /^[a-zA-Z0-9\-_+*\/]*$/;
+            const input = e.target.value;
+            if (!regex.test(input)) {
+                e.target.value = input.replace(/[^a-zA-Z0-9-_]/g, '');
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.onmouseenter = Swal.stopTimer;
+                        toast.onmouseleave = Swal.resumeTimer;
+                    },
+                    icon: "error",
+                    title: "Mã bài không được tồn tại ký tự Tiếng Việt và khoảng trắng"
+                });
+            }
+        });
+        document.getElementById("IsExam").addEventListener('change', function () {
+            const checked = this.checked;
+            if (checked) {
+                $(".select-option").each(function (index, elem) {
+                    if ($(elem).val() == 1) {
+                        $(elem).prop("selected", true);
+                    } else {
+                        $(elem).prop("selected", false);
+                    }
+                });
+                $("#AccessRole").prop("disabled", true);
+            } else {
+                $("#AccessRole").prop("disabled", false);
+            }
+        });
+    </script>
+
+    @* Multiple selected system *@
+    <script>
+        $(function () {
+
+            setCheckboxSelectLabels();
+
+            $('.toggle-next').click(function () {
+                $(this).next('.checkboxes').slideToggle(400);
+            });
+
+            $('.ckkBox').change(function () {
+                setCheckboxSelectLabels();
+            });
+
+        });
+
+        function setCheckboxSelectLabels() {
+            var parents = $('.select-types');
+            $.each(parents, function (key, parent) {
+                var checkboxes = $(parent).find('.ckkBox');
+                var prevText = '';
+                var numberOfChecked = $(parent).find('input:checkbox:checked').length;
+                var button = $(parent).find('button');
+
+                if (numberOfChecked === 0) {
+                    $(button).text("---Chọn dạng bài---");
+                } else {
+                    $.each(checkboxes, function (i, checkbox) {
+                        if ($(checkbox).prop('checked') == true) {
+                            var text = $(checkbox).parent().parent().next().html();
+                            var btnText = prevText + text;
+                            if (numberOfChecked >= 4) {
+                                btnText = numberOfChecked + ' ' + "Dạng bài" + ' được chọn';
+                            }
+                            $(button).text(btnText);
+                            prevText = btnText + ', ';
+                        }
+                    });
+                }
+            });
+        }
+
+    </script>
+
+    @* Save Event *@
+    <script>
+        function getExerciseTypes() {
+            let result = [];
+            $('.select-types').find('input:checkbox:checked').each(function () {
+                var type = {
+                    ExerciseTypeId: parseInt($(this).val()),
+                    ExerciseId: 0
+                }
+                result.push(type);
+            });
+            return result;
+        }
+
+        function getAllTestCases() {
+            let result = [];
+            let list = $("#testcase-row-list tr");
+            list.each(function (index, elem) {
+                var testcase = {
+                    Position: $(elem).find('td').first().text(),
+                    Input: $(elem).find('.test-case-input').val(),
+                    Output: $(elem).find('.test-case-output').val()
+                };
+                result.push(testcase);
+            });
+            return result;
+        }
+
+        $("#save").on('click', function (event) {
+            event.preventDefault();
+            if ($('.select-types').find('input:checkbox:checked').length == 0) {
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.onmouseenter = Swal.stopTimer;
+                        toast.onmouseleave = Swal.resumeTimer;
+                    },
+                    icon: "error",
+                    title: "Hãy chọn dạng bài"
+                });
+            }
+            else if($("#ExerciseCode").val() == ""){
+
+            } else {
+                let model = {
+                    ExerciseCode: $("#ExerciseCode").val(),
+                    ExerciseName: $("#ExerciseName").val(),
+                    ExerciseContent: CKEDITOR.instances['ex-content'].getData(),
+                    InputFile: $("#InputFile").val(),
+                    OutputFile: $("#OutputFile").val(),
+                    NumberTestcase: $("#testcase-row-list tr").length,
+                    KindMarking: $("#KindMarking").val(),
+                    TypeMarking: $("#TypeMarking").val(),
+                    DifficultyId: parseInt($("#Difficulty").val()),
+                    ChapterId: parseInt($("#Chapter").val()),
+                    AccessId: parseInt($("#AccessRole").val()),
+                    IsExam: $("#IsExam").prop("checked"),
+                    RuntimeLimit: $("#RuntimeLimit").val(),
+                    UserCreatedId: 0,
+                    ExerciseBelongTypes: getExerciseTypes(),
+                    TestCases: getAllTestCases(),
+                    IsAccept: false
+
+                }
+
+                $.ajax({
+                    url: '/Exercise/Create',
+                    method: 'post',
+                    data: { model: model},
+                    success: function (response) {
+                        if (response.status) {
+                            Swal.fire({
+                                icon: "success",
+                                title: "Bài của bạn đang chờ kiểm duyệt...",
+                                showConfirmButton: false,
+                                timer: 2000
+                            });
+                            setTimeout(function () {
+                                window.location.href = response.redirect;
+                            }, 2000);
+                        } else {
+                            Swal.fire("Đăng thất bại!", response.error, "error");
+                        }
+                    },
+                    error: function(error){
+                        Swal.fire("Đăng thất bại!", error, "error");
+                    }
+                })
+
+
+            }
+        });
+    </script>
+}

@@ -1,0 +1,97 @@
+﻿body {
+    transition-delay: 0.3s;
+    background-color: #d3d3d39c;
+}
+:root {
+    --primary-color: rgb(26,26,26);
+}
+
+main#main{
+    min-height: 400px;
+}
+
+/*Footer*/
+#footer {
+    position: relative;
+    background-color: var(--primary-color);
+}
+
+    #footer img {
+        width: 15%;
+        transform: scaleX(-1);
+        position: absolute;
+        bottom: 0;
+        left: 0;
+    }
+
+    #footer .container {
+        padding: 16px 24px;
+        text-align: center;
+        color: rgba(256, 256, 256, 0.6);
+        font-size: 12px;
+    }
+
+        #footer .container p {
+            padding: 4px;
+        }
+
+
+.loader {
+    width: 50px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 8px solid;
+    border-color: #000 #0000;
+    animation: l1 1s infinite;
+    display: none;
+}
+.loaderBar {
+    width: 45px;
+    aspect-ratio: 1;
+    --c: no-repeat linear-gradient(#000 0 0);
+    background: var(--c) 0% 50%, var(--c) 50% 50%, var(--c) 100% 50%;
+    background-size: 20% 100%;
+    animation: l2 1s infinite linear;
+}
+
+@keyframes l2 {
+    0% {
+        background-size: 20% 100%,20% 100%,20% 100%
+    }
+
+    33% {
+        background-size: 20% 10%,20% 100%,20% 100%
+    }
+
+    50% {
+        background-size: 20% 100%,20% 10%,20% 100%
+    }
+
+    66% {
+        background-size: 20% 100%,20% 100%,20% 10%
+    }
+
+    100% {
+        background-size: 20% 100%,20% 100%,20% 100%
+    }
+}
+@keyframes l1 {
+    to {
+        transform: rotate(.5turn)
+    }
+}
+
+
+.animation-hidden {
+    
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.4s ease, opacity 0.4s ease;
+    overflow:hidden;
+}
+
+.animation-visible {
+    max-height: 1000px;
+    opacity: 1;
+    transition: max-height 0.7s ease, opacity 0.7s ease;
+}

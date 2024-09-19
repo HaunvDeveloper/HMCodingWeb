@@ -1,0 +1,259 @@
+
+#main-content {
+    padding: 0 !important;
+    --bs-gutter-x: 0 !important; 
+}
+
+
+#codepad {
+    height: auto;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.io-div {
+    width: 100%;
+    height: auto;
+    margin-top: 5px;
+    margin-left: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#code-div {
+    width: 100%;
+    height: auto;
+    margin-top: 5px;
+    margin-left: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+#code-head{
+  width: 56rem;
+  max-width: 80%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#code-head input{
+    color: black;
+    font-weight: bold;
+}
+
+#import-code{
+  width: 56rem;
+  max-width: 80%;
+}
+#editor {
+  width: 56rem;
+  max-width: 80%;
+  height: 38rem;
+  font-size: 18px;
+  margin-top: 0.4rem;
+  margin-bottom: 0.4rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  resize: both;
+  border: 3px solid black;
+}
+
+#right-side {
+    min-width: 260px;
+    height: fit-content;
+    padding: 5px;
+    padding-left: 8px;
+    top: 20px;
+    position: -webkit-sticky;
+    position: sticky;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    color:white;
+    border: 2px solid black;
+
+}
+
+#right-side .line{
+    width: 100%;
+    height: 1px;
+    background:black;
+}
+
+
+@media (max-width: 1200px) {
+    #codepad {
+        width: 100%;
+    }
+    #right-side {
+        width: 100%;
+        position: relative;
+    }
+    #editor{
+        max-width: 95%;
+        
+    }
+    .tab-pane {
+        max-width: 95% !important;
+    }
+}
+
+
+
+
+
+
+.cfg-option{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  margin-top: 0.3rem;
+  margin-left: 0.2rem;
+  margin-bottom: 0.3rem;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+.cfg-title{
+  width: 50%;
+  text-align: left;
+  display: flex;
+  align-items: center;
+}
+.cfg-content{
+  display: flex;
+  align-items: center;
+}
+#wrap {
+  max-width: 400px;
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+}
+.selector {
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+  font-size: 16px;
+  color: black;
+  width: 100px;
+  height: 32px;
+  border-radius: 20px;
+  text-align: center;
+}
+tr td {
+  border: none;
+  justify-content: center;
+}
+#myTabContent {
+    width: 100%;
+    text-align: -webkit-center;
+}
+
+.tab-pane {
+    border: 1px solid #55595C;
+    max-width: 80%;
+    width: 56rem;
+
+    height: fit-content;
+}
+
+.io-child-div {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    
+    overflow: hidden;
+    justify-content: center;
+}
+
+#ioput-file-area {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+
+#input-data {
+  padding: 5px;
+  height: 10rem;
+  border: 1px solid gray;
+  resize: both;
+}
+
+#output-data {
+    padding: 5px;
+    height: 10rem;
+    border: 1px solid gray;
+    resize: both;
+}
+
+#error {
+    padding: 5px;
+    height: 10rem;
+    border: 1px solid gray;
+    resize: both;
+}
+
+.nav-tabs .nav-link.active {
+    background: rgb(52,58,64);
+    color: white;
+}
+
+.align-center {
+    justify-content: center;
+    align-items: center;
+}
+.flex {
+  display: flex;
+}
+
+
+#save-file-input{
+  margin-top: 1rem;
+  border: 1px solid black;
+  border-radius: 10px;
+  height: 3rem;
+  display:flex;
+  justify-content: space-evenly;
+  align-items:center;
+  overflow:hidden;
+}
+#save-file-name{
+  border:none;
+  width:85%;
+  height:95%;
+  font-size:20px;
+}
+#save-file-name:focus{
+  border:none;
+  outline: none; 
+  border-color: initial; 
+  box-shadow: none;
+  padding-left: 5px;
+}
+#save-file-input span{
+  background-color: #696f71;
+  color:white;
+  border-radius: 10px;
+  padding:5px 10px;
+  display: flex;
+  align-items: center;
+  text-align: center;
+}
+
+
+
+
+

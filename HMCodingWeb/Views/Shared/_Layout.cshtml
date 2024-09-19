@@ -1,0 +1,122 @@
+﻿@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="~/lib/bootstrap/theme/bootstrap.css">
+    <link rel="stylesheet" href="~/css/bootstrap.extend.css">
+    <link rel="stylesheet" href="~/lib/sweetalert2/themes/minimal/minimal.min.css">
+    <link rel="stylesheet" href="~/css/button-extend.css"/>
+    <link rel="stylesheet" href="~/js/sweetalert2-extend.js"/>
+    <link rel="stylesheet" href="~/css/site.css"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito">
+
+    <link rel="icon" href="~/assets/icons/logo.png"/>
+
+    @RenderSection("Links", required: false)
+
+
+    <title>HM Coding</title>
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">Online Coding</a>
+                <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse" id="navbarColor01" style="">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Home" && currentAction == "Index" ? "active" : "")" asp-action="Index" asp-controller="Home">
+                                Trang chủ
+                               
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "CodePad" ? "active" : "")" asp-action="Index" asp-controller="Codepad">Codepad</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Exercise" ? "active" : "")" asp-action="Index" asp-controller="Exercise">Bài tập</a>
+                        </li>
+                    </ul>
+                    @if(User.Identity?.IsAuthenticated ?? false)
+                    {
+                        <div class="nav-item dropdown mt-1">
+                            <a class="nav-link dropdown-toggle text-success @(currentController == "User" ? "active" : "")" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" asp-action="Index" asp-controller="User">@User.FindFirst(ClaimTypes.Name)?.Value</a>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item" asp-action="Index" asp-controller="User">Thông tin tài khoản</a>
+                                @if(User.IsInRole("admin") || User.IsInRole("teacher"))
+                                {
+                                    <a class="dropdown-item" asp-action="Index" asp-controller="Home" asp-area="Admin">Tới trang quản lý</a>
+                                }
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item text-danger" asp-action="Logout" asp-controller="User">Đăng xuất</a>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="nav-item mt-2">
+                            <a class="nav-link text-info" asp-action="Login" asp-controller="User">Đăng nhập</a>
+                        </div>
+                        <div class="nav-item mt-2">
+                            <a class="nav-link text-info" asp-action="Signup" asp-controller="User">Đăng ký</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main id="main">
+        @RenderBody()
+    </main>
+    
+
+    <div id="footer">
+        <img src="~/assets/images/ToanhaA-01.png" alt="">
+        <div class="container">
+            <p class="address1" style="display:flex;align-items:center;justify-content:center; gap:0.7rem;">Tác giả: Nguyễn Văn Hậu</p>
+            <p class="address2" style="display:flex;align-items:center;justify-content:center; gap:0.7rem;">Khoa Công nghệ Thông tin - Đại học Sư phạm TP. Hồ Chí Minh</p>
+            <div class="phonenumber mt-0" style="display:flex;align-items:center;justify-content:center; gap:0.7rem;">
+                <p>Liên hệ: 0944746748</p>
+                <p>Email: haunv.cntt@gmail.com</p>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="~/lib/sweetalert2/dist/sweetalert2.min.js"></script>
+    <script src="~/js/sweetalert2-extend.js"></script>
+    <script src="https://kit.fontawesome.com/0f2d543076.js" crossorigin="anonymous"></script>
+
+    @if (TempData["UserLogin"] != null)
+    {
+        <script id="tempShowToast">
+            setTimeout(function () {
+                showToast("success", "Đăng nhập thành công", 3000);
+                $("#tempShowToast").remove();
+            }, 100);
+        </script>
+
+
+    }
+    @{
+        TempData.Remove("UserLogin");
+    }
+
+    @RenderSection("Scripts", required: false)
+</body>
+
+</html>

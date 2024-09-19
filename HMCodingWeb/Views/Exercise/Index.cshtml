@@ -1,0 +1,156 @@
+﻿@{
+    ViewData["Title"] = "Bài tập";
+    var kindMarkings = ViewBag.KindMarking as IEnumerable<SelectListItem>;
+    var typeMarkings = ViewBag.TypeMarking as IEnumerable<SelectListItem>;
+    var difficults = ViewBag.Difficults as IEnumerable<SelectListItem>;
+    var chapters = ViewBag.Chapters as IEnumerable<SelectListItem>;
+    var exerciseType = ViewBag.ExerciseType as IEnumerable<SelectListItem>;
+}
+
+<div id="codepad" class="m-5 flex-center flex-column">
+    <h1 class="title text-center">
+        <b>DANH SÁCH BÀI TẬP</b>
+    </h1>
+
+    <div class="container flex-center flex-wrap justify-content-between">
+        <a class="btn btn-primary" asp-action="Create" asp-controller="Exercise">Tạo Bài tập</a>
+        <button id="show-filter" class="btn ml-2 btn-outline-info">LỌC</button>
+    </div>
+    <form asp-action="Index" asp-controller="Exercise" method="get" id="filter" class="container animation-hidden">
+        <div class="row pt-4">
+            <div class="col-12 col-md-6">
+                <input type="hidden" id="p" name="p" value="1"/>
+                <input type="hidden" id="s" name="s"/>
+                <div class="form-group">
+                    <label for="Search" class="text-primary form-label"><b>Tìm kiếm:</b></label>
+                    <input id="Search" name="key" class="form-control" placeholder="Nhập mã bài hoặc tên bài" />
+                </div>
+                <div class="form-group">
+                    <label class="text-primary form-label">Thể loại chấm</label>
+                    @Html.DropDownList("kM", kindMarkings, "Thể loại chấm", new { @class = "form-control" })
+                </div>
+                <div class="form-group">
+                    <label class="text-primary form-label">Cách chấm chấm</label>
+                    @Html.DropDownList("tM", typeMarkings, "Cách chấm chấm", new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="form-group">
+                    <label class="text-primary form-label">Độ khó</label>
+                    @Html.DropDownList("dId", difficults, "Độ khó", new { @class = "form-control" })
+                </div>
+                <div class="form-group">
+                    <label class="text-primary form-label">Chương</label>
+                    @Html.DropDownList("cId", chapters, "Chương", new { @class = "form-control" })
+                </div>
+                <div class="form-group">
+                    <label class="text-primary form-label">Dạng bài</label>
+                    @Html.DropDownList("etId", exerciseType, "Dạng bài", new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <button class="btn btn-info">TÌM KIẾM</button>
+            </div>
+        </div>
+    </form>
+    <div class="container mt-3 mb-3 table-responsive list">
+        <table id="listcodepad" class="table table-hover table-border table-striped ml-5 mr-3">
+            <tbody>
+                <tr>
+                    <td colspan="6" class="flex justify-content-center gap-4 align-items-center">
+                        <div class="loaderBar"></div>
+                        <h5>Loading.....</h5>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+@section Links {
+    <link rel="stylesheet" href="~/css/codepad-index.css">
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+}
+
+@section Scripts {
+
+    <script>
+        $('#show-filter').on('click', function () {
+            $('#filter').toggleClass('animation-visible animation-hidden');
+        });
+
+    </script>
+
+    @*Event Listening*@
+    <script>
+        async function loadListFormParams() {
+            let params = new URLSearchParams(window.location.search);
+            let p = params.get('p') || 1;
+            let s = params.get('s') || 10;
+            let key = params.get('key') || '';
+            let dId = params.get('dId') || null;
+            let cId = params.get('cId') || null;
+            let etId = params.get('etId') || null;
+            let tM = params.get('tM') || null;
+            let kM = params.get('kM') || null;
+            $('#s').val(s);
+            await loadList(p, s, key, dId, cId, etId, tM, kM);
+        }
+
+        $(document).ready(loadListFormParams());
+
+        async function setPage(p) {
+            let params = new URLSearchParams(window.location.search);
+            let s = params.get('s') || 10;
+            let key = params.get('key') || '';
+            let dId = params.get('dId') || null;
+            let etId = params.get('etId') || null;
+            let tM = params.get('tM') || null;
+            let kM = params.get('kM') || null;
+            await loadList(p, s, key, dId, etId, tM, kM);
+        }
+
+        async function changePageSize(elem) {
+            let params = new URLSearchParams(window.location.search);
+            let key = params.get('key') || '';
+            let dId = params.get('dId') || null;
+            let etId = params.get('etId') || null;
+            let tM = params.get('tM') || null;
+            let kM = params.get('kM') || null;
+            $('#s').val($(elem).find("option:selected").val());
+            await loadList(1, $(elem).find("option:selected").val(), key, dId, etId, tM, kM);
+        }
+
+        async function loadList(p, s, key, dId, cId, etId, tM, kM) {
+            let url = '@Url.Action("_GetList", "Exercise")';
+
+            let newUrl = window.location.pathname + "?";
+            if (p) newUrl += "&p=" + p;
+            if (s) newUrl += "&s=" + s;
+            if (key) newUrl += "&key=" + key;
+            if (dId) newUrl += "&dId=" + dId;
+            if (cId) newUrl += "&cId=" + cId;
+            if (etId) newUrl += "&etId=" + etId;
+            if (tM) newUrl += "&tM=" + tM;
+            if (kM) newUrl += "&kM=" + kM;
+
+            window.history.pushState({ path: newUrl }, '', newUrl);
+            await $.ajax({
+                url: url,
+                data: { p: p, s: s, key: key, dId: dId, cId: cId, etId: etId, tM: tM, kM: kM},
+                method: 'GET',
+                success: function (data) {
+                    $('.list').html(data);
+                },
+                error: function (xhr, status, error) {
+                    console.error("Failed to load codepads:", error);
+                    $('.list').html('<tr><td colspan="6" class="text-center text-danger">Error loading codepads. Please try again.</td></tr>');
+                }
+            });
+        }
+
+
+    </script>
+}

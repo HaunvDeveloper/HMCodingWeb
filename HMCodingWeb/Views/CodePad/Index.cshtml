@@ -1,0 +1,239 @@
+﻿
+@{
+    ViewData["Title"] = "Codepad";
+    var listProgramLanguage = ViewBag.ProgramLanguageList as List<ProgramLanguage>;
+    var listAccess = ViewBag.AccessList as List<AccessRole>;
+}
+
+<div id="codepad" class="m-5 flex-center flex-column">
+    <h1 class="title text-center">
+        <b>DANH SÁCH CODEPAD</b>
+    </h1>
+
+    <div class="container">
+        <div class="row pt-4">
+            <div class="col-6">
+                <a class="btn btn-primary" asp-action="Code" asp-controller="CodePad">Tạo Codepad</a>
+            </div>
+            <div id="SearchForm" method="get" class="col-6 flex-center text-end">
+                <label for="Search" class="text-primary"><b>Tìm kiếm:</b></label>
+                <input id="Search" name="key" class="w-75 form-control" placeholder="Nhập nội dung tìm kiếm"/>
+            </div>
+        </div>
+    </div>
+    <div class="container mt-3 mb-3 table-responsive list">
+        <table id="listcodepad" class="table table-hover table-border table-striped ml-5 mr-3">
+            <tbody>
+                <tr>
+                    <td colspan="6" class="flex justify-content-center gap-4 align-items-center">
+                        <div class="loaderBar"></div>
+                        <h5>Loading.....</h5>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<div class="modal" id="share-code-popup" aria-labelledby="share-code-popup-label"
+     aria-hidden="true" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="share-code-popup-label">Quyền truy cập</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true"></span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="select-role-list">
+                    @if (listAccess != null)
+                    {
+                        foreach (var role in listAccess)
+                        {
+                            <div class="access-role h-25">
+                                <label for="@role.AccessCode" style="width: 100%;height:4rem; display: flex; flex-wrap:nowrap; gap: 0.4rem;">
+                                    <div class="checkbox-wrapper-24">
+                                        <input type="radio" id="@role.AccessCode" name="select-role" value="@role.Id"/>
+                                        <label for="@role.AccessCode">
+                                            <span></span>
+                                        </label>
+                                    </div>
+
+                                    <div style="display:flex;width: 95%; flex-wrap: nowrap; gap: 0.4rem;">
+                                        <span style="width: 40%;">@role.AccessName</span>
+                                        <div style="width: 60%; font-weight: 500;">@role.Description</div>
+                                    </div><br>
+                                </label>
+
+                            </div>
+                        }
+                    }
+                    <div class="d-flex align-items-center gap-1 justify-content-between">
+                        <span>Đường dẫn chia sẻ: </span>
+                        <input type="url" readonly id="url" class="form-control-sm" value=""/>
+                        <button id="copy-url" class="btn btn-sm btn-outline-secondary">Sao chép</button>
+                        <div id="copy-url-temp" class="d-none"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-save-role" type="button" class="btn btn-primary">Save changes</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <div class="loader" style="display: none"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Links {
+    <link rel="stylesheet" href="~/css/codepad-index.css">
+    <link rel="stylesheet" href="~/css/checkbox-extend.css"/>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+}
+
+@section Scripts {
+
+    @*Event Listening*@
+    <script>
+        $(document).ready(async function () {
+            let p = sessionStorage.getItem('page');
+            let s = sessionStorage.getItem('size');
+            let key = sessionStorage.getItem('key');
+            if (p === 'null') p = null;
+            if (s === 'null') s = null;
+            if (key === 'null') key = null;
+
+            $('#Search').val(key);
+            await loadCodepads(p, s, key); 
+        });
+
+        async function setPage(p) {
+            await loadCodepads(p, $("#pageSizeSelector").find("option:selected").val(), $("#Search").val());
+        }
+
+        $("#Search").on('change', async function () {
+            await loadCodepads(1, $("#pageSizeSelector").find("option:selected").val(), $("#Search").val());  
+        });
+
+        async function changePageSize(elem){
+            await loadCodepads(1, $(elem).find("option:selected").val(), $("#Search").val());
+        }
+
+        async function loadCodepads(p, s, key) {
+            let url = '@Url.Action("_GetList", "CodePad")';
+            
+            await $.ajax({
+                url: url, 
+                data: {p: p, s: s, key: key},
+                method: 'GET',
+                success: function (data) {
+                    $('.list').html(data);
+                    sessionStorage.setItem('page', p);
+                    sessionStorage.setItem('size', s);
+                    sessionStorage.setItem('key', key);
+                },
+                error: function (xhr, status, error) {
+                    console.error("Failed to load codepads:", error);
+                    $('.list').html('<tr><td colspan="6" class="text-center text-danger">Error loading codepads. Please try again.</td></tr>');
+                }
+            });
+        }
+
+        async function deleteCode(elem) {
+            const isConfirmed = await confirmAction();
+            if (isConfirmed) {
+                let tr = $(elem).closest("tr");
+                $.ajax({
+                    url: "/CodePad/Delete",
+                    method: "post",
+                    data: { id: tr.attr("data-value") },
+                    success: function (response) {
+                        if (response.status) {
+                            showToast("success", "Xóa thành công");
+                            tr.remove();
+                        }
+                        else {
+                            showToast("error", "Xóa thất bại");
+                            console.log(response.error);
+                        }
+                    },
+                    error: function (error) {
+                        showToast("error", "Xóa thất bại");
+                        console.log(error);
+                    }
+                });
+            }
+        }
+
+        function shareCode(elem) {
+            let id = $(elem).closest('tr').find('td').eq(4).data('value');
+            let codepadId = $(elem).closest('tr').data('value');
+            let accessRole = document.getElementsByName("select-role");
+            let href = $(elem).closest('tr').find('.detail').find('a').attr('href');
+            const fullUrl = new URL(href, window.location.origin);
+            for (let role of accessRole) {
+                if (role.value == id) {
+                    role.checked = true;
+                    document.getElementById('btn-save-role').value = codepadId;
+                    document.getElementById('url').value = fullUrl;
+                    break;
+                }
+                else {
+                    role.checked = false;
+                }
+            }
+            $('#share-code-popup').modal('show');
+        }
+
+        $('#btn-save-role').on('click', async function (elem) {
+            let codepadId = parseInt($(this).val());
+
+            let accessId = parseInt(document.querySelector('input[name="select-role"]:checked').value);
+
+            console.log(codepadId, accessId);
+            $(this).hide();
+            $(".loader").show();
+            await $.ajax({
+                url: '@Url.Action("ChangeAccessRole", "CodePad")',
+                method: 'post',
+                data: { codepadId: codepadId, accessId: accessId },
+                success: function (response) {
+                    $('#share-code-popup').modal('hide');
+                    if (response.status) {
+                        $('tr[data-value="' + codepadId + '"]').find('td').eq(4).text(response.accessName);
+                        $('tr[data-value="' + codepadId + '"]').find('td').eq(4).data("value", accessId);
+                        showToast("success", "Thay đổi thành công");
+                    } else {
+                        showToast("error", "Thay đổi thất bại");
+                        console.log(response.error);
+                    }
+                },
+                error: function (err) {
+                    $('#share-code-popup').modal('hide');
+                    showToast("error", "Thay đổi thất bại");
+                    console.log(err);
+                }
+            });
+            $(this).show();
+            $(".loader").hide();
+        });
+
+        $("#copy-url").on('click', function () {
+            const button = this;
+            button.innerText = "Đã sao chép";
+            setTimeout(function () {
+                button.innerText = "Sao chép";
+            }, 800);
+            const url = document.getElementById('url');
+            url.select();
+            navigator.clipboard.writeText(url.value);
+           
+        });
+
+        
+    </script>
+}

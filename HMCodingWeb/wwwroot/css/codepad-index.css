@@ -1,0 +1,12 @@
+.title {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    width: 100%;
+    text-align: center;
+    font-weight: 700;
+}
+
+
+a {
+    text-decoration: none !important;
+    color: inherit;
+}
