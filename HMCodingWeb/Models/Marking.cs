@@ -41,6 +41,8 @@ public partial class Marking
 
     public string? ResultContent { get; set; }
 
+    public string? Status { get; set; }
+
     public virtual Exercise Exercise { get; set; } = null!;
 
     public virtual ICollection<MarkingDetail> MarkingDetails { get; set; } = new List<MarkingDetail>();

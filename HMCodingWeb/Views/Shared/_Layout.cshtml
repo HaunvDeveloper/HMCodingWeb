@@ -15,8 +15,9 @@
     <link rel="stylesheet" href="~/css/button-extend.css"/>
     <link rel="stylesheet" href="~/js/sweetalert2-extend.js"/>
     <link rel="stylesheet" href="~/css/site.css"/>
+    <link href="~/lib/DataTables/datatables.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito">
-
+    <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.2.2/datatables.min.css" rel="stylesheet" integrity="sha384-WMi+Ec+QE8hxW/3qKvuefShIddYjwMalSgy0MR4FZnl285C4HGYfISceaagw0Am3" crossorigin="anonymous">
     <link rel="icon" href="~/assets/icons/logo.png"/>
 
     @RenderSection("Links", required: false)
@@ -29,7 +30,7 @@
     <header>
         <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">Online Coding</a>
+                <a class="navbar-brand" href="#">HM Coding</a>
                 <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -46,6 +47,9 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link @(currentController == "Exercise" ? "active" : "")" asp-action="Index" asp-controller="Exercise">Bài tập</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Marking" ? "active" : "")" asp-action="Index" asp-controller="Marking">Bảng chấm bài</a>
                         </li>
                     </ul>
                     @if(User.Identity?.IsAuthenticated ?? false)
@@ -98,6 +102,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="~/lib/sweetalert2/dist/sweetalert2.min.js"></script>
+    <script src="~/lib/DataTables/datatables.min.js"></script>
     <script src="~/js/sweetalert2-extend.js"></script>
     <script src="~/js/site.js"></script>
     <script src="https://kit.fontawesome.com/0f2d543076.js" crossorigin="anonymous"></script>

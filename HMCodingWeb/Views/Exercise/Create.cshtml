@@ -138,8 +138,31 @@
                 <label for="IsExam" class="check-box">
             </div>
         </div>
+
+        
     </div>
-    <textarea id="ex-content" name="ex-content"></textarea>
+    <div>
+        <h2 class="mt-4" style="font-weight: 700;">NỘI DUNG BÀI TẬP</h2>
+        <!-- Tabbed Interface for Content -->
+        <ul class="nav nav-tabs" id="contentTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" data-bs-toggle="tab" href="#editorPane" aria-selected="false" role="tab" tabindex="-1">Edit</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link " data-bs-toggle="tab" href="#previewPane" aria-selected="true" role="tab" onclick="updatePreview()">Preview</a>
+            </li>
+        </ul>
+        <div class="tab-content">
+
+            <div class="tab-pane fade show active" id="editorPane" role="tabpanel" aria-labelledby="editor-tab">
+                <textarea id="ex-content" name="ex-content"></textarea>
+            </div>
+            <div class="tab-pane fade" id="previewPane" role="tabpanel" aria-labelledby="preview-tab">
+                <div id="preview" class="preview-container"></div>
+            </div>
+        </div>
+    </div>
+    
 
     <div id="title" class="mt-5">
         <h2 style="font-weight: 700;">TEST CASE</h2>
@@ -213,14 +236,38 @@
     <link rel="stylesheet" href="~/css/exercise-create.css">
     <link rel="stylesheet" href="~/css/checkbox-extend.css">
     <link rel="stylesheet" href="~/css/button-extend.css">
+    <style>
+        #previewPane {
+            border: 1px solid #ddd;
+            padding: 10px;
+            min-height: 300px;
+            background-color: #fff;
+            border-radius: 10px;
+        }
+
+        .nav-tabs .nav-link {
+            display: flex;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+            .nav-tabs .nav-link.active {
+                color: #495057;
+                background-color: #fff;
+                border-color: 2px solid #dee2e6 #dee2e6 #fff;
+            }
+    </style>
 }
 
 
 @section Scripts {
     <script src="https://cdn.ckeditor.com/4.22.1/full/ckeditor.js"></script>
+
     <script>
+        
         CKEDITOR.replace('ex-content', {
             extraPlugins: 'justify,table,link',
+            height: 600,
             toolbar: [
                 { name: 'document', items: ['Source', '-', 'NewPage', 'Preview', 'Print', '-', 'Templates'] },
                 { name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'] },
@@ -238,23 +285,41 @@
                 { name: 'others', items: ['Ruler'] }
             ]
         });
+
         CKEDITOR.instances['ex-content'].on('change', function () {
+            updatePreview();
             saveDataToLocalStorage();
         });
         function saveDataToLocalStorage() {
             var editorData = CKEDITOR.instances['ex-content'].getData();
-            localStorage.setItem('ckeditor_data', editorData);
+            localStorage.setItem('editor_data', editorData);
         }
+        function updatePreview() {
+            var content = CKEDITOR.instances['ex-content'].getData();
+            const host = document.querySelector('#preview');
+            host.innerHTML = ''; // Clear any non-shadow content (if any)
 
+            // Get or create shadow root
+            let shadowRoot = host.shadowRoot || host.attachShadow({ mode: 'open' });
+
+            // Update shadow content
+            const innerContent = `
+                <div id="dependency">
+                    ${content || '<p>Chưa có nội dung.</p>'}
+                </div>`;
+            shadowRoot.innerHTML = innerContent;
+        }
         $(document).ready(function () {
-            var storedData = localStorage.getItem('ckeditor_data');
+            var storedData = localStorage.getItem('editor_data');
             if (storedData) {
                 CKEDITOR.instances['ex-content'].setData(storedData);
+                updatePreview();
             }
+            
         });
         setTimeout(()=>{
-            document.querySelector('.cke_notification_close').click();
-        }, 500);
+             document.querySelector('.cke_notification_close').click();
+         }, 500);
     </script>
 
     @* Add or Remove Row Testcase *@

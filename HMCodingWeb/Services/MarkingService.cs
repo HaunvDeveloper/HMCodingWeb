@@ -118,14 +118,22 @@ namespace HMCodingWeb.Services
             model.Score = MarkingScore(model.KindMarking, model.CorrectTestNumber, testCases.Count);
             model.TimeSpent = TimeOnly.FromTimeSpan(DateTime.Now - model.MarkingDate);
             model.ResultContent += $"Total correct test cases: {model.CorrectTestNumber}/{testCases.Count}\n";
-            if (model.IsError)
+            if(model.IsAllCorrect)
             {
+                model.Status = "Passed";
+            }
+            else if(model.IsError)
+            {
+                model.Status = "Error";
                 model.ResultContent += "There was an error during the marking process.\n";
             }
             else
             {
-                model.ResultContent += $"Final score: {model.Score}\n";
+                model.Status = "Wrong";
             }
+
+            model.ResultContent += $"Final score: {model.Score}\n";
+
             return model;
         }
 

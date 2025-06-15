@@ -1,0 +1,194 @@
+﻿@{
+}
+
+@section Links {
+    <style>
+        .view-detail {
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        #sourceCodeEditor {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #ccc;
+        }
+
+        #resultContent {
+            width: 100%;
+            height: 200px;
+            resize: vertical;
+        }
+
+        .modal-xl {
+            max-width: 90%;
+        }
+    </style>
+}
+
+<div id="codepad" class="m-5 flex-center flex-column">
+    <h1 class="title text-center">
+        <b>DANH SÁCH CHẤM BÀI</b>
+    </h1>
+
+    <div class="container mt-3 mb-3 table-responsive list">
+        <table id="table-data" class="table table-sm table-hover table-border table-striped ml-5 mr-3">
+            <thead>
+                <tr class="table-dark">
+                    <th>Thời gian</th>
+                    <th>Người dùng</th>
+                    <th>Tên bài</th>
+                    <th>Kiểu chấm</th>
+                    <th>Điểm</th>
+                    <th>Trạng thái</th>
+                    <th>Ngôn ngữ</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal for Viewing Details -->
+<div class="modal fade" id="markingDetailModal" tabindex="-1" aria-labelledby="markingDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="markingDetailModalLabel">Chi tiết bài nộp</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Mã nguồn:</h6>
+                <div id="sourceCodeEditor"></div>
+                <h6 class="mt-3">Kết quả thực thi:</h6>
+                <textarea id="resultContent" class="form-control" readonly></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/ace-builds/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="~/lib/ace-builds/src-min-noconflict/ext-language_tools.js"></script>
+    <script>
+        function getProgramLanguageMode(proLanguageCode) {
+            if (proLanguageCode == "cpp")
+                return "ace/mode/c_cpp";
+            else if (proLanguageCode == "py")
+                return "ace/mode/python";
+            else if (proLanguageCode == "pas")
+                return "ace/mode/pascal";
+            else
+                return "ace/mode/javascript";
+        }
+        var table = $('#table-data').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "searching": true,
+            "ajax": {
+                "url": '@Url.Action("_GetList", "Marking")',
+                "data": function (d) {
+                    d.keyword = $('input[type="search"]').val();
+                    d.userId = `@ViewBag.UserId` || null; // Pass userId if available`
+                    d.exerciseId = `@ViewBag.ExerciseId` || null; // Pass exerciseId if available
+                },
+                "type": "POST",
+                "dataSrc": function (json) {
+                    return json.data;
+                }
+            },
+            "pageLength": 25,
+            "lengthMenu": [10, 25, 50, 100],
+            "columns": [
+                { "data": "markingDate" },
+                {
+                    "data": "userName",
+                    "render": function (data, type, row) {
+                        return `<a href="/User/Details/${row.userId}">${data}</a>`;
+                    }
+                },
+                {
+                    "data": "exerciseName",
+                    "render": function (data, type, row) {
+                        return `<a href="/Exercise/Code/${row.exerciseId}">${data}</a>`;
+                    }
+                },
+                { "data": "kindMarking" },
+                { "data": "score" },
+                {
+                    "data": "status",
+                    "render": function (data, type, row) {
+                        if (data === 'Passed') {
+                            return `<b onclick="viewDetail(${row.markingId})" class="view-detail badge bg-success text-dark">${data}</b>`;
+                        } else if (data === 'Error') {
+                            return `<b onclick="viewDetail(${row.markingId})" class="view-detail badge bg-danger">${data}</b>`;
+                        } else if (data === 'Wrong') {
+                            return `<b onclick="viewDetail(${row.markingId})" class="view-detail badge bg-warning">${data}</b>`;
+                        }
+                    }
+                },
+                { "data": "programLanguageName" }
+            ]
+        });
+
+        // Initialize Ace Editor
+        var editor = ace.edit("sourceCodeEditor");
+        editor.setTheme("ace/theme/monokai");
+        editor.setReadOnly(true);
+        editor.setOptions({
+            fontSize: "14px",
+            showPrintMargin: false
+        });
+        $('#markingDetailModal').on('hidden.bs.modal', function () {
+            editor.setValue('');
+            $('#resultContent').val('');
+        });
+        function viewDetail(id) {
+            $.ajax({
+                url: '@Url.Action("Detail", "Marking")',
+                type: 'GET',
+                data: { id: id },
+                success: function (response) {
+                    if (response.status && response.data) {
+                        // Set source code in Ace Editor    
+                        var sourceCode = response.data.sourceCode || '';
+                        var language = getProgramLanguageMode(response.data.programLanguageName);
+
+                        editor.session.setMode(language);
+                        editor.setValue(sourceCode, -1); // -1 to move cursor to start
+
+                        // Set result content in textarea
+                        $('#resultContent').val(response.data.resultContent || '');
+
+                        // Show the modal
+                        var modal = new bootstrap.Modal(document.getElementById('markingDetailModal'));
+                        modal.show();
+                    } else {
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'error',
+                            title: response.error || 'Không thể tải chi tiết bài nộp',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error fetching detail:', error);
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'error',
+                        title: 'Lỗi khi tải chi tiết bài nộp',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                }
+            });
+        }
+    </script>
+}

@@ -54,6 +54,7 @@
         #marking-status {
             font-size: 0.9rem;
         }
+
     </style>
 }
 @if (Model == null)
@@ -66,7 +67,8 @@
     return;
 }
 
-<div id="select-tab">
+<div id="select-tab" class="">
+    <a style="left: 15px;" class="position-absolute text-light text-decoration-none" asp-action="Index" asp-controller="Marking" asp-route-exId="@Model.Id" asp-route-uId="@userInfo?.Id"><b>Xem các lần nộp</b></a>
     <span id="view-title" class="active"><b>Xem bài</b></span>
 
     <div class="checkbox-wrapper-38">
@@ -114,7 +116,7 @@
             </div>
         </div>
         @* <iframe id="content-iframe" style="width: 90%; border: none;" onload="resizeIframe(this)"></iframe> *@
-        <div id="inner-content"></div>
+        <div class="p-2" id="inner-content"></div>
     </div>
 </div>
 
@@ -359,7 +361,6 @@
         const host = document.querySelector('#inner-content');
         const shadowRoot = host.attachShadow({ mode: 'open' });
         const innerContent = `
-                    <style>#dependency{overflow: auto;}table{width: 100%;max-width: 100%;}</style>
                     <div id="dependency">
         @(Html.Raw(Model != null ? Model.ExerciseContent : ""))
                     </div>

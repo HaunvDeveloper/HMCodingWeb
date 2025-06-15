@@ -13,6 +13,7 @@
 
 #cke_ex-content {
     min-width: 80%;
+    width: 1300px;
     border: 2px solid black;
     border-radius: 10px;
     overflow: hidden;

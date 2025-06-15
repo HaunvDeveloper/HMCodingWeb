@@ -115,27 +115,45 @@ namespace HMCodingWeb.Controllers
             // Calculate total records
             var totalRecords = await query.CountAsync();
 
-            // Fetch paginated data with successful users count and user-specific IsCorrect
+            var userMarkingsQuery = _context.Markings
+                .Where(m => m.UserId == userId);
+
+            var successCountsQuery = _context.Markings
+                .Where(m => m.IsAllCorrect)
+                .GroupBy(m => m.ExerciseId)
+                .Select(g => new
+                {
+                    ExerciseId = g.Key,
+                    SuccessfulUsers = g.Select(m => m.UserId).Distinct().Count()
+                });
+
             var rawData = await query
                 .GroupJoin(
-                    _context.Markings
-                        .Where(m => m.IsAllCorrect)
-                        .GroupBy(m => m.ExerciseId)
-                        .Select(g => new { ExerciseId = g.Key, SuccessfulUsers = g.Select(m => m.UserId).Distinct().Count() }),
+                    successCountsQuery,
                     ex => ex.Id,
-                    marking => marking.ExerciseId,
-                    (ex, markingGroup) => new
-                    {
-                        Exercise = ex,
-                        SuccessfulUsers = markingGroup.Select(m => m.SuccessfulUsers).FirstOrDefault(),
-                        IsCorrect = userId != 0 && _context.Markings.Any(m => m.ExerciseId == ex.Id && m.UserId == userId && m.IsAllCorrect)
-                    }
+                    sc => sc.ExerciseId,
+                    (ex, scGroup) => new { ex, scGroup }
                 )
+                .Select(joined => new
+                {
+                    Exercise = joined.ex,
+                    SuccessfulUsers = joined.scGroup.Select(g => g.SuccessfulUsers).FirstOrDefault(),
+
+                    IsCorrect = userId == 0
+                        ? ""
+                        : userMarkingsQuery
+                            .Where(m => m.ExerciseId == joined.ex.Id)
+                            .OrderByDescending(m => m.IsAllCorrect) // ưu tiên Passed nếu có
+                            .Select(m => m.IsAllCorrect ? "Passed" : "Failed")
+                            .FirstOrDefault() ?? ""
+                })
                 .AsNoTracking()
                 .OrderByDescending(x => x.Exercise.CreatedDate)
                 .Skip((p - 1) * s)
                 .Take(s)
                 .ToListAsync();
+
+
 
             // Transform to ExerciseViewModel client-side
             var listData = rawData.Select(x => new ExerciseViewModel(x.Exercise, x.SuccessfulUsers, x.IsCorrect)).ToList();
@@ -151,7 +169,7 @@ namespace HMCodingWeb.Controllers
             ViewBag.TypeMarkingSearch = tM;
             ViewBag.KindMarkingSearch = kM;
             ViewBag.AvailablePageSizes = new int[] { 5, 10, 20, 100 };
-
+            ViewBag.UserId = userId;
             return PartialView(listData);
         }
 
@@ -218,10 +236,19 @@ namespace HMCodingWeb.Controllers
                 .Include(ex => ex.ExerciseBelongTypes)
                     .ThenInclude(ebt => ebt.ExerciseType)
                 .SingleOrDefaultAsync(ex => ex.Id == id);
+
             if (exercise == null)
             {
                 return View("Error");
             }
+
+            long userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            string userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "User";
+            if (userRole != "Admin" && userRole != "Teacher" && exercise.UserCreatedId != userId)
+            {
+                return View("Error");
+            }
+
             ViewBag.AccessRole = _context.AccessRoles.ToList();
             ViewBag.Difficulty = _context.DifficultyLevels.ToList();
             ViewBag.ExerciseType = _context.ExerciseTypes.ToList();
@@ -240,12 +267,19 @@ namespace HMCodingWeb.Controllers
                 .Include(e => e.ExerciseBelongTypes)
                 .Include(e => e.TestCases)
                 .FirstOrDefaultAsync(e => e.Id == model.Id);
-                long userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-                var user = await _context.Users.FindAsync(userId);
+                
                 if (exercise == null)
                 {
                     return Json(new { status = false, error = "Bài tập không tồn tại" });
                 }
+                long userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+                var user = await _context.Users.FindAsync(userId);
+                string userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "User";
+                if (userRole != "Admin" && userRole != "Teacher" && exercise.UserCreatedId != userId)
+                {
+                    return Json(new { status = false, error = "Bạn không có quyền sửa bài tập này" });
+                }
+
 
                 // Update exercise properties
                 exercise.ExerciseCode = model.ExerciseCode;
@@ -288,6 +322,36 @@ namespace HMCodingWeb.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Delete(long id)
+        {
+            try
+            {
+                var exercise = await _context.Exercises.FindAsync(id);
+                if (exercise == null)
+                {
+                    return Json(new { status = false, error = "Bài tập không tồn tại" });
+                }
+                long userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+                string userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "User";
+                if (userRole != "Admin" && userRole != "Teacher" && exercise.UserCreatedId != userId)
+                {
+                    return Json(new { status = false, error = "Bạn không có quyền xóa bài tập này" });
+                }
+                _context.Exercises.Remove(exercise);
+                await _context.SaveChangesAsync();
+                return Json(new { status = true, redirect = Url.Action("Index", "Exercise") });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting exercise");
+                return Json(new { status = false, error = ex.Message });
+            }
+        }
+
+
+
+
         public IActionResult Code(long? id)
         {
             if (id == null)
@@ -314,6 +378,8 @@ namespace HMCodingWeb.Controllers
             exercise.UserCreated = _context.Users.Single(user => user.Id == exercise.UserCreatedId);
             return View(exercise);
         }
+
+
 
 
         [HttpPost]

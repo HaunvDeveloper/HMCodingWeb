@@ -23,7 +23,7 @@
                 <input type="hidden" id="s" name="s"/>
                 <div class="form-group">
                     <label for="Search" class="text-primary form-label"><b>Tìm kiếm:</b></label>
-                    <input id="Search" name="key" class="form-control" placeholder="Nhập mã bài hoặc tên bài" />
+                    @Html.TextBox("key", null, new { id="Search", @class = "form-control", placeholder = "Nhập mã bài hoặc tên bài" })
                 </div>
                 <div class="form-group">
                     <label class="text-primary form-label">Thể loại chấm</label>
@@ -86,59 +86,65 @@
     @*Event Listening*@
     <script>
         async function loadListFormParams() {
-            let params = new URLSearchParams(window.location.search);
-            let p = params.get('p') || 1;
-            let s = params.get('s') || 10;
-            let key = params.get('key') || '';
-            let dId = params.get('dId') || null;
-            let cId = params.get('cId') || null;
-            let etId = params.get('etId') || null;
-            let tM = params.get('tM') || null;
-            let kM = params.get('kM') || null;
+            let p = getParamFromCurrentUrl('p') || 1;
+            let s = getParamFromCurrentUrl('s') || 10;
+            let key = getParamFromCurrentUrl('key') || '';
+            let dId = getParamFromCurrentUrl('dId') || null;
+            let cId = getParamFromCurrentUrl('cId') || null;
+            let etId = getParamFromCurrentUrl('etId') || null;
+            let tM = getParamFromCurrentUrl('tM') || null;
+            let kM = getParamFromCurrentUrl('kM') || null;
             $('#s').val(s);
             await loadList(p, s, key, dId, cId, etId, tM, kM);
         }
 
         $(document).ready(loadListFormParams());
+        $('#filter').submit(function (event){
+            event.preventDefault(); // Prevent the default form submission
+            let p = 1; // Reset to page 1 on new search
+            let s = $('#s').val() || 10; // Get page size from the input or default to 10
+            let key = $('#Search').val() || '';
+            let dId = $('#dId').val() || null;
+            let cId = $('#cId').val() || null;
+            let etId = $('#etId').val() || null;
+            let tM = $('#tM').val() || null;
+            let kM = $('#kM').val() || null;
+            loadList(p, s, key, dId, cId, etId, tM, kM);
+        })
 
         async function setPage(p) {
-            let params = new URLSearchParams(window.location.search);
-            let s = params.get('s') || 10;
-            let key = params.get('key') || '';
-            let dId = params.get('dId') || null;
-            let etId = params.get('etId') || null;
-            let tM = params.get('tM') || null;
-            let kM = params.get('kM') || null;
+            let s = getParamFromCurrentUrl('s') || 10;
+            let key = getParamFromCurrentUrl('key') || '';
+            let dId = getParamFromCurrentUrl('dId') || null;
+            let etId = getParamFromCurrentUrl('etId') || null;
+            let tM = getParamFromCurrentUrl('tM') || null;
+            let kM = getParamFromCurrentUrl('kM') || null;
             await loadList(p, s, key, dId, etId, tM, kM);
         }
 
         async function changePageSize(elem) {
             let params = new URLSearchParams(window.location.search);
-            let key = params.get('key') || '';
-            let dId = params.get('dId') || null;
-            let etId = params.get('etId') || null;
-            let tM = params.get('tM') || null;
-            let kM = params.get('kM') || null;
+            let key = getParamFromCurrentUrl('key') || '';
+            let dId = getParamFromCurrentUrl('dId') || null;
+            let etId = getParamFromCurrentUrl('etId') || null;
+            let tM = getParamFromCurrentUrl('tM') || null;
+            let kM = getParamFromCurrentUrl('kM') || null;
             $('#s').val($(elem).find("option:selected").val());
             await loadList(1, $(elem).find("option:selected").val(), key, dId, etId, tM, kM);
         }
-
+                
         async function loadList(p, s, key, dId, cId, etId, tM, kM) {
-            let url = '@Url.Action("_GetList", "Exercise")';
+            addParamToCurrentUrl('p', p);
+            addParamToCurrentUrl('s', s);
+            addParamToCurrentUrl('key', key);
+            addParamToCurrentUrl('dId', dId);
+            addParamToCurrentUrl('cId', cId);
+            addParamToCurrentUrl('etId', etId);
+            addParamToCurrentUrl('tM', tM);
+            addParamToCurrentUrl('kM', kM);
 
-            let newUrl = window.location.pathname + "?";
-            if (p) newUrl += "&p=" + p;
-            if (s) newUrl += "&s=" + s;
-            if (key) newUrl += "&key=" + key;
-            if (dId) newUrl += "&dId=" + dId;
-            if (cId) newUrl += "&cId=" + cId;
-            if (etId) newUrl += "&etId=" + etId;
-            if (tM) newUrl += "&tM=" + tM;
-            if (kM) newUrl += "&kM=" + kM;
-
-            window.history.pushState({ path: newUrl }, '', newUrl);
             await $.ajax({
-                url: url,
+                url: '@Url.Action("_GetList", "Exercise")',
                 data: { p: p, s: s, key: key, dId: dId, cId: cId, etId: etId, tM: tM, kM: kM},
                 method: 'GET',
                 success: function (data) {
@@ -151,6 +157,51 @@
             });
         }
 
+        async function deleteRow(id){
+            if (await confirmAction()) {
+                $.ajax({
+                    url: '@Url.Action("Delete", "Exercise")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.status) {
+                            showToast("success", "Xóa thành công!");
+                            loadListFormParams(); // Reload the list after deletion
+                        } else {
+                            alert("Xóa thất bại: " + response.message);
+                        }
+                    },
+                    error: function () {
+                        alert("Đã xảy ra lỗi khi xóa bài tập.");
+                    }
+                });
+            }
+        }
 
     </script>
+    <script>
+        $(function () {
+            // Toggle dropdown on click
+            $(document).on('click','.menu-toggle', function (e) {
+                e.stopPropagation();
+                console.log("Dropdown clicked");
+                // Đóng các dropdown khác
+                $('.dropdown-menu-custom').not($(this).next()).hide();
+
+                // Toggle menu này
+                $(this).next('.dropdown-menu-custom').toggle();
+            });
+
+            // Click ra ngoài thì ẩn dropdown
+            $(document).on('click', function () {
+                $('.dropdown-menu-custom').hide();
+            });
+
+            // Ngăn không đóng khi click bên trong dropdown
+            $(document).on('click','.dropdown-menu-custom', function (e) {
+                e.stopPropagation();
+            });
+        });
+    </script>
+
 }

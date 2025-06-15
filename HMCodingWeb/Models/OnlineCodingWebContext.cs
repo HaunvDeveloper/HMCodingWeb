@@ -224,6 +224,7 @@ public partial class OnlineCodingWebContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.OutputFile).HasMaxLength(50);
+            entity.Property(e => e.Status).HasMaxLength(50);
             entity.Property(e => e.TimeLimit).HasDefaultValue(1.0);
             entity.Property(e => e.TypeMarking)
                 .HasMaxLength(20)

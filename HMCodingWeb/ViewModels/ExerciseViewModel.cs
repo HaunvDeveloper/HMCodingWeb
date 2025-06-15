@@ -17,7 +17,7 @@ namespace HMCodingWeb.ViewModels
             ExerciseTypeName = string.Empty;
         }
 
-        public ExerciseViewModel(Exercise exercise, int numberSuccessful, bool isCorrect)
+        public ExerciseViewModel(Exercise exercise, int numberSuccessful, string isCorrect)
         {
             Id = exercise.Id;
             ExerciseCode = exercise.ExerciseCode;
@@ -85,7 +85,7 @@ namespace HMCodingWeb.ViewModels
 
         public int NumberSuccessful { get; set; } = 0;
 
-        public bool IsCorrect { get; set; }
+        public string IsCorrect { get; set; }
 
     }
 }
