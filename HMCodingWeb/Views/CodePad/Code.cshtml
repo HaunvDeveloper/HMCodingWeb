@@ -37,10 +37,12 @@
 
                     <button id="copy-code" class="btn btn-outline-secondary" role="button">Sao chép</button>
                 </div>
-                <div id="editor">@if (Model != null)
+                <div id="editor">
+                    @if (Model != null)
                     {
                         @Model.CodeContent
-                    }</div>
+                    }
+                </div>
                 <div id="import-code">
                     <button id="import-file" class="btn btn-info" role="button">Chọn tệp</button>
                 </div>
@@ -95,7 +97,7 @@
                         </div>
                     </div>
                     <div class="tab-pane fade" id="output" role="tabpanel">
-                        <div id="output-div" class="io-child-div mt-2">
+                        <div id="output-div" class="io-child-div">
                             <div class="flex align-center mt-2">
                                 <span>Thời gian thực thi:</span>
                                 <input class="run-time ml-2 form-control p-2 w-50" type="text" placeholder="Thời gian thực thi (giây)" readonly>
@@ -109,7 +111,7 @@
                         </div>
                     </div>
                     <div class="tab-pane fade" id="erroralert" role="tabpanel">
-                        <div id="alert-error" class="io-child-div mt-2">
+                        <div id="alert-error" class="io-child-div">
                             <div class="flex align-center mt-2">
                                 <span>Thời gian thực thi:</span>
                                 <input class="run-time ml-2 form-control p-2 w-50" type="text" placeholder="Thời gian thực thi (giây)" readonly>
@@ -309,14 +311,16 @@
             document.execCommand('Copy');
             input.remove();
         }
-        document.getElementById("copy-code").addEventListener("click", function () {
-            const button = this;
-            button.innerText = "Đã sao chép";
-            setTimeout(function () {
-                button.innerText = "Sao chép";
-            }, 800);
-            const content = editor.getValue();
-            executeCopy(content);
+        $(document).on('keydown', function(event) {
+            if (event.ctrlKey && event.key === 's') {
+                event.preventDefault();
+                var saveBtn = $("#save");
+                if(saveBtn.length > 0) {
+                    saveBtn.click();
+                } else {
+                    $('#save-as').click();
+                }
+            }
         });
 
 
@@ -364,6 +368,17 @@
                 }
             });
         });
+
+
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.key === 's') {
+                event.preventDefault(); // Prevent browser's default save action
+                const saveAsButton = document.getElementById('save-as');
+                if (saveAsButton) {
+                    saveAsButton.click();
+                }
+            }
+        })
 
         document.getElementById("save-as").addEventListener("click", async function () {
             var { value: fileName } = await Swal.fire({

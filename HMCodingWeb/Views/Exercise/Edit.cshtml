@@ -1,3 +1,4 @@
+﻿@model HMCodingWeb.Models.Exercise
 @{
     var accessRoles = ViewBag.AccessRole as List<AccessRole>;
     var difficulties = ViewBag.Difficulty as List<DifficultyLevel>;
@@ -8,19 +9,20 @@
 }
 
 <form id="main" class="mb-3 mt-1 container" accept="" method="post">
+    <input type="hidden" id="Id" value="@Model.Id" />
     <div id="title" class="mt-4">
-        <h1 style="font-weight: 700;">TẠO BÀI TẬP</h1>
+        <h1 style="font-weight: 700;">CHỈNH SỬA BÀI TẬP</h1>
     </div>
     <div id="header-content" class="mb-4 bg-light">
         <div class="header-content-child">
             <span class="required"><b>Mã bài</b></span>
             <input type="text" id="ExerciseCode" placeholder="Nhập mã bài...." class="form-control header-content-input"
-                required>
+                   value="@Model.ExerciseCode" required>
         </div>
         <div class="header-content-child">
             <span><b>Tên bài</b></span>
             <input type="text" id="ExerciseName" placeholder="Nhập tên bài...."
-                class="form-control header-content-input" required>
+                   class="form-control header-content-input" value="@Model.ExerciseName" required>
         </div>
         <div class="header-content-child">
             <span><b>Độ khó</b></span>
@@ -29,8 +31,8 @@
                 {
                     @foreach (var dif in difficulties)
                     {
-                        <option class="select-option" value="@dif.Id" data-value="@dif.DifficultyCode">@dif.DifficultyName
-                        </option>
+                        <option class="select-option" value="@dif.Id" data-value="@dif.DifficultyCode"
+                                selected="@(dif.Id == Model.DifficultyId)">@dif.DifficultyName</option>
                     }
                 }
             </select>
@@ -42,8 +44,8 @@
                 {
                     @foreach (var chapter in chapters)
                     {
-                        <option class="select-option" value="@chapter.Id" data-value="@chapter.ChapterCode">@chapter.ChapterName
-                        </option>
+                        <option class="select-option" value="@chapter.Id" data-value="@chapter.ChapterCode"
+                                selected="@(chapter.Id == Model.ChapterId)">@chapter.ChapterName</option>
                     }
                 }
             </select>
@@ -54,19 +56,19 @@
             <div class="checkboxes" id="ExerciseType">
                 <label class="apply-selection">
                     <input type="checkbox" value="" />
-                    &#x2714; apply selection
+                    ✔ apply selection
                 </label>
-
                 <div class="inner-wrap">
                     @if (exerciseTypes != null)
                     {
                         @foreach (var type in exerciseTypes)
                         {
+                            var isChecked = Model.ExerciseBelongTypes?.Any(ebt => ebt.ExerciseTypeId == type.Id) ?? false;
                             <label>
                                 <div class="checkbox-wrapper-18">
                                     <div class="round">
                                         <input id="ckkBox_@type.Id" type="checkbox" value="@type.Id" data-value="@type.TypeCode"
-                                            class="ckkBox" />
+                                               class="ckkBox" @(isChecked ? "checked" : "") />
                                         <label for="ckkBox_@type.Id"></label>
                                     </div>
                                 </div>
@@ -79,18 +81,17 @@
         </div>
         <div class="header-content-child">
             <span><b>Quyền truy cập</b></span>
-            <select name="AccessRole" id="AccessRole" class="form-control" required>
+            <select name="AccessRole" id="AccessRole" class="form-control" required
+            @(Model.IsExam ? "disabled" : "")>
                 @if (accessRoles != null)
                 {
                     @foreach (var acc in accessRoles)
                     {
                         <option class="select-option access-option" value="@acc.Id" data-value="@acc.AccessCode"
-                            title="@acc.Description">
-                            @acc.AccessName</option>
+                                title="@acc.Description" selected="@(acc.Id == Model.AccessId)">@acc.AccessName</option>
                     }
                 }
             </select>
-
         </div>
         <div class="header-content-child">
             <span><b>Thể loại chấm</b></span>
@@ -99,7 +100,8 @@
                 {
                     @foreach (var kind in kindMarking)
                     {
-                        <option class="select-option" value="@kind">@kind</option>
+                        <option class="select-option" value="@kind"
+                                selected="@(kind == Model.KindMarking)">@kind</option>
                     }
                 }
             </select>
@@ -111,7 +113,8 @@
                 {
                     @foreach (var type in typeMarking)
                     {
-                        <option class="select-option" value="@type">@type</option>
+                        <option class="select-option" value="@type"
+                                selected="@(type == Model.TypeMarking)">@type</option>
                     }
                 }
             </select>
@@ -119,27 +122,27 @@
         <div class="header-content-child">
             <span style="color: blue;"><b>Input File (nếu có)</b></span>
             <input type="text" id="InputFile" placeholder="Nhập hoặc bỏ trống"
-                class="form-control header-content-input">
+                   class="form-control header-content-input" value="@Model.InputFile">
         </div>
         <div class="header-content-child">
             <span style="color: blue;"><b>Output File (nếu có)</b></span>
             <input type="text" id="OutputFile" placeholder="Nhập hoặc bỏ trống"
-                class="form-control header-content-input">
+                   class="form-control header-content-input" value="@Model.OutputFile">
         </div>
         <div class="header-content-child">
             <span><b>Thời gian thực thi giới hạn</b></span>
-            <input type="number" id="RuntimeLimit" class="form-control header-content-input" step="1" value="1" max="10"
-                min="1" required>
+            <input type="number" id="RuntimeLimit" class="form-control header-content-input" step="1"
+                   value="@Model.RuntimeLimit" max="10" min="1" required>
         </div>
         <div class="header-content-child" style="align-items: center; gap:2rem;">
-            <span class="mt-2" style="font-size: 20px;"><strong>Là bài kiểm tra:</strong></span>
+            <span class="mt-2" style="font-size: 24px;"><strong>Là bài kiểm tra:</strong></span>
             <div class="checkbox-wrapper-19 mt-4">
-                <input type="checkbox" id="IsExam" />
-                <label for="IsExam" class="check-box">
+                <input type="checkbox" id="IsExam" @(Model.IsExam ? "checked" : "") />
+                <label for="IsExam" class="check-box"></label>
             </div>
         </div>
     </div>
-    <textarea id="ex-content" name="ex-content"></textarea>
+    <textarea id="ex-content" name="ex-content">@Model.ExerciseContent</textarea>
 
     <div id="title" class="mt-5">
         <h2 style="font-weight: 700;">TEST CASE</h2>
@@ -156,21 +159,51 @@
                 </tr>
             </thead>
             <tbody id="testcase-row-list">
-                <tr data-value="1">
-                    <td class="mt-5">1</td>
-                    <td>
-                        <textarea class="testcase-io-input test-case-input form-control"
-                            name="testcase-input"></textarea>
-                    </td>
-                    <td>
-                        <textarea class="testcase-io-input test-case-output form-control"
-                            name="testcase-output"></textarea>
-                    </td>
-                    <td>
-                        <button type="button" onclick="deleteRow(this)"
-                            class="btn btn-danger test-case-delete">Delete</button>
-                    </td>
-                </tr>
+                @if (Model.TestCases != null && Model.TestCases.Any())
+                {
+                    var index = 1;
+                    foreach (var testCase in Model.TestCases.OrderBy(tc => tc.Position))
+                    {
+                        <tr data-value="@index">
+                            <td class="mt-5">@index</td>
+                            <td>
+                                <textarea class="testcase-io-input test-case-input form-control"
+                                          name="testcase-input">@testCase.Input</textarea>
+                            </td>
+                            <td>
+                                <textarea class="testcase-io-input test-case-output form-control"
+                                          name="testcase-output">@testCase.Output</textarea>
+                            </td>
+                            <td>
+                                <button type="button" onclick="deleteRow(this)"
+                                        class="btn btn-danger test-case-delete">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                        index++;
+                    }
+                }
+                else
+                {
+                    <tr data-value="1">
+                        <td class="mt-5">1</td>
+                        <td>
+                            <textarea class="testcase-io-input test-case-input form-control"
+                                      name="testcase-input"></textarea>
+                        </td>
+                        <td>
+                            <textarea class="testcase-io-input test-case-output form-control"
+                                      name="testcase-output"></textarea>
+                        </td>
+                        <td>
+                            <button type="button" onclick="deleteRow(this)"
+                                    class="btn btn-danger test-case-delete">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                }
             </tbody>
             <tfoot>
                 <tr>
@@ -185,10 +218,9 @@
         <span class="button-82-shadow"></span>
         <span class="button-82-edge"></span>
         <span class="button-82-front text">
-            ĐĂNG BÀI
+            CẬP NHẬT
         </span>
     </button>
-
 </form>
 
 <table id="row-clone" style="display: none;">
@@ -206,15 +238,11 @@
     </tr>
 </table>
 
-
-
-
 @section Links {
     <link rel="stylesheet" href="~/css/exercise-create.css">
     <link rel="stylesheet" href="~/css/checkbox-extend.css">
     <link rel="stylesheet" href="~/css/button-extend.css">
 }
-
 
 @section Scripts {
     <script src="https://cdn.ckeditor.com/4.22.1/full/ckeditor.js"></script>
@@ -238,23 +266,11 @@
                 { name: 'others', items: ['Ruler'] }
             ]
         });
-        CKEDITOR.instances['ex-content'].on('change', function () {
-            saveDataToLocalStorage();
-        });
-        function saveDataToLocalStorage() {
-            var editorData = CKEDITOR.instances['ex-content'].getData();
-            localStorage.setItem('ckeditor_data', editorData);
-        }
-
-        $(document).ready(function () {
-            var storedData = localStorage.getItem('ckeditor_data');
-            if (storedData) {
-                CKEDITOR.instances['ex-content'].setData(storedData);
-            }
-        });
         setTimeout(()=>{
             document.querySelector('.cke_notification_close').click();
+            setCheckboxSelectLabels();
         }, 500);
+
     </script>
 
     @* Add or Remove Row Testcase *@
@@ -294,11 +310,10 @@
         }
 
         document.getElementById('ExerciseCode').addEventListener('input', function (e) {
-
             const regex = /^[a-zA-Z0-9\-_+*\/]*$/;
             const input = e.target.value;
             if (!regex.test(input)) {
-                e.target.value = input.replace(/[^a-zA-Z0-9-_]/g, '');
+                e.target.value = input.replace(/[^a-zA-Z0-9\-_+*\/]/g, '');
                 Swal.fire({
                     toast: true,
                     position: "top-end",
@@ -314,10 +329,11 @@
                 });
             }
         });
+
         document.getElementById("IsExam").addEventListener('change', function () {
             const checked = this.checked;
             if (checked) {
-                $(".select-option").each(function (index, elem) {
+                $(".select-option.access-option").each(function (index, elem) {
                     if ($(elem).val() == 1) {
                         $(elem).prop("selected", true);
                     } else {
@@ -334,9 +350,6 @@
     @* Multiple selected system *@
     <script>
         $(function () {
-
-            setCheckboxSelectLabels();
-
             $('.toggle-next').click(function () {
                 $(this).next('.checkboxes').slideToggle(400);
             });
@@ -344,7 +357,6 @@
             $('.ckkBox').change(function () {
                 setCheckboxSelectLabels();
             });
-
         });
 
         function setCheckboxSelectLabels() {
@@ -381,7 +393,7 @@
             $('.select-types').find('input:checkbox:checked').each(function () {
                 var type = {
                     ExerciseTypeId: parseInt($(this).val()),
-                    ExerciseId: 0
+                    ExerciseId: parseInt($("#Id").val())
                 }
                 result.push(type);
             });
@@ -418,11 +430,23 @@
                     icon: "error",
                     title: "Hãy chọn dạng bài"
                 });
-            }
-            else if($("#ExerciseCode").val() == ""){
-
+            } else if ($("#ExerciseCode").val() == "") {
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.onmouseenter = Swal.stopTimer;
+                        toast.onmouseleave = Swal.resumeTimer;
+                    },
+                    icon: "error",
+                    title: "Mã bài không được để trống"
+                });
             } else {
                 let model = {
+                    Id: parseInt($("#Id").val()),
                     ExerciseCode: $("#ExerciseCode").val(),
                     ExerciseName: $("#ExerciseName").val(),
                     ExerciseContent: CKEDITOR.instances['ex-content'].getData(),
@@ -435,23 +459,22 @@
                     ChapterId: parseInt($("#Chapter").val()),
                     AccessId: parseInt($("#AccessRole").val()),
                     IsExam: $("#IsExam").prop("checked"),
-                    RuntimeLimit: $("#RuntimeLimit").val(),
+                    RuntimeLimit: parseInt($("#RuntimeLimit").val()),
                     UserCreatedId: 0,
                     ExerciseBelongTypes: getExerciseTypes(),
                     TestCases: getAllTestCases(),
-                    IsAccept: false
-
+                    IsAccept: @Model.IsAccept.ToString().ToLower()
                 }
 
                 $.ajax({
-                    url: '/Exercise/Create',
+                    url: '/Exercise/Edit',
                     method: 'post',
-                    data: { model: model},
+                    data: { model: model },
                     success: function (response) {
                         if (response.status) {
                             Swal.fire({
                                 icon: "success",
-                                title: "Bài của bạn đang chờ kiểm duyệt...",
+                                title: "Cập nhật bài tập thành công!",
                                 showConfirmButton: false,
                                 timer: 2000
                             });
@@ -459,15 +482,13 @@
                                 window.location.href = response.redirect;
                             }, 2000);
                         } else {
-                            Swal.fire("Đăng thất bại!", response.error, "error");
+                            Swal.fire("Cập nhật thất bại!", response.error, "error");
                         }
                     },
-                    error: function(error){
-                        Swal.fire("Đăng thất bại!", error, "error");
+                    error: function (error) {
+                        Swal.fire("Cập nhật thất bại!", error.responseText || "Lỗi không xác định", "error");
                     }
-                })
-
-
+                });
             }
         });
     </script>

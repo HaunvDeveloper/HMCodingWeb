@@ -19,18 +19,22 @@ using Microsoft.EntityFrameworkCore;
 using HMCodingWeb.Models;
 using HMCodingWeb.Services;
 using System.Security.Policy;
+using HMCodingWeb.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews();
 builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 
-builder.Services.AddSingleton<RunProcessService>();
-builder.Services.AddSingleton<EmailSendService>();
+
 builder.Services.AddDbContext<OnlineCodingWebContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("OnlineCoding"));
 });
+builder.Services.AddTransient<RunProcessService>(); // Or Scoped if request-specific coordination needed
+builder.Services.AddTransient<EmailSendService>(); // Or Singleton if thread-safe and stateless
+builder.Services.AddScoped<MarkingService>();
+builder.Services.AddScoped<UserPointService>();
+
 
 
 builder.Services.AddSession(options =>
@@ -54,6 +58,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 // Config Lowercase
 builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
+builder.Services.AddSignalR();
 
 
 
@@ -67,7 +72,6 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
@@ -75,6 +79,7 @@ app.UseRouting();
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapHub<MarkingHub>("/markingHub");
 
 app.MapControllerRoute(
     name: "default",

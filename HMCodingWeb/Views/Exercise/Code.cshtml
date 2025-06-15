@@ -7,18 +7,77 @@
     var exerciseId = Model?.Id ?? 0;
 }
 
+
+@section Links {
+    <link rel="stylesheet" href="~/css/exercise-code.css">
+    <link rel="stylesheet" href="~/css/button-extend.css">
+    <style>
+
+        .test-case-result {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid;
+            background-color: #fff;
+            border-radius: 4px;
+            transition: all 0.2s ease-in-out;
+        }
+
+            .test-case-result.passed {
+                border-left-color: #28a745;
+            }
+
+            .test-case-result.failed {
+                border-left-color: #dc3545;
+            }
+
+            .test-case-result:hover {
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            }
+
+            .test-case-result .status-icon {
+                font-size: 1.2rem;
+                margin-right: 8px;
+                vertical-align: middle;
+            }
+
+            .test-case-result .details {
+                font-size: 0.9rem;
+                color: #6c757d;
+                margin-top: 5px;
+            }
+
+        #btn-marking:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        #marking-status {
+            font-size: 0.9rem;
+        }
+    </style>
+}
+@if (Model == null)
+{
+    <div class="container mt-5">
+        <div class="alert alert-danger" role="alert">
+            Không tìm thấy bài tập này hoặc bài tập đã bị xóa.
+        </div>
+    </div>
+    return;
+}
+
 <div id="select-tab">
     <span id="view-title" class="active"><b>Xem bài</b></span>
-    <div class="checkbox-wrapper-63 mt-2">
-        <label class="switch">
-            <input type="checkbox" id="input-tab">
-            <span class="slider"></span>
-        </label>
+
+    <div class="checkbox-wrapper-38">
+        <input class="toggle-input" id="input-tab" type="checkbox" />
+        <label class="toggle-label" for="input-tab"> </label>
     </div>
+
     <span id="code-title"><b>Làm bài</b></span>
 </div>
 
-<div id="content-section" class="mt-3 mb-4">
+<div id="content-section" class="container mt-3 mb-4">
     <div id="content-container">
         <div id="header-content">
             <div class="header-content-child">
@@ -59,152 +118,197 @@
     </div>
 </div>
 
-<div id="code-section" class="row mr-0 mt-2 d-none">
-    <div id="codepad" class="col-sm-9 mt-4 flex flex-column">
-        <div id="code-head">
-            <div class="form__group field">
-                <input type="input" class="form__field" placeholder="Name" name="file-name" id='file-name'
-                    value="@(Model.ExerciseName ?? "None Name")" disabled readonly />
-                <label for="name" class="form__label">Tên bài</label>
-            </div>
-            <button id="copy-code" class="button-30" role="button">Sao chép</button>
-        </div>
-        <div id="code-div">
-            <div id="editor"></div>
-            <div id="import-code">
-                <button id="import-file" class="button-19" role="button">Chọn tệp</button>
-            </div>
-        </div>
-        <div id="input-div" class="mt-2">
-            <div id="input-header">
-                <span>Dữ liệu vào</span>
-            </div>
-            <div id="input-area" class="flex flex-column">
-                <div id="input-data-area">
-                    <span>NHẬP DỮ LIỆU VÀO</span>
-                    <textarea id="input-data"></textarea>
+<section class="container">
+
+
+    <div id="code-section" class="row mr-0 mt-2 d-none">
+        <div id="codepad" class="col-sm-9 mt-4 flex flex-column">
+            <div id="code-head">
+                <div class="form-floating w-75">
+                    <input type="text" class="form-control w-75" placeholder="Name" name="file-name" id='file-name' value="@(Model.ExerciseName ?? "None Name")" readonly />
+                    <label for="file-name">Tên bài</label>
                 </div>
-                <div id="run-button">
-                    <button id="run">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                        <h1>RUN</h1>
-                    </button>
-                    <div class="loader"></div>
+                <button id="copy-code" class="btn btn-outline-secondary" role="button">Sao chép</button>
+            </div>
+            <div id="code-div">
+                <div id="editor"></div>
+                <div id="import-code">
+                    <button id="import-file" class="btn btn-info" role="button">Chọn tệp</button>
                 </div>
             </div>
-        </div>
-        <div id="output-div" class="mt-2">
-            <div id="output-header">
-                <span>Dữ liệu ra</span>
-            </div>
-            <div class="flex align-center mt-2">
-                <span>Thời gian thực thi:</span>
-                <input class="run-time ml-2" type="text" readonly>
-            </div>
-            <div id="output-area" class="flex flex-column">
-                <div id="output-data-area">
-                    <textarea id="output-data" readonly></textarea>
+            <div class="io-div">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#input" aria-selected="false" role="tab" tabindex="-1">INPUT</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link " data-bs-toggle="tab" href="#output" aria-selected="true" role="tab">OUTPUT</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" data-bs-toggle="tab" href="#erroralert" aria-selected="true" role="tab">ERROR</a>
+                    </li>
+                </ul>
+                <div id="myTabContent" class="tab-content">
+                    <div class="tab-pane fade w-100  active show" id="input" role="tabpanel">
+                        <div id="input-div" class="io-child-div border-primary p-3">
+                            <div id="ioput-file-area">
+                                <div>
+                                    @if (Model != null && !string.IsNullOrEmpty(Model.InputFile))
+                                    {
+                                        <input type="text" id="input-file" name="input-file" placeholder="Nhập tên file hoặc bỏ trống"
+                                               value="@Model.InputFile" class="form-control p-2" disabled />
+                                    }
+                                </div>
+                                <div>
+                                    @if (Model != null && !string.IsNullOrEmpty(Model.InputFile))
+                                    {
+                                        <input type="text" id="output-file" name="output-file" placeholder="Nhập tên file hoặc bỏ trống"
+                                               value="@Model.OutputFile" class="form-control p-2" disabled />
+                                    }
+                                </div>
+                            </div>
+
+                            <div id="input-data-area" class="px-3 mt-3">
+                                <span>NHẬP DỮ LIỆU VÀO</span>
+                                <textarea id="input-data" class="form-control"></textarea>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="output" role="tabpanel">
+                        <div id="output-div" class="io-child-div">
+                            <div class="flex align-center mt-2">
+                                <span>Thời gian thực thi:</span>
+                                <input class="run-time ml-2 form-control p-2 w-50" type="text" placeholder="Thời gian thực thi (giây)" readonly>
+                            </div>
+                            <div id="output-area" class="p-4">
+                                <div id="output-data-area">
+                                    <span>DỮ LIỆU RA</span>
+                                    <textarea id="output-data" class="form-control" readonly></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="erroralert" role="tabpanel">
+                        <div id="alert-error" class="io-child-div">
+                            <div class="flex align-center mt-2">
+                                <span>Thời gian thực thi:</span>
+                                <input class="run-time ml-2 form-control p-2 w-50" type="text" placeholder="Thời gian thực thi (giây)" readonly>
+                            </div>
+                            <div id="error" class="m-3"></div>
+                        </div>
+                    </div>
+                    <div id="run-button" class="mt-3">
+                        <button id="run" class="btn btn-primary btn-lg p-3 px-5">
+                            RUN
+                        </button>
+                        <div class="loader"></div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div id="alert-error" class="mt-2">
-            <div id="alert-error-head">
-                <span>Báo lỗi</span>
+
+        <div id="right-side" class="col-3">
+            <div id="setting" class=" bg-dark mt-5 mb-2 pt-4 pb-4 ">
+                <h3 class="text-light">Cài đặt</h3>
+                <div class="line"></div>
+                <div class="cfg-option px-3">
+                    <div class="cfg-title">
+                        <b>Theme:</b>
+                    </div>
+                    <div class="cfg-content w-50 mr-3">
+                        <select id="theme-selector" class="form-control-sm w-100">
+                            @if (listTheme != null)
+                            {
+                                foreach (var i in listTheme)
+                                {
+                                    @if (userInfo != null && i.Id == userInfo.ThemeCodeId)
+                                    {
+                                        <option selected data-value="@i.Id" value="ace/theme/@i.ThemeCode">@i.ThemeCode</option>
+                                    }
+                                    else
+                                    {
+                                        <option data-value="@i.Id" value="ace/theme/@i.ThemeCode">@i.ThemeCode</option>
+                                    }
+                                }
+                            }
+
+                        </select>
+                    </div>
+                </div>
+                <div class="cfg-option  px-3">
+                    <div class="cfg-title">
+                        <b>Font size:</b>
+                    </div>
+                    <div class="cfg-content w-50 mr-3">
+                        <input id="fontsize-selector" class="form-control-sm w-100" type="number" value="18" max="72" min="2">
+                    </div>
+                </div>
+                <div class="cfg-option px-3">
+                    <div class="cfg-title">
+                        <b>Program Language:</b>
+                    </div>
+                    <div class="cfg-content w-50 mr-3">
+                        <select id="programlanguage-selector" class="form-control-sm w-100">
+                            @if (programLanguageList != null)
+                            {
+                                foreach (var i in programLanguageList)
+                                {
+                                    @if (userInfo != null && i.Id == userInfo.ProgramLanguageId)
+                                    {
+                                        <option selected data-value="@i.Id" value="@i.ProgramLanguageCode">@i.ProgramLanguageName</option>
+                                    }
+                                    else
+                                    {
+                                        <option data-value="@i.Id" value="@i.ProgramLanguageCode">@i.ProgramLanguageName</option>
+                                    }
+                                }
+                            }
+
+                        </select>
+                    </div>
+                </div>
+                <div class="cfg-option px-3">
+                    <div class="cfg-title">
+                        <b>Time limit:</b>
+                    </div>
+                    <div class="cfg-content w-50 mr-3">
+                        <input type="number" id="time-limit" class="form-control-sm w-100" disabled value="@((int)Model?.RuntimeLimit)">
+                    </div>
+                </div>
+
+
+                <button id="save-as" class="btn btn-success w-75" role="button">
+                    LƯU VÀO CODEPAD
+                </button>
             </div>
-            <div class="flex  align-center mt-2">
-                <span>Thời gian thực thi:</span>
-                <input class="run-time ml-2" type="text" readonly>
+
+            <div id="marking" class=" bg-warning mt-1 mb-5 pt-4 pb-4">
+                <h3 class="text-light">Chấm điểm</h3>
+                <div class="line"></div>
+                <button id="btn-marking" class="btn btn-danger w-75 text-nowrap" role="button">
+                    CHẤM ĐIỂM
+                </button>
+                <div id="test-case-results">
+                </div>
             </div>
-            <div id="error"></div>
+
         </div>
     </div>
 
-    <div id="right-side" class="col-sm-3 col-12">
-        <div class="cfg-option">
-            <div class="cfg-title">
-                <b>Theme:</b>
-            </div>
-            <div class="cfg-content">
-                <select id="theme-selector" class="selector">
-                    @if(listTheme != null)
-                    {
-                        @foreach (var i in listTheme)
-                        {
-                            @if (userInfo != null && i.Id == userInfo.ThemeCodeId)
-                            {
-                                <option selected data-value="@i.Id" value="ace/theme/@i.ThemeCode">@i.ThemeCode</option>
-                            }
-                            else
-                            {
-                                <option data-value="@i.Id" value="ace/theme/@i.ThemeCode">@i.ThemeCode</option>
-                            }
-                        }
-                    }
-                    
-                </select>
-            </div>
-        </div>
-        <div class="cfg-option">
-            <div class="cfg-title">
-                <b>Font size:</b>
-            </div>
-            <div class="cfg-content">
-                <input id="fontsize-selector" class="selector" type="number" value="18" max="72" min="2">
-            </div>
-        </div>
-        <div class="cfg-option">
-            <div class="cfg-title">
-                <b>Program Language:</b>
-            </div>
-            <div class="cfg-content">
-                <select id="programlanguage-selector" class="selector">
-                    @if(programLanguageList != null)
-                    {
-                        @foreach (var i in programLanguageList)
-                        {
-                            @if (userInfo != null && i.Id == userInfo.Id)
-                            {
-                                <option selected data-value="@i.Id" value="@i.ProgramLanguageCode">@i.ProgramLanguageName
-                                </option>
-                            }
-                            else
-                            {
-                                <option data-value="@i.Id" value="@i.ProgramLanguageCode">@i.ProgramLanguageName</option>
-                            }
-                        }
-                    }
-                </select>
-            </div>
-        </div>
-        <button id="submit" class="button-82-pushable" role="button">
-            <span class="button-82-shadow"></span>
-            <span class="button-82-edge"></span>
-            <span class="button-82-front text">
-                CHẤM BÀI
-            </span>
-        </button>
-    </div>
-</div>
+</section>
 
-
-
-
-@section Links {
-    <link rel="stylesheet" href="~/css/exercise-code.css">
-    <link rel="stylesheet" href="~/css/button-extend.css">
-}
 
 @section Scripts {
-    
+
 
 
     @*ACE EDITOR*@
-    <script src="~/assets/plugins/ace-builds/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
-    <script src="~/assets/plugins/ace-builds/src-min-noconflict/ext-language_tools.js"></script>
+    <script src="~/lib/ace-builds/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="~/lib/ace-builds/src-min-noconflict/ext-language_tools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script>
+
         // CODE SECTION
         function getProgramLanguageMode(proLanguageCode) {
             if (proLanguageCode == "cpp")
@@ -239,7 +343,7 @@
         $('#programlanguage-selector').on('change', function (event) {
             editor.session.setMode(getProgramLanguageMode($(this).val()));
         });
-        
+
     </script>
     <script>
         var baoloi = ace.edit("error");
@@ -257,7 +361,7 @@
         const innerContent = `
                     <style>#dependency{overflow: auto;}table{width: 100%;max-width: 100%;}</style>
                     <div id="dependency">
-        @Html.Raw(Model.ExerciseContent)
+        @(Html.Raw(Model != null ? Model.ExerciseContent : ""))
                     </div>
                 `;
         shadowRoot.innerHTML = innerContent;
@@ -306,8 +410,7 @@
         document.getElementById("run").addEventListener("click", function () {
             this.style.display = "none";
             document.querySelector(".loader").style.display = "block";
-            var runProcess = {
-                "UserId": 0,
+            let runProcess = {
                 "ProgramLanguageId": $("#programlanguage-selector option:selected").attr("data-value"),
                 "SourceCode": editor.getValue(),
                 "Input": $("#input-data").val(),
@@ -319,20 +422,24 @@
             }
             $.ajax({
                 type: 'POST',
-                url: '/CodePad/RunProcessCodepad',
+                url: '@Url.Action("RunProcessCodepad", "CodePad")',
                 data: runProcess,
                 success: function (response) {
                     if (response.isError) {
-                        document.getElementById("alert-error").style.display = "flex";
-                        document.getElementById("output-div").style.display = "none";
+                        let tabTriggerEl = document.querySelector('a[href="#erroralert"]');
+                        let tab = new bootstrap.Tab(tabTriggerEl);
+                        tab.show();
                         baoloi.setValue(response.error);
                         $(".run-time").val(response.runTime);
+                        showToast("error", "Đã có lỗi xảy ra", 1500);
                     }
                     else {
-                        document.getElementById("alert-error").style.display = "none";
-                        document.getElementById("output-div").style.display = "flex";
+                        let tabTriggerEl = document.querySelector('a[href="#output"]');
+                        let tab = new bootstrap.Tab(tabTriggerEl);
+                        tab.show();
                         document.getElementById("output-data").innerHTML = response.output;
                         $(".run-time").val(response.runTime);
+                        showToast("success", "Đã có kết quả output", 1500);
                     }
                     document.getElementById("run").style.display = "block";
                     document.querySelector(".loader").style.display = "none";
@@ -344,31 +451,255 @@
                 }
             });
         });
+        $(document).on('keydown', function(event) {
+            if (event.ctrlKey && event.key === 's') {
+                event.preventDefault();
+                $('#save-as').click();
+            }
+        });;
+
+        document.getElementById("save-as").addEventListener("click", async function () {
+            var { value: fileName } = await Swal.fire({
+                title: "NHẬP TÊN FILE CẦN LƯU",
+                input: "text",
+                inputAttributes: {
+                    placeholder: "Nhập tên file ở đây...",
+                    maxLength: 50
+                },
+                showCancelButton: true,
+                inputValidator: (value) => {
+                    if (!value) {
+                        return "Tên file không thể rỗng";
+                    }
+                },
+            });
+            if (fileName) {
+                const confirm = await confirmAction("Bạn có chắc muốn lưu", "", "", "Lưu", "#1f9bcf");
+
+                if (confirm) {
+                    var model = {
+                        "FileName": fileName,
+                        "InputFile": $("#input-file").val(),
+                        "OutputFile": $("#output-file").val(),
+                        "ProgramLanguageId": $("#programlanguage-selector option:selected").attr("data-value"),
+                        "CodeContent": editor.getValue()
+                    }
+                    $.ajax({
+                        url: "/CodePad/SaveAs",
+                        method: 'POST',
+                        data: { model: model },
+                        success: function (response) {
+                            if (response.status) {
+                                showAlert("success", "Lưu thành công");
+
+                            } else {
+                                Swal.fire("Lưu thất bại!", response.error, "error");
+                            }
+                        },
+                        error: function () {
+                            Swal.fire("Lưu thất bại!", "Đã có lỗi xảy ra", "error");
+                        }
+                    });
+
+
+
+                }
+            }
+        });
     </script>
 
+    @*Marking script*@
     <script>
-        $("#input-tab").on('click', function (e) {
-            const checked = $(this).prop("checked");
+        $(document).ready(function () {
+            // Initialize SignalR connection
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/markingHub")
+                .configureLogging(signalR.LogLevel.Information)
+                .build();
+
+            // Start SignalR connection
+            async function startSignalR() {
+                try {
+                    await connection.start();
+                    console.log("SignalR Connected.");
+                } catch (err) {
+                    console.error("SignalR Connection Error: ", err);
+                    setTimeout(startSignalR, 5000); // Retry after 5 seconds
+                }
+            }
+
+            connection.on("ReceiveTestCaseResult", function (testCaseResult) {
+                console.log("Received test case result: ", testCaseResult);
+
+                // Determine failure reason
+                let failureReason = '';
+                if (!testCaseResult.isCorrect) {
+                    if (testCaseResult.isTimeLimitExceed) {
+                        failureReason = 'Vượt quá thời gian';
+                    } else if (testCaseResult.isError) {
+                        failureReason = 'Lỗi thực thi';
+                    } else {
+                        failureReason = 'Kết quả sai';
+                    }
+                }
+
+                // Generate result HTML
+                const resultHtml = `
+                    <div class="test-case-result ${testCaseResult.isCorrect ? 'passed' : 'failed'} ">
+                        <div class="d-flex align-items-center">
+                            <span class="status-icon">
+                                ${testCaseResult.isCorrect ? '✅' : '❌'}
+                            </span>
+                            <strong class="text-dark">Test Case ${testCaseResult.testCaseIndex}:</strong>
+                            <span class="ms-2 ${testCaseResult.isCorrect ? 'text-success' : 'text-danger'}">
+                                <b>${testCaseResult.isCorrect ? 'Đạt' : 'Thất bại'}</b>
+                            </span>
+                        </div>
+                        ${failureReason ? `<div class="details"><strong>Lý do:</strong> ${failureReason}</div>` : ''}
+                        <div class="details"><strong>Thời gian:</strong> ${testCaseResult.runTime.toFixed(6)}ms</div>
+                    </div>
+                `;
+                $("#test-case-results").append(resultHtml);
+
+                // Update marking status badge
+                $("#marking-status").text(testCaseResult.isFinalResult ? "Hoàn tất" : "Đang chấm...");
+
+                // Handle errors (switch to error tab)
+                if (testCaseResult.isError) {
+                    const tabTriggerEl = document.querySelector('a[href="#erroralert"]');
+                    if (tabTriggerEl) {
+                        const tab = new bootstrap.Tab(tabTriggerEl);
+                        tab.show();
+                    }
+                    if (baoloi && typeof baoloi.setValue === 'function') {
+                        baoloi.setValue(testCaseResult.errorContent || '');
+                    }
+                    $(".run-time").val(testCaseResult.runTime);
+                    showToast("error", "Đã có lỗi xảy ra", 1500);
+                }
+
+            
+            });
+
+            // Utility function to escape HTML
+            function escapeHtml(unsafe) {
+                return unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            // Start SignalR connection
+            startSignalR();
+
+            // Handle marking button click
+            $("#btn-marking").on("click", async function () {
+                // Disable button
+                $(this).prop("disabled", true).text("Marking...");
+
+                // Clear previous results
+                $("#test-case-results").empty();
+
+
+
+                try {
+                    await $.ajax({
+                        url: "/Exercise/Marking",
+                        type: "POST",
+                        data: {
+                            ExerciseId: exerciseId,
+                            ProgramLanguageId: $("#programlanguage-selector option:selected").attr("data-value"),
+                            SourceCode: editor.getValue()
+                        },
+                        success: function (response) {
+                            if (response.status) {
+                                const resultHtml = `
+                                    <div class="alert ${response.data.isAllCorrect ? 'alert-success' : 'alert-warning'}">
+                                        <h5>Kết quả chấm điểm:</h5>
+                                        <p><strong>Trạng thái:</strong> ${response.data.isAllCorrect ? 'Tất cả đúng' : 'Có test case sai'}</p>
+                                        <p><strong>Điểm số:</strong> ${response.data.score}/100</p>
+                                        ${response.data.isError ? '<p><strong>Lỗi:</strong> Có lỗi trong quá trình chạy chương trình</p>' : ''}
+                                        ${response.data.pointGain ? `<p><strong>Bạn được nhận thêm:</strong> ${response.data.pointGain} điểm</p>` : ''}
+                                    </div>
+                                `;
+                                $("#test-case-results").prepend(resultHtml); // Prepend instead of append
+                                $("#btn-marking").prop("disabled", false).text("CHẤM ĐIỂM");
+                            } else {
+                                const errorHtml = `
+                                    <div class="alert alert-danger">
+                                        <strong>Lỗi:</strong> ${response.message || "Gửi bài chấm điểm thất bại."}
+                                    </div>
+                                `;
+                                $("#test-case-results").prepend(errorHtml);
+                                $("#btn-marking").prop("disabled", false).text("CHẤM ĐIỂM");
+                            }
+                        },
+                        error: function (xhr) {
+                            console.error("Error submitting code: ", xhr.responseText);
+                            $("#test-case-results").append(`<div class="alert alert-danger">Error: ${xhr.responseText}</div>`);
+                            $("#btn-marking").prop("disabled", false).text("CHẤM ĐIỂM");
+                        }
+                    });
+                } catch (err) {
+                    console.error("AJAX Error: ", err);
+                    $("#test-case-results").append(`<div class="alert alert-danger">Error: ${err.message}</div>`);
+                    $("#btn-marking").prop("disabled", false).text("CHẤM ĐIỂM");
+                }
+            });
+        });
+    </script>
+
+
+    @*Init code add*@
+
+    <script>
+        $(document).ready(function () {
+            let type = getParamFromCurrentUrl("tab");
+            if (type === "code") {
+                $("#input-tab").prop("checked", true);
+                swapTab();
+            } else {
+                $("#input-tab").prop("checked", false);
+                 swapTab();
+            }
+            editor.getSession().on('change', function () {
+                localStorage.setItem('saveCodepadExercise@(Model?.Id)', editor.getValue());
+            });
+            var storedContent = localStorage.getItem('saveCodepadExercise@(Model?.Id)');
+            if (storedContent) {
+                editor.setValue(storedContent, -1);
+            }
+        });
+    </script>
+    <script>
+        $("#input-tab").on('click', swapTab);
+
+        function swapTab() {
+            const checked = $("#input-tab").prop("checked");
             if (checked) {
+                addParamToCurrentUrl("tab", "code");
                 $("#view-title").toggleClass("active");
                 $("#code-title").toggleClass("active");
                 $("#content-section").slideUp(300, function () {
-                    $(this).addClass("d-none");
+                    $("#input-tab").addClass("d-none");
                     $("#code-section").removeClass("d-none").slideDown(300);
                 });
             } else {
+                addParamToCurrentUrl("tab", "view");
                 $("#view-title").toggleClass("active");
                 $("#code-title").toggleClass("active");
                 $("#code-section").slideUp(300, function () {
-                    $(this).addClass("d-none");
+                    $("#input-tab").addClass("d-none");
                     $("#content-section").removeClass("d-none").slideDown(300);
                 });
             }
-        });
+        }
 
     </script>
 
-    @if (userInfo.AuthId == 3 || userInfo.AuthId == 4)
+    @* @if (userInfo.AuthId == 3 || userInfo.AuthId == 4)
     {
         <text>
             <script>
@@ -386,7 +717,7 @@
                     let content = e.clipboardData.getData('text');;
                     checkCopy(content, 'paste', 'exercise');
                 });
-                
+
                 editor.container.addEventListener('copy', function (e) {
                     let content = window.getSelection().toString();
                     checkCopy(content, 'copy', 'code');
@@ -416,9 +747,9 @@
                         }
                     });
                 }
-                
+
             </script>
         </text> 
-    }
+    } *@
 
 }

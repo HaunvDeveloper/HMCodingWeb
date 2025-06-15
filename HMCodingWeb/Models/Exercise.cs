@@ -49,6 +49,8 @@ public partial class Exercise
 
     public virtual ICollection<ExerciseBelongType> ExerciseBelongTypes { get; set; } = new List<ExerciseBelongType>();
 
+    public virtual ICollection<Marking> Markings { get; set; } = new List<Marking>();
+
     public virtual ICollection<TestCase> TestCases { get; set; } = new List<TestCase>();
 
     public virtual User UserCreated { get; set; } = null!;

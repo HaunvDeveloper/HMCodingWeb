@@ -2,7 +2,7 @@
 {
     public class RunProcessViewModel
     {
-        public int UserId { get; set; }
+        public long UserId { get; set; }
         public int ProgramLanguageId { get; set; }
         public string? FileName { get; set; }
         public string? SourceCode { get; set; }

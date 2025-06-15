@@ -128,7 +128,7 @@ namespace HMCodingWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> RunProcessCodepad(RunProcessViewModel model)
         {
-            model.UserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            model.UserId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             model.FileName = "codepadProcess";
             if (model.RunTime <= 0)
                 model.RunTime = 1;

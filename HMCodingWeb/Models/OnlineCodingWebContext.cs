@@ -33,6 +33,10 @@ public partial class OnlineCodingWebContext : DbContext
 
     public virtual DbSet<ExerciseType> ExerciseTypes { get; set; }
 
+    public virtual DbSet<Marking> Markings { get; set; }
+
+    public virtual DbSet<MarkingDetail> MarkingDetails { get; set; }
+
     public virtual DbSet<ProgramLanguage> ProgramLanguages { get; set; }
 
     public virtual DbSet<Rank> Ranks { get; set; }
@@ -149,10 +153,7 @@ public partial class OnlineCodingWebContext : DbContext
                 .IsFixedLength();
             entity.Property(e => e.ExerciseName).HasMaxLength(125);
             entity.Property(e => e.InputFile).HasMaxLength(50);
-            entity.Property(e => e.KindMarking)
-                .HasMaxLength(10)
-                .IsUnicode(false)
-                .IsFixedLength();
+            entity.Property(e => e.KindMarking).HasMaxLength(20);
             entity.Property(e => e.OutputFile).HasMaxLength(50);
             entity.Property(e => e.TypeMarking).HasMaxLength(20);
 
@@ -208,6 +209,49 @@ public partial class OnlineCodingWebContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.TypeName).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<Marking>(entity =>
+        {
+            entity.ToTable("Marking");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.InputFile).HasMaxLength(50);
+            entity.Property(e => e.KindMarking)
+                .HasMaxLength(20)
+                .HasDefaultValue("io");
+            entity.Property(e => e.MarkingDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.OutputFile).HasMaxLength(50);
+            entity.Property(e => e.TimeLimit).HasDefaultValue(1.0);
+            entity.Property(e => e.TypeMarking)
+                .HasMaxLength(20)
+                .HasDefaultValue("Tương đối");
+
+            entity.HasOne(d => d.Exercise).WithMany(p => p.Markings)
+                .HasForeignKey(d => d.ExerciseId)
+                .HasConstraintName("FK_Marking_Exercise");
+
+            entity.HasOne(d => d.ProgramLanguage).WithMany(p => p.Markings)
+                .HasForeignKey(d => d.ProgramLanguageId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Marking_ProgramLanguage");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Markings)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_Marking_User");
+        });
+
+        modelBuilder.Entity<MarkingDetail>(entity =>
+        {
+            entity.ToTable("MarkingDetail");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+
+            entity.HasOne(d => d.Marking).WithMany(p => p.MarkingDetails)
+                .HasForeignKey(d => d.MarkingId)
+                .HasConstraintName("FK_MarkingDetail_Marking");
         });
 
         modelBuilder.Entity<ProgramLanguage>(entity =>

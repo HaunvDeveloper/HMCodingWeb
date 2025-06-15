@@ -18,12 +18,13 @@
     overflow: hidden;
 }
 
+
 #header-content {
     width: 80%;
     max-width: 80%;
-    border: 2px solid black;
+    /* border: 2px solid black; */
     border-radius: 20px;
-    box-shadow: 0.1rem 0.4rem;
+    box-shadow: 0rem 0rem 20px 2px;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     gap: 16px;
@@ -128,4 +129,10 @@ th, td{
     padding: 10px;
     border: 1px solid black;
     border-radius: 10px;
+}
+
+@media (max-width: 500px) {
+    .header-content-child{
+        width: 300px;
+    }
 }

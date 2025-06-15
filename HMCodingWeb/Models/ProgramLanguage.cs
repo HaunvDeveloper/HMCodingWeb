@@ -13,5 +13,7 @@ public partial class ProgramLanguage
 
     public virtual ICollection<Codepad> Codepads { get; set; } = new List<Codepad>();
 
+    public virtual ICollection<Marking> Markings { get; set; } = new List<Marking>();
+
     public virtual ICollection<User> Users { get; set; } = new List<User>();
 }

@@ -1,4 +1,11 @@
-﻿// Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿function addParamToCurrentUrl(key, value) {
+    const urlObj = new URL(window.location.href);
+    urlObj.searchParams.set(key, value);
+    window.history.replaceState({}, '', urlObj.toString());
+    return urlObj.toString();
+}
 
-// Write your JavaScript code.
+function getParamFromCurrentUrl(key) {
+    const urlObj = new URL(window.location.href);
+    return urlObj.searchParams.get(key);
+}

@@ -37,6 +37,8 @@ public partial class User
 
     public bool IsBlock { get; set; }
 
+    public long Point { get; set; }
+
     public virtual Authority Auth { get; set; } = null!;
 
     public virtual ICollection<Codepad> Codepads { get; set; } = new List<Codepad>();
@@ -44,6 +46,8 @@ public partial class User
     public virtual ICollection<CopyPasteHistory> CopyPasteHistories { get; set; } = new List<CopyPasteHistory>();
 
     public virtual ICollection<Exercise> Exercises { get; set; } = new List<Exercise>();
+
+    public virtual ICollection<Marking> Markings { get; set; } = new List<Marking>();
 
     public virtual ProgramLanguage ProgramLanguage { get; set; } = null!;
 

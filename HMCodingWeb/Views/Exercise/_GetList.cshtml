@@ -1,15 +1,15 @@
-﻿@model IEnumerable<Exercise>
+﻿@model List<HMCodingWeb.ViewModels.ExerciseViewModel>
 
 
 <table id="listcodepad" class="table table-sm table-hover table-border table-striped ml-5 mr-3">
     <thead>
         <tr class="table-dark">
-            <th class="col1">ID</th>
-            <th class="col2">Mã bài</th>
-            <th class="col3">Tên bài</th>
-            <th class="col4">Độ khó</th>
-            <th class="col5">Dạng bài</th>
-            <th class="col6">Bài làm đúng</th>
+            <th>Mã bài</th>
+            <th>Tên bài</th>
+            <th>Độ khó</th>
+            <th>Dạng bài</th>
+            <th>Làm đúng</th>
+            <th class="d-sm-table-cell"></th>
         </tr>
     </thead>
     <tbody>
@@ -17,16 +17,22 @@
         {
             @foreach (var item in Model)
             {
-                <tr data-value="@item.Id">
-                    <td><a asp-action="Code" asp-controller="Exercise" asp-route-id="@item.Id">@item.Id</a></td>
+                <tr data-value="@item.Id" class="@(item.IsCorrect ? "table-success": "")">
                     <td><a asp-action="Code" asp-controller="Exercise" asp-route-id="@item.Id">@item.ExerciseCode</a></td>
                     <td><a asp-action="Code" asp-controller="Exercise" asp-route-id="@item.Id">@item.ExerciseName</a></td>
-                    <td><a asp-action="Code" asp-controller="Exercise" asp-route-id="@item.Id">@item.Difficulty.DifficultyName</a></td>
+                    <td><a asp-action="Code" asp-controller="Exercise" asp-route-id="@item.Id">@item.DifficultyName</a></td>
                     <td>
-                        @string.Join(", ", @item.ExerciseBelongTypes.Select(ebt => ebt.ExerciseType.TypeName).ToList())
+                        @item.ExerciseTypeName
                     </td>
-                    <td class="detail">
+                    <td>
+                        @item.NumberSuccessful 
                         
+                    </td>
+                    <td class="d-sm-table-cell">
+                        @if (item.IsCorrect)
+                        {
+                            <img style="width:30px;" src="/assets/icons/circle-check-solid.svg" />
+                        }
                     </td>
                 </tr>
             }
