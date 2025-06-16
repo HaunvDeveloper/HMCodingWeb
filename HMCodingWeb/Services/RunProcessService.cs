@@ -24,15 +24,15 @@ namespace HMCodingWeb.Services
             }
             else if (compiler == "python")
             {
-                return Path.Combine("Compilers", "python\\python.exe");
+                return "python";
             }
             else if (compiler == "fpc")
             {
-                return Path.Combine("Compilers", "fpc\\bin\\i386-win32\\fpc.exe");
+                return "fpc";
             }
             else if (compiler == "node")
             {
-                return Path.Combine("Compilers", "nodejs\\node.exe");
+                return "node";
             }
             return "python";
         }
