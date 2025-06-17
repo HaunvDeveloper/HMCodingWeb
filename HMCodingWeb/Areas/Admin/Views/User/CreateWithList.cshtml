@@ -1,0 +1,82 @@
+﻿@{
+    ViewData["Title"] = "Thêm danh sách người dùng";
+}
+@section Links {
+    <link rel="stylesheet" href="~/css/course.css">
+    <style>
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+}
+
+<div class="container">
+    <div class="table-container m-4">
+        <h4 class="text-center mb-4 mt-2 text-danger" style="font-size:30px;font-weight:bold;">THÊM DANH SÁCH NGƯỜI DÙNG</h4>
+        <div id="form-create" class="container">
+            <div class="d-flex justify-content-between mb-3 align-items-center flex-wrap gap-2">
+
+                <a asp-action="DownloadSample" asp-controller="User" asp-area="Admin" class="btn btn-outline-primary">Tải mẫu danh sách</a>
+
+            </div>
+            <hr />
+            <div class="info-detail">
+                <label for="file">Tải file Excel:</label>
+                <input type="file" id="file" class="form-control" />
+            </div>
+            <div class="mt-3 text-lg-end">
+                <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+                <button id="btn-create" type="submit" class="btn btn-primary">Tạo</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <script>
+        $(document).ready(function () {
+
+
+            $("#btn-create").on("click", function () {
+                const fileInput = $("#file")[0];
+                const file = fileInput.files[0];
+
+                if (!file) {
+                    showAlert("error", "Vui lòng chọn file trước khi tải lên.");
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append("file", file);
+
+                $.ajax({
+                    url: '@Url.Action("CreateWithList", "User", new { area = "Admin" })', // Đường dẫn tới action
+                    type: 'POST',
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    success: function (response) {
+                        if (response.status) {
+                            showAlert("success", "Tạo thành công");
+                            setTimeout(function () {
+                                window.location.href = response.redirect;
+                            }, 1500);
+                        } else {
+                            showAlert("error", "Đã có lỗi xảy ra", response.error);
+
+                        }
+                    },
+                    error: function () {
+                        showAlert("error", "Có lỗi xảy ra khi gửi yêu cầu.");
+                    }
+                });
+            });
+
+
+        });
+
+    </script>
+}

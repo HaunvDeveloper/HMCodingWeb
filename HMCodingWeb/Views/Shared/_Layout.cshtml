@@ -1,5 +1,4 @@
-﻿@using Microsoft.AspNetCore.Http
-@{
+﻿@{
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
     var avatar = Context.Session.GetString("UserAvatar");

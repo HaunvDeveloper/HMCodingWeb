@@ -197,8 +197,10 @@ namespace HMCodingWeb.Controllers
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, user.Username),
+                    new Claim(ClaimTypes.GivenName, user.Fullname ?? ""),
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                     new Claim(ClaimTypes.Role, user.Auth.AuthCode),
+                    new Claim(ClaimTypes.Authentication, user.Auth.AuthCode),
                 };
 
                 var identity = new ClaimsIdentity(claims, "Cookies");

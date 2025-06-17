@@ -1,0 +1,173 @@
+﻿@{
+    ViewData["Title"] = "Danh sách người dùng";
+}
+
+@section Links {
+    <link rel="stylesheet" href="~/css/course.css">
+    <style>
+        .avatar-img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .action-buttons a, .action-buttons button {
+            margin: 0 5px;
+        }
+
+        .is-block {
+            color: red;
+            font-weight: bold;
+        }
+
+        .is-active {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+}
+
+<div class="container">
+    <div class="table-container m-4 table-responsive">
+        <h4 class="text-center mb-4 mt-2 text-danger" style="font-size:30px;font-weight:bold;">DANH SÁCH NGƯỜI DÙNG</h4>
+        <div class="d-flex justify-content-start mb-3 align-items-center flex-wrap gap-2">
+
+            <a asp-action="Create" asp-controller="User" asp-area="Admin" class="btn btn-add-course">+ Thêm người dùng</a>
+            <a asp-action="CreateWithList" asp-controller="User" asp-area="Admin" class="btn btn-primary">+ Thêm theo danh sách</a>
+
+        </div>
+
+        <!-- Table to display employee data using DataTable -->
+        <table id="table-data" class="table table-striped table-sm">
+            <thead class="table-primary">
+                <tr class="table-primary">
+                    <th>ID</th>
+                    <th>Avatar</th>
+                    <th>Username</th>
+                    <th>Full Name</th>
+                    <th>Phone No</th>
+                    <th>Email</th>
+                    <th>Day of Birth</th>
+                    <th>Language</th>
+                    <th>Auth</th>
+                    <th>Rank</th>
+                    <th>Point</th>
+                    <th>Status</th>
+                    <th>Registered</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be loaded dynamically by DataTable -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var table = $('#table-data').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "searching": true,
+            "ajax": {
+                "url": '@Url.Action("_GetList", "User", new { area = "Admin" })',
+                "data": function (d) {
+                    d.keyword = $('input[type="search"]').val();
+                },
+                "type": "POST"
+            },
+            "pageLength": 10,
+            "lengthMenu": [10, 25, 50, 100],
+            "orderable": false,
+            "columns": [
+                { "data": "id","orderable": false },
+                {
+                    "data": "avatar",
+                    "render": function (data) {
+                        return data ? `<img src="data:image/jpeg;base64,${data}" class="avatar-img" alt="Avatar" />` : `<img src="/assets/images/avartardefault.jpg" class="avatar-img" alt="Default Avatar" />`;
+                    },
+                    "orderable": false
+                },
+                { "data": "username","orderable": false },
+                { "data": "fullName","orderable": false },
+                { "data": "phoneNo","orderable": false },
+                { "data": "email","orderable": false },
+                {
+                    "data": "dayOfBirth",
+                    "render": function (data) {
+                        return data ? new Date(data).toLocaleDateString('vi-VN') : 'N/A';
+                    },"orderable": false
+                },
+                { "data": "programLanguage","orderable": false },
+                { "data": "authentication","orderable": false },
+                { "data": "rank","orderable": false },
+                { "data": "point","orderable": false },
+                {
+                    "data": "isBlock",
+                    "render": function (data) {
+                        return data ? '<span class="is-block">Blocked</span>' : '<span class="is-active">Active</span>';
+                    },"orderable": false
+                },
+                {
+                    "data": "registeredTime",
+                    "render": function (data) {
+                        return new Date(data).toLocaleString('vi-VN');
+                    },"orderable": false
+                },
+                {
+                    "data": "id",
+                    "render": function (data) {
+                        return `
+                            <div class="action-buttons text-nowrap">
+                                <a href="/admin/user/edit/${data}" class="btn btn-sm btn-primary">Edit</a>
+                                <button onclick="deleteRow(${data})" class="btn btn-sm btn-danger">Delete</button>
+                            </div>`;
+                    },
+                    "orderable": false
+                }
+            ],
+            
+        });
+
+        async function deleteRow(id) {
+            if (id) {
+                let confirmed = await confirmAction();
+                if (confirmed) {
+                    $.ajax({
+                        url: '@Url.Action("Delete", "User", new { area = "Admin" })',
+                        method: 'POST',
+                        data: { id },
+                        success: function (response) {
+                            if (response.status) {
+                                showToast("success", "Xóa người dùng thành công", 3000);
+                                table.ajax.reload(null, false);
+                            } else {
+                                showAlert("error", "Có lỗi", response.error);
+                            }
+                        },
+                        error: function (error) {
+                            showAlert("error", "Có lỗi", error.statusText);
+                        }
+                    });
+                }
+            }
+        }
+
+        async function confirmAction() {
+            return new Promise((resolve) => {
+                Swal.fire({
+                    title: 'Xác nhận xóa',
+                    text: 'Bạn có chắc muốn xóa người dùng này?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Xóa',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    resolve(result.isConfirmed);
+                });
+            });
+        }
+    </script>
+}

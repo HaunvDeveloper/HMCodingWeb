@@ -70,7 +70,14 @@
             if (returnUrl && returnUrl !== "null") {
                 data.append('ReturnUrl', returnUrl);
             }
-
+            Swal.fire({
+                title: 'Đang xử lý...',
+                text: 'Vui lòng chờ giây lát',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
             $.ajax({
                 type: 'POST',
                 url: $(this).attr('action'),
@@ -78,6 +85,7 @@
                 processData: false,
                 contentType: false,
                 success: function (response) {
+                     Swal.close();
                     if (response.status) {
                         showAlert('success', response.message);
                         // Kiểm tra redirectUrl, tránh chuỗi "null"
@@ -90,6 +98,7 @@
                     }
                 },
                 error: function () {
+                     Swal.close();
                     showAlert("error", "Lỗi", "Đã xảy ra lỗi trong quá trình đăng nhập. Vui lòng thử lại sau.", false, false, 1000);
                 }
             });

@@ -1,0 +1,343 @@
+body {
+    background-color: #f5f5f5;
+}
+
+.tb-container {
+    max-width: 1200px;
+    margin-top: 20px;
+}
+
+.table-container {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.table thead {
+    background-color: rgba(18, 72, 116, 1);
+    color: white;
+}
+
+.table th
+{
+    color:white !important;
+    text-align: center;
+}
+
+.table th,
+.table td {
+    vertical-align: middle;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: rgba(18, 72, 116, 1);
+    border-color: rgba(18, 72, 116, 1);
+}
+
+.btn-add-course {
+    background-color: #ffd966;
+    color: black;
+    font-weight: bold;
+}
+
+.btn-add-course:hover {
+    background-color: #ffc927;
+    color: white;
+}
+
+.btn-link::after{
+    content: "";
+    border: none !important;
+}
+
+.page-link {
+    color: rgba(18, 72, 116, 1) !important;
+}
+
+.page-item.active .page-link {
+    color: white !important;
+}
+
+table .dropdown-menu{
+    min-width: 7rem;
+    text-align: center;
+}
+
+table .dropdown-item.active, .dropdown-item:active{
+    background-color: #d0d0d0;
+    color: var(--secondary-color);
+}
+
+
+:root {
+    --main-color: #f0f0f0;
+    --secondary-color: rgba(18, 72, 116, 1);
+}
+
+*,
+*::after,
+*::before {
+    box-sizing: border-box;
+}
+
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pag-container {
+    counter-reset: pagination;
+    text-align: center;
+    width: 100% !important;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+
+.pagination {
+    width: 40rem;
+}
+
+.pag-container:after {
+    clear: both;
+    content: "";
+    display: table;
+}
+
+.pag-container ul {
+    width: 100%;
+}
+
+.xlarge {
+    width: 65rem;
+}
+
+.large {
+    width: 45rem;
+}
+
+.middle {
+    width: 32rem;
+}
+
+.small {
+    width: 22rem;
+}
+
+.xsmall {
+    width: 14rem;
+}
+
+.pagination ul,
+.pagination li {
+    list-style: none;
+    display: inline;
+    padding-left: 0px;
+}
+
+.pagination li {
+    counter-increment: pagination;
+}
+
+.pagination li:hover a {
+    color: #fafafa;
+    background-color: var(--secondary-color);
+    border: solid 1px var(--secondary-color);
+}
+
+.pagination li.active a {
+    color: #fafafa;
+    background-color: var(--secondary-color);
+    border: solid 1px var(--secondary-color);
+}
+
+.previous {
+    float: left;
+    transform: rotate(180deg);
+}
+
+.next {
+    float: right;
+}
+
+
+
+
+
+
+.pagination li a {
+    border: solid 1px #d0d0d0;
+    border-radius: 0.2rem;
+    color: rgba(18, 72, 116, 1);
+    text-decoration: none;
+    text-transform: uppercase;
+    display: inline-block;
+    text-align: center;
+    padding: 0.5rem 0.9rem;
+}
+
+.btn-link {
+    font-weight: 400;
+    color: black;
+    text-decoration: underline;
+}
+
+.btn-link:hover {
+    color: #0d6efd;
+}
+
+
+.move {
+    width: 35px;
+    cursor: pointer;
+}
+
+.move a {
+    color: white;
+    text-decoration: none;
+    border: none !important;
+}
+
+.move:hover {
+    border-radius: 50% !important;
+}
+
+.pagination li:last-child {
+    float: right;
+    background-color: rgba(18, 72, 116, 1) !important;
+    color: white !important;
+    border-radius: 50% !important;
+    border: none !important;
+}
+
+.pagination li:last-child a {
+    color: white;
+    border: none !important;
+}
+
+
+.large li a {
+    display: none;
+}
+
+.large li:first-child a {
+    display: inline-block;
+}
+
+.large li:first-child a:after {
+    content: "Previous";
+}
+
+.large li:nth-child(2) a,
+.large li:nth-child(3) a,
+.large li:nth-child(4) a,
+.large li:nth-child(5) a,
+.large li:nth-child(6) a,
+.large li:nth-child(7) a,
+.large li:nth-child(8) a {
+    display: inline-block;
+}
+
+.large li:last-child a {
+    display: inline-block;
+}
+
+.large li:nth-last-child(2) a {
+    display: inline-block;
+}
+
+.large li:nth-last-child(3):after {
+    padding: 0 1rem;
+    content: "...";
+}
+
+.middle li a {
+}
+
+.middle li:first-child a {
+    display: inline-block;
+}
+
+.middle li:first-child a:after {
+    content: "<";
+}
+
+.middle li:last-child a {
+    display: inline-block;
+}
+
+.middle li:nth-child(2) a,
+.middle li:nth-child(3) a,
+.middle li:nth-child(4) a,
+.middle li:nth-child(5) a {
+    display: inline-block;
+}
+
+.middle li:nth-last-child(2) a {
+    display: inline-block;
+}
+
+.small li {
+    display: none;
+}
+
+.small li:first-child {
+    width: 50%;
+    display: inline;
+}
+
+.small li:first-child a:after {
+    content: "Previous Page";
+}
+
+.small li:last-child {
+    display: inline;
+}
+
+.small li:last-child a:after {
+    content: "Next Page";
+}
+
+.xsmall li {
+    display: none;
+}
+
+.xsmall li.active {
+    display: inline;
+}
+
+.xsmall li:first-child {
+    display: inline;
+}
+
+.xsmall li:first-child a:after {
+    content: "Prev";
+}
+
+.xsmall li:last-child {
+    display: inline;
+}
+
+.xsmall li:last-child a:after {
+    content: "Next";
+}
+
+
+.image-center{
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-service{
+    width: 45px;
+    padding: 7px 9px;
+    
+}
+
+.btn-service img{
+    margin: 0;
+    padding: 0;
+}

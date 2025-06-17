@@ -20,11 +20,13 @@ using HMCodingWeb.Models;
 using HMCodingWeb.Services;
 using System.Security.Policy;
 using HMCodingWeb.Hubs;
+using OfficeOpenXml;
+
+ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
-
 
 builder.Services.AddDbContext<OnlineCodingWebContext>(options =>
 {
@@ -81,6 +83,12 @@ app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapHub<MarkingHub>("/markingHub");
+
+
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
 
 app.MapControllerRoute(
     name: "default",

@@ -1,0 +1,13 @@
+﻿.text-no-wrap {
+    text-wrap: nowrap;
+}
+
+.btn-light-success {
+    color: #1f9946;
+    background: #d8f6e2;
+    font-weight: bold;
+}
+
+    .btn-light-success:hover {
+        background: #12be4b;
+    }
