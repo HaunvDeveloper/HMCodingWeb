@@ -1,0 +1,172 @@
+﻿@model HMCodingWeb.Models.User
+@using HMCodingWeb.Models
+
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+@section Links{
+    <style>
+        .form-group label {
+            font-weight: bold;
+        }
+
+        .form-control {
+            border-radius: 5px;
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+    </style>
+}
+<div class="container mt-5 mb-4">
+    <h2>Edit Profile</h2>
+    <hr />
+    <form id="editProfileForm" enctype="multipart/form-data">
+
+    <div class="row">
+        <!-- Form Column -->
+        <div class="col-md-6">
+                <input type="hidden" asp-for="Id" />
+
+                <div class="form-group mb-3">
+                    <label asp-for="Fullname" class="form-label"></label>
+                    <input asp-for="Fullname" class="form-control" />
+                    <span asp-validation-for="Fullname" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="PhoneNumber" class="form-label"></label>
+                    <input asp-for="PhoneNumber" class="form-control" />
+                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Birthday" class="form-label"></label>
+                    <input asp-for="Birthday" class="form-control" type="date" />
+                    <span asp-validation-for="Birthday" class="text-danger"></span>
+                </div>
+
+                
+
+                <div class="form-group mb-3">
+                    <label asp-for="ThemeCodeId" class="form-label">Theme</label>
+                    <select asp-for="ThemeCodeId" class="form-control"
+                            asp-items="@(new SelectList(ViewBag.Themes, "Id", "ThemeCode"))"></select>
+                    <span asp-validation-for="ThemeCodeId" class="text-danger"></span>
+                </div>
+                <div class="form-group mb-3">
+                    <label asp-for="ProgramLanguageId" class="form-label">Programming Language</label>
+                    <select asp-for="ProgramLanguageId" class="form-control"
+                            asp-items="@(new SelectList(ViewBag.ProgramLanguages, "Id", "ProgramLanguageName"))"></select>
+                    <span asp-validation-for="ProgramLanguageId" class="text-danger"></span>
+                </div>
+                
+
+                
+        </div>
+
+        <!-- Preview Column -->
+        <div class="col-md-6">
+            <div class="card mb-3 mt-4">
+                <div class="card-header">
+                    <h4>Avatar Preview</h4>
+                </div>
+                <div class="card-body text-center">
+                    <img id="avatarPreview"
+                         src="@(Model.AvartarImage != null ? "data:image/jpeg;base64," + Convert.ToBase64String(Model.AvartarImage) : "/images/default-avatar.png")"
+                         class="img-fluid rounded-circle"
+                         style="width: 200px; height: 200px; object-fit: cover;"
+                         alt="Avatar Preview" />
+                </div>
+            </div>
+            <div class="form-group mb-3">
+                <label class="form-label">Avatar</label>
+                <input type="file" name="avatarFile" id="avatarFile" class="form-control" accept="image/*" />
+                <small class="form-text text-muted">Max size: 2MB</small>
+                @* @if (Model.AvartarImage != null)
+                {
+                    <img src="data:image/jpeg;base64,@Convert.ToBase64String(Model.AvartarImage)"
+                         class="img-fluid mt-2" style="max-width: 100px;" alt="Current Avatar" />
+                } *@
+            </div>
+            
+            <div class="form-group mt-4 text-lg-end">
+                <button id="btn-submit" type="submit" class="btn btn-primary">Save Changes</button>
+                <a asp-action="Details" asp-controller="User" asp-route-id="@Model.Id"
+                   class="btn btn-secondary ms-2">Cancel</a>
+            </div>
+        </div>
+    </div>
+    </form>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            // Preview avatar when a new file is selected
+            $("#avatarFile").change(function () {
+                var file = this.files[0];
+                if (file) {
+                    if (file.size > 2 * 1024 * 1024) {
+                        $("#validationSummary").text("Avatar file size must be less than 2MB.");
+                        return;
+                    }
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        $("#avatarPreview").attr("src", e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            $("#editProfileForm").submit(function (e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+
+                $('#btn-submit').attr('disabled', 'disabled'); // Disable the button to prevent multiple submissions
+
+                // Client-side file size validation
+                var avatarFile = $('input[name="avatarFile"]')[0].files[0];
+                if (avatarFile && avatarFile.size > 2 * 1024 * 1024) {
+                    $("#validationSummary").text("Avatar file size must be less than 2MB.");
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("EditProfile", "User")',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        if (response.status) {
+                            showAlert("success","Profile updated successfully!");
+                            setTimeout(function () {
+                                window.location.href = '@Url.Action("Details", "User")/' + response.userId;
+                            }, 1500);
+                        } else {
+                            $("#validationSummary").text(response.message);
+                        }
+                        $('#btn-submit').removeAttr('disabled'); // Re-enable the button
+                    },
+                    error: function () {
+                        $("#validationSummary").text("An error occurred. Please try again.");
+                        $('#btn-submit').removeAttr('disabled'); // Re-enable the button
+                    }
+                });
+            });
+        });
+    </script>
+
+}

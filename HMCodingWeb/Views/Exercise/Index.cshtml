@@ -85,6 +85,7 @@
 
     @*Event Listening*@
     <script>
+        const loadingTable = $('.list').html();
         async function loadListFormParams() {
             let p = getParamFromCurrentUrl('p') || 1;
             let s = getParamFromCurrentUrl('s') || 10;
@@ -134,6 +135,7 @@
         }
                 
         async function loadList(p, s, key, dId, cId, etId, tM, kM) {
+            $('.list').html(loadingTable); // Show loading state
             addParamToCurrentUrl('p', p);
             addParamToCurrentUrl('s', s);
             addParamToCurrentUrl('key', key);

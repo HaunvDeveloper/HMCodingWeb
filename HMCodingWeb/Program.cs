@@ -4,10 +4,10 @@ build EntityFramework
 
 
 VS Code
-dotnet ef dbcontext scaffold "Data Source=LAPTOP-ENCKOU6S;Initial Catalog=OnlineCodingWeb;Integrated Security=True;TrustServerCertificate=True" Microsoft.EntityFrameworkCore.SqlServer -o Models --force
+dotnet ef dbcontext scaffold "Data Source=168.231.122.98;Initial Catalog=OnlineCodingWeb;Persist Security Info=True;User ID=sa;Password=NguyenH@u100304;Trust Server Certificate=True" Microsoft.EntityFrameworkCore.SqlServer -o Models --force
 
 VS 2022
-Scaffold-DbContext "Data Source=LAPTOP-ENCKOU6S;Initial Catalog=OnlineCodingWeb;Integrated Security=True;TrustServerCertificate=True" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -Force
+Scaffold-DbContext "Data Source=168.231.122.98;Initial Catalog=OnlineCodingWeb;Persist Security Info=True;User ID=sa;Password=NguyenH@u100304;Trust Server Certificate=True" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -Force
 
 
 

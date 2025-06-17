@@ -26,10 +26,12 @@
                         @item.ExerciseTypeName
                     </td>
                     <td class="d-sm-table-cell">
-                        @item.NumberSuccessful 
+
+                        <a asp-action="Index" asp-controller="Marking" asp-route-exId="@item.Id">@item.NumberSuccessful</a>
 
                     </td>
                     <td class="d-sm-table-cel">
+                        
                         @if (item.IsCorrect == "Passed")
                         {
                             <img style="width:30px;" src="~/assets/icons/circle-check-solid.svg" />
@@ -41,24 +43,31 @@
                         
                     </td>
                     <td class="d-sm-table-cel">
-                        @if (User.IsInRole("admin,teacher") || (long)ViewBag.UserId == item.UserCreatedId)
-                        {
-                            <div class="dropdown-custom" style="position: relative; display: inline-block;">
-                                <button class="btn btn-sm btn-outline-secondary menu-toggle d-flex justify-content-center align-items-center" type="button">
-                                    <span class="material-symbols-outlined">more_vert</span>
-                                </button>
-
-                                <div class="dropdown-menu-custom" style="display: none; position: absolute; z-index: 1000; background: white; border: 1px solid #ccc; border-radius: 4px; min-width: 120px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
-                                    <a class="dropdown-item-custom" href="@Url.Action("Edit", "Exercise", new { id = item.Id })" style="display: block; padding: 8px 12px; text-decoration: none; color: black;">
-                                        ✏️ Edit
-                                    </a>
-
-                                    <button onclick="deleteRow(@item.Id)" class="dropdown-item-custom" style="display: block; padding: 8px 12px; width: 100%; border: none; background: none; color: red; text-align: left;">
-                                        🗑️ Delete
+                        <div class="d-flex gap-2">
+                            @if (User.IsInRole("admin") || User.IsInRole("teacher") || (long)ViewBag.UserId == item.UserCreatedId)
+                            {
+                                <div class="dropdown-custom" style="position: relative; display: inline-block;">
+                                    <button class="btn btn-sm btn-outline-secondary menu-toggle d-flex justify-content-center align-items-center" type="button">
+                                        <span class="material-symbols-outlined">more_vert</span>
                                     </button>
+
+                                    <div class="dropdown-menu-custom" style="display: none; position: absolute; z-index: 1000; background: white; border: 1px solid #ccc; border-radius: 4px; min-width: 120px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                        <a class="dropdown-item-custom" href="@Url.Action("Edit", "Exercise", new { id = item.Id })" style="display: block; padding: 8px 12px; text-decoration: none; color: black;">
+                                            ✏️ Edit
+                                        </a>
+
+                                        <button onclick="deleteRow(@item.Id)" class="dropdown-item-custom" style="display: block; padding: 8px 12px; width: 100%; border: none; background: none; color: red; text-align: left;">
+                                            🗑️ Delete
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        }
+                            }
+                            @if (item.AccessId != 3)
+                            {
+                                <img style="width: 30px" src="~/assets/icons/eye-close.svg" id="eye" title="Bài đang được ẩn"/>
+                            }
+                        </div>
+                        
                     </td>
 
 

@@ -1,0 +1,138 @@
+﻿@model User
+
+@{
+    ViewData["Title"] = "User Detail";
+}
+
+<div class="container mt-3 mb-5">
+    <div class="row">
+        <!-- User Information -->
+        <div class="col-12 col-lg-4 mt-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center mt-3">@Model.Fullname</h3>
+                </div>
+                <div class="card-body text-center">
+                    @if (Model.AvartarImage != null)
+                    {
+                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(Model.AvartarImage)"
+                             class="img-fluid rounded-circle mb-3"
+                             style="width: 150px; height: 150px; object-fit: cover;"
+                             alt="User Avatar" />
+                    }
+                    else
+                    {
+                        <img src="~/assets/images/avartardefault.jpg"
+                             class="img-fluid rounded-circle mb-3"
+                             style="width: 150px; height: 150px; object-fit: cover;"
+                             alt="Default Avatar" />
+                    }
+                    <div class="ml-2 text-lg-start p-4">
+                        <p><strong>Username:</strong> @Model.Username</p>
+                        <p><strong>Email:</strong> @Model.Email</p>
+                        @if (!string.IsNullOrEmpty(Model.PhoneNumber))
+                        {
+                            <p><strong>Phone:</strong> @Model.PhoneNumber</p>
+                        }
+                        @if (Model.Birthday.HasValue)
+                        {
+                            <p><strong>Birthday:</strong> @Model.Birthday.Value.ToString("dd/MM/yyyy")</p>
+                        }
+                        <p><strong>Points:</strong> @Model.Point</p>
+                        <p><strong>Rank:</strong> @(Model.Rank?.RankName ?? "Unranked")</p>
+                        <p><strong>Programming Language:</strong> @Model.ProgramLanguage.ProgramLanguageName</p>
+                    </div>
+
+                    @if ((long)ViewBag.OwnUserId == Model.Id)
+                    {
+                        <a asp-action="EditProfile" asp-controller="User"
+                           class="btn btn-primary mt-3">Edit Profile</a>
+                    }
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Exercises List -->
+        <div class="col-lg-8 col-12 mt-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mt-3">Bài tập đã hoàn thành</h3>
+                </div>
+                <div class="card-body table-responsive">
+                    <table id="table-data" class="table table-bordered table-sm table-active">
+                        <thead>
+                            <tr class="table-dark">
+                                <td class=" text-light">Mã bài</td>
+                                <td class=" text-light">Tên bài</td>
+                                <td class=" text-light">Độ khó</td>
+                                <td class=" text-light">Lần đầu chấm</td>
+                                <td class=" text-light">Lần đầu đúng</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        var table = $('#table-data').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "searching": true,
+            "ajax": {
+                "url": '@Url.Action("_GetCompletedExByUser", "Exercise")',
+                "data": function (d) {
+                    d.keyword = $('input[type="search"]').val();
+                    d.userId = `@Model.Id` || null; // Pass userId if available`
+                },
+                "type": "POST",
+                "dataSrc": function (json) {
+                    return json.data;
+                }
+            },
+            "pageLength": 5,
+            "lengthMenu": [5, 10, 25, 50, 100],
+            "columns": [
+                    {
+                        "data": "exerciseCode",
+                        "render": function (data, type, row) {
+                            return `<a href="/exercise/code/${row.id}">${data}</a>`;
+                        }
+                    },
+                    {
+                        "data": "exerciseName",
+                        "render": function (data, type, row) {
+                            return `<a href="/exercise/code/${row.id}">${data}</a>`;
+                        }
+                    },
+                    { "data": "difficulty" },
+                    { "data": "firstMarkingTime" },
+                    { "data": "firstCorrectMarkingTime" }
+            ]
+        });
+    </script>
+}
+
+
+@section Links {
+    <style>
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        strong {
+            font-weight: bold;
+        }
+        a{
+            text-decoration: none;
+        }
+    </style>
+}

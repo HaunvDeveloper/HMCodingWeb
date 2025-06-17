@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.IO;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace HMCodingWeb.Controllers
 {
@@ -72,7 +73,7 @@ namespace HMCodingWeb.Controllers
 
             // Base query with initial filters and includes
             var query = _context.Exercises
-                .Where(ex => ex.IsAccept == true && ex.AccessId == 3)
+                .Where(ex => ex.IsAccept == true && (ex.AccessId == 3 || ex.UserCreatedId == userId))
                 .Include(ex => ex.Difficulty)
                 .Include(ex => ex.Chapter)
                 .Include(ex => ex.ExerciseBelongTypes)
@@ -173,7 +174,84 @@ namespace HMCodingWeb.Controllers
             return PartialView(listData);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> _GetCompletedExByUser(int draw, int start, int length, string keyword = "", long? userId = null)
+        {
+            // Nếu không có userId, lấy từ Claims (nếu có)
+            if (!userId.HasValue)
+            {
+                userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            }
 
+            // Base query: Lấy các ExerciseId mà user đã hoàn thành (IsAllCorrect == true)
+            var completedExerciseIdsQuery = _context.Markings
+                .Where(m => m.UserId == userId && m.IsAllCorrect == true)
+                .Select(m => m.ExerciseId)
+                .Distinct();
+
+            // Áp dụng tìm kiếm theo keyword
+            var query = _context.Exercises
+                .Where(e => completedExerciseIdsQuery.Contains(e.Id))
+                .Join(_context.DifficultyLevels,
+                    e => e.DifficultyId,
+                    d => d.Id,
+                    (e, d) => new { Exercise = e, Difficulty = d.DifficultyName });
+
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                keyword = keyword.ToLower();
+                query = query.Where(x => x.Exercise.ExerciseCode.ToLower().Contains(keyword) ||
+                                        x.Exercise.ExerciseName.ToLower().Contains(keyword));
+            }
+
+            // Lấy tổng số bản ghi
+            var totalRecords = await query.CountAsync();
+
+            // Lấy dữ liệu phân trang
+            var completedExercises = await query
+                .OrderByDescending(x => x.Exercise.CreatedDate) // Sắp xếp theo CreatedDate của Exercise
+                .Skip(start)
+                .Take(length)
+                .Select(x => new
+                {
+                    x.Exercise.Id,
+                    x.Exercise.ExerciseCode,
+                    x.Exercise.ExerciseName,
+                    Difficulty = x.Difficulty,
+                    FirstMarkingTime = _context.Markings
+                        .Where(m => m.UserId == userId && m.ExerciseId == x.Exercise.Id)
+                        .OrderBy(m => m.MarkingDate)
+                        .Select(m => m.MarkingDate)
+                        .FirstOrDefault(),
+                    FirstCorrectMarkingTime = _context.Markings
+                        .Where(m => m.UserId == userId && m.ExerciseId == x.Exercise.Id && m.IsAllCorrect == true)
+                        .OrderBy(m => m.MarkingDate)
+                        .Select(m => m.MarkingDate)
+                        .FirstOrDefault()
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            // Transform dữ liệu cho DataTable
+            var data = completedExercises.Select(x => new
+            {
+                x.Id,
+                x.ExerciseCode,
+                x.ExerciseName,
+                x.Difficulty,
+                FirstMarkingTime = x.FirstMarkingTime != default(DateTime) ? x.FirstMarkingTime.ToString("dd/MM/yyyy HH:mm") : "N/A",
+                FirstCorrectMarkingTime = x.FirstCorrectMarkingTime != default(DateTime) ? x.FirstCorrectMarkingTime.ToString("dd/MM/yyyy HH:mm") : "N/A"
+            }).ToList();
+
+            // Trả về JSON cho DataTable
+            return Json(new
+            {
+                draw = draw,
+                recordsTotal = totalRecords,
+                recordsFiltered = totalRecords, // Nếu có thêm bộ lọc phức tạp, cần tính lại recordsFiltered
+                data = data
+            });
+        }
         public IActionResult Create()
         {
             ViewBag.AccessRole = _context.AccessRoles.ToList();
@@ -244,9 +322,9 @@ namespace HMCodingWeb.Controllers
 
             long userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             string userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "User";
-            if (userRole != "Admin" && userRole != "Teacher" && exercise.UserCreatedId != userId)
+            if (!(userRole == "admin" || userRole == "teacher" || exercise.UserCreatedId == userId))
             {
-                return View("Error");
+                return View("NotAccess");
             }
 
             ViewBag.AccessRole = _context.AccessRoles.ToList();
@@ -334,7 +412,7 @@ namespace HMCodingWeb.Controllers
                 }
                 long userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
                 string userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "User";
-                if (userRole != "Admin" && userRole != "Teacher" && exercise.UserCreatedId != userId)
+                if (!(userRole == "admin" || userRole == "teacher" || exercise.UserCreatedId == userId))
                 {
                     return Json(new { status = false, error = "Bạn không có quyền xóa bài tập này" });
                 }

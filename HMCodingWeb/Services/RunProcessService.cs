@@ -24,7 +24,7 @@ namespace HMCodingWeb.Services
             }
             else if (compiler == "python")
             {
-                return "python";
+                return "python3";
             }
             else if (compiler == "fpc")
             {
@@ -61,8 +61,8 @@ namespace HMCodingWeb.Services
                     {
                         StartInfo = new ProcessStartInfo
                         {
-                            FileName = GetCompilerPath("g++"),
-                            Arguments = $"\"-Wl,--stack,{_capacityLimit}\" {model.FileName} -o {Path.ChangeExtension(model.FileName, "exe")} -std=c++11",
+                            FileName = "sudo",
+                            Arguments = $"-u sandbox {GetCompilerPath("g++")} \"{model.FileName}\" -o \"{Path.ChangeExtension(model.FileName, "exe")}\" -std=c++11",
                             RedirectStandardOutput = true,
                             RedirectStandardError = true,
                             UseShellExecute = false,
@@ -70,6 +70,7 @@ namespace HMCodingWeb.Services
                             WorkingDirectory = userDirectory
                         }
                     };
+
 
 
                     compileProcess.Start();
@@ -210,8 +211,8 @@ namespace HMCodingWeb.Services
                     {
                         StartInfo = new ProcessStartInfo
                         {
-                            FileName = GetCompilerPath("python"),
-                            Arguments = model.FileName,
+                            FileName = "sudo",
+                            Arguments = $"-u sandbox {GetCompilerPath("python")} \"{model.FileName}\"",
                             RedirectStandardInput = true,
                             RedirectStandardOutput = true,
                             RedirectStandardError = true,
@@ -220,6 +221,7 @@ namespace HMCodingWeb.Services
                             WorkingDirectory = userDirectory
                         }
                     };
+
                     runProcess.StartInfo.EnvironmentVariables["PYTHONIOENCODING"] = "utf-8";
                     var stopwatch = new Stopwatch();
                     stopwatch.Start();
@@ -322,8 +324,8 @@ namespace HMCodingWeb.Services
                     {
                         StartInfo = new ProcessStartInfo
                         {
-                            FileName = GetCompilerPath("fpc"),
-                            Arguments = model.FileName,
+                            FileName = "sudo",
+                            Arguments = $"-u sandbox {GetCompilerPath("fpc")} \"{model.FileName}\"",
                             RedirectStandardOutput = true,
                             RedirectStandardError = true,
                             UseShellExecute = false,
@@ -331,6 +333,7 @@ namespace HMCodingWeb.Services
                             WorkingDirectory = userDirectory
                         }
                     };
+
 
                     compileProcess.Start();
                     await compileProcess.WaitForExitAsync();
@@ -469,8 +472,8 @@ namespace HMCodingWeb.Services
                     {
                         StartInfo = new ProcessStartInfo
                         {
-                            FileName = GetCompilerPath("node"),
-                            Arguments = model.FileName,
+                            FileName = "sudo",
+                            Arguments = $"-u sandbox {GetCompilerPath("node")} \"{model.FileName}\"",
                             RedirectStandardInput = true,
                             RedirectStandardOutput = true,
                             RedirectStandardError = true,
@@ -479,6 +482,7 @@ namespace HMCodingWeb.Services
                             WorkingDirectory = userDirectory
                         }
                     };
+
 
                     // create run time watching
                     var stopwatch = new Stopwatch();

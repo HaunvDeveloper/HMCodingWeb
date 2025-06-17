@@ -18,11 +18,130 @@ namespace HMCodingWeb.Controllers
     {
         private readonly OnlineCodingWebContext _context;
         private readonly EmailSendService _emailSendService;
+        private const long MaxAvatarSize = 2 * 1024 * 1024; // 2MB
+
         public UserController(OnlineCodingWebContext context, EmailSendService emailSendService)
         {
             _context = context;
             _emailSendService = emailSendService;
         }
+
+
+        // GET: User/UserDetail/5
+        [Authorize]
+        public async Task<IActionResult> Details(long? id)
+        {
+            id ??= long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            if (id <= 0)
+            {
+                return NotFound();
+            }
+            var user = await _context.Users
+                .Include(u => u.ProgramLanguage)
+                .Include(u => u.Rank)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+            ViewBag.OwnUserId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            return View(user);
+        }
+
+
+        // GET: User/Edit
+        [Authorize]
+        public async Task<IActionResult> EditProfile()
+        {
+            var id = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            ViewBag.ProgramLanguages = await _context.ProgramLanguages.ToListAsync();
+            ViewBag.Themes = await _context.Themes.ToListAsync();
+            return View(user);
+        }
+
+        // POST: User/Edit
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> EditProfile(User user, IFormFile? avatarFile)
+        {
+            var currentUserId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            if (user.Id != currentUserId)
+            {
+                return Json(new { status = false, message = "You can only edit your own profile." });
+            }
+
+
+            try
+            {
+                var existingUser = await _context.Users.FindAsync(user.Id);
+                if (existingUser == null)
+                {
+                    return Json(new { status = false, message = "User not found." });
+                }
+
+                // Update fields
+                existingUser.Fullname = user.Fullname;
+                existingUser.Email = user.Email;
+                existingUser.PhoneNumber = user.PhoneNumber;
+                existingUser.Birthday = user.Birthday;
+                existingUser.ProgramLanguageId = user.ProgramLanguageId;
+                existingUser.ThemeCodeId = user.ThemeCodeId;
+
+                // Handle avatar upload
+                if (avatarFile != null)
+                {
+                    if (avatarFile.Length > MaxAvatarSize)
+                    {
+                        return Json(new { status = false, message = "Avatar file size must be less than 2MB." });
+                    }
+
+                    using var memoryStream = new MemoryStream();
+                    await avatarFile.CopyToAsync(memoryStream);
+                    existingUser.AvartarImage = memoryStream.ToArray();
+                }
+
+                await _context.SaveChangesAsync();
+                return Json(new { status = true, userId = user.Id });
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!await _context.Users.AnyAsync(e => e.Id == user.Id))
+                {
+                    return Json(new { status = false, message = "User not found." });
+                }
+                return Json(new { status = false, message = "Concurrency error occurred." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { status = false, message = "An error occurred: " + ex.Message });
+            }
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetAvatar()
+        {
+            var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            var user = await _context.Users.FindAsync(userId);
+
+            if (user == null || user.AvartarImage == null)
+            {
+                return Json(new { status = false, message = "Avatar not found." });
+            }
+
+            return Json(new { status = true, avatar = Convert.ToBase64String(user.AvartarImage) });
+        }
+
+
+
+
 
         private string MaskEmail(string email)
         {

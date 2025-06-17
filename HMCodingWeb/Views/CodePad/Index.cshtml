@@ -99,7 +99,10 @@
 
     @*Event Listening*@
     <script>
+        const loadingTable = $('.list').html();
+
         $(document).ready(async function () {
+
             let p = sessionStorage.getItem('page');
             let s = sessionStorage.getItem('size');
             let key = sessionStorage.getItem('key');
@@ -125,7 +128,7 @@
 
         async function loadCodepads(p, s, key) {
             let url = '@Url.Action("_GetList", "CodePad")';
-            
+            $('.list').html(loadingTable);
             await $.ajax({
                 url: url, 
                 data: {p: p, s: s, key: key},

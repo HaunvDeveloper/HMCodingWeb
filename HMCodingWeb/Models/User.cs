@@ -39,6 +39,8 @@ public partial class User
 
     public long Point { get; set; }
 
+    public byte[]? AvartarImage { get; set; }
+
     public virtual Authority Auth { get; set; } = null!;
 
     public virtual ICollection<Codepad> Codepads { get; set; } = new List<Codepad>();
