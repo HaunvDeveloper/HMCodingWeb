@@ -4,6 +4,28 @@
     ViewData["Title"] = "User Detail";
 }
 
+
+@section Links {
+    <style>
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        strong {
+            font-weight: bold;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+
+        .rank {
+            cursor: pointer;
+        }
+    </style>
+}
 <div class="container mt-3 mb-5">
     <div class="row">
         <!-- User Information -->
@@ -28,25 +50,31 @@
                              alt="Default Avatar" />
                     }
                     <div class="ml-2 text-lg-start p-4">
+                        <div class="text-center mb-3">
+                            <h4>MỨC HẠNG</h4>
+                            <div class="rank @Model.Rank?.RankCode">@(Model.Rank?.RankName ?? "Unranked")</div>
+                        </div>
                         <p><strong>Username:</strong> @Model.Username</p>
                         <p><strong>Email:</strong> @Model.Email</p>
                         @if (!string.IsNullOrEmpty(Model.PhoneNumber))
                         {
-                            <p><strong>Phone:</strong> @Model.PhoneNumber</p>
+                            <p><strong>SĐT:</strong> @Model.PhoneNumber</p>
                         }
                         @if (Model.Birthday.HasValue)
                         {
-                            <p><strong>Birthday:</strong> @Model.Birthday.Value.ToString("dd/MM/yyyy")</p>
+                            <p><strong>Ngày sinh:</strong> @Model.Birthday.Value.ToString("dd/MM/yyyy")</p>
                         }
-                        <p><strong>Points:</strong> @Model.Point</p>
-                        <p><strong>Rank:</strong> @(Model.Rank?.RankName ?? "Unranked")</p>
-                        <p><strong>Programming Language:</strong> @Model.ProgramLanguage.ProgramLanguageName</p>
-                    </div>
+                        
+                        
+                        <p><strong>Ngôn ngữ:</strong> @Model.ProgramLanguage.ProgramLanguageName</p>
+                        <p><strong>Điểm hạng:</strong> @Model.Point</p>
 
+                        
+                    </div>
                     @if ((long)ViewBag.OwnUserId == Model.Id)
                     {
                         <a asp-action="EditProfile" asp-controller="User"
-                           class="btn btn-primary mt-3">Edit Profile</a>
+                           class="btn btn-primary">Edit Profile</a>
                     }
 
                 </div>
@@ -73,7 +101,9 @@
                         <tbody>
                         </tbody>
                     </table>
+
                 </div>
+
             </div>
         </div>
     </div>
@@ -117,22 +147,8 @@
                     { "data": "firstCorrectMarkingTime" }
             ]
         });
+        $(document).on('click', '.rank', function() {
+                window.location.href = `/rank`;
+         });
     </script>
-}
-
-
-@section Links {
-    <style>
-        .card {
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        strong {
-            font-weight: bold;
-        }
-        a{
-            text-decoration: none;
-        }
-    </style>
 }

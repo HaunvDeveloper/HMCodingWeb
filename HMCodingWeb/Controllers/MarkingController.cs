@@ -64,6 +64,7 @@ namespace HMCodingWeb.Controllers
                 {
                     MarkingDate = x.MarkingDate.ToString("HH:mm:ss dd-MM-yyyy"),
                     UserName = x.User.Username,
+                    Avatar = x.User.AvartarImage != null ? Convert.ToBase64String(x.User.AvartarImage) : null,
                     ExerciseName = x.Exercise.ExerciseName,
                     ProgramLanguageName = x.ProgramLanguage.ProgramLanguageName,
                     Status = x.Status,

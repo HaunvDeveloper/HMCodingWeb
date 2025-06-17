@@ -34,7 +34,8 @@ builder.Services.AddTransient<RunProcessService>(); // Or Scoped if request-spec
 builder.Services.AddTransient<EmailSendService>(); // Or Singleton if thread-safe and stateless
 builder.Services.AddScoped<MarkingService>();
 builder.Services.AddScoped<UserPointService>();
-
+builder.Services.AddScoped<UserListService>();
+builder.Services.AddScoped<RankingService>();
 
 
 builder.Services.AddSession(options =>

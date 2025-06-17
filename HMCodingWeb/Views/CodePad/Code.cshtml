@@ -37,12 +37,7 @@
 
                     <button id="copy-code" class="btn btn-outline-secondary" role="button">Sao chép</button>
                 </div>
-                <div id="editor">
-                    @if (Model != null)
-                    {
-                        @Model.CodeContent
-                    }
-                </div>
+                <div id="editor">@if (Model != null){@Model.CodeContent}</div>
                 <div id="import-code">
                     <button id="import-file" class="btn btn-info" role="button">Chọn tệp</button>
                 </div>

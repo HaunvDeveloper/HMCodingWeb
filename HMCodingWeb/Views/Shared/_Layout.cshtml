@@ -1,6 +1,8 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Http
+@{
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+    var avatar = Context.Session.GetString("UserAvatar");
 }
 
 <!DOCTYPE html>
@@ -13,8 +15,8 @@
     <link rel="stylesheet" href="~/css/bootstrap.extend.css">
     <link rel="stylesheet" href="~/lib/sweetalert2/themes/minimal/minimal.min.css">
     <link rel="stylesheet" href="~/css/button-extend.css" />
-    <link rel="stylesheet" href="~/js/sweetalert2-extend.js" />
     <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/rank.css" />
     <link href="~/lib/DataTables/datatables.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito">
     <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.2.2/datatables.min.css" rel="stylesheet" integrity="sha384-WMi+Ec+QE8hxW/3qKvuefShIddYjwMalSgy0MR4FZnl285C4HGYfISceaagw0Am3" crossorigin="anonymous">
@@ -49,12 +51,22 @@
                         <li class="nav-item">
                             <a class="nav-link @(currentController == "Marking" ? "active" : "")" asp-action="Index" asp-controller="Marking">Bảng chấm bài</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Rank" && currentAction=="RankingList" ? "active" : "")" asp-action="RankingList" asp-controller="Rank">Xếp hạng</a>
+                        </li>
+                        
                     </ul>
                     @if (User.Identity?.IsAuthenticated ?? false)
                     {
-                        <div class="nav-item dropdown mt-1" style="z-index:2000;">
+                        <div class="nav-item dropdown mt-1" style="z-index:1001;">
                             <a class="nav-link dropdown-toggle text-success @(currentController == "User" ? "active" : "")" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                                <img id="userAvatar" src="~/assets/images/avartardefault.jpg" class="rounded-circle me-2" style="width: 30px; height: 30px; object-fit: cover;" alt="User Avatar" />
+
+                                <img id="userAvatar"
+                                     src="@(avatar != null ? $"data:image/jpeg;base64,{avatar}" : "/assets/images/avartardefault.jpg")"
+                                     class="rounded-circle me-2"
+                                     style="width: 30px; height: 30px; object-fit: cover;"
+                                     alt="User Avatar" />
+
                                 @User.FindFirst(ClaimTypes.Name)?.Value
                             </a>
                             <div class="dropdown-menu dropdown-menu-right">
@@ -106,7 +118,7 @@
     <script src="~/js/site.js"></script>
     <script src="https://kit.fontawesome.com/0f2d543076.js" crossorigin="anonymous"></script>
 
-    @if (User.Identity?.IsAuthenticated ?? false)
+@*     @if (User.Identity?.IsAuthenticated ?? false)
     {
         <script>
             $(document).ready(function () {
@@ -124,7 +136,7 @@
                 });
             });
         </script>
-    }
+    } *@
 
     @if (TempData["UserLogin"] != null)
     {

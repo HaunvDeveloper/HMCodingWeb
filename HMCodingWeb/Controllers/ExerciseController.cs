@@ -19,14 +19,16 @@ namespace HMCodingWeb.Controllers
         private readonly RunProcessService _runProcessService;
         private readonly MarkingService _markingService;
         private readonly UserPointService _userPointService;
+        private readonly RankingService _rankingService;
 
-        public ExerciseController(ILogger<ExerciseController> logger, OnlineCodingWebContext context, RunProcessService runProcessService, MarkingService markingService, UserPointService userPointService)
+        public ExerciseController(ILogger<ExerciseController> logger, OnlineCodingWebContext context, RunProcessService runProcessService, MarkingService markingService, UserPointService userPointService, RankingService rankingService)
         {
             _logger = logger;
             _context = context;
             _runProcessService = runProcessService;
             _markingService = markingService;
             _userPointService = userPointService;
+            _rankingService = rankingService;
         }
         [AllowAnonymous]
         public IActionResult Index()
@@ -62,7 +64,7 @@ namespace HMCodingWeb.Controllers
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> _GetList(int p = 1, int s = 10, string key = "", int? dId = null, int? cId = null, int? etId = null, string? tM = null, string? kM = null)
+        public async Task<IActionResult> _GetList(int p = 1, int s = 10, string key = "", int? dId = null, int? cId = null, int? etId = null, string? tM = null, string? kM = null, string? sortBy = null, string? sortOrder = null)
         {
             // Validate pagination parameters
             p = Math.Max(1, p);
@@ -112,6 +114,7 @@ namespace HMCodingWeb.Controllers
             {
                 query = query.Where(ex => ex.TypeMarking == tM);
             }
+            
 
             // Calculate total records
             var totalRecords = await query.CountAsync();
@@ -128,7 +131,7 @@ namespace HMCodingWeb.Controllers
                     SuccessfulUsers = g.Select(m => m.UserId).Distinct().Count()
                 });
 
-            var rawData = await query
+            var rawDataQuery = query
                 .GroupJoin(
                     successCountsQuery,
                     ex => ex.Id,
@@ -139,7 +142,7 @@ namespace HMCodingWeb.Controllers
                 {
                     Exercise = joined.ex,
                     SuccessfulUsers = joined.scGroup.Select(g => g.SuccessfulUsers).FirstOrDefault(),
-
+                    DifficultyLevel = joined.ex.DifficultyId,
                     IsCorrect = userId == 0
                         ? ""
                         : userMarkingsQuery
@@ -149,12 +152,34 @@ namespace HMCodingWeb.Controllers
                             .FirstOrDefault() ?? ""
                 })
                 .AsNoTracking()
-                .OrderByDescending(x => x.Exercise.CreatedDate)
+                .OrderByDescending(x => x.Exercise.CreatedDate);
+                
+            if (sortBy == "success")
+            {
+                if (sortOrder == "asc")
+                {
+                    rawDataQuery = rawDataQuery.OrderBy(ex => ex.SuccessfulUsers);
+                }
+                else
+                {
+                    rawDataQuery = rawDataQuery.OrderByDescending(ex => ex.SuccessfulUsers);
+                }
+            }
+            if (sortBy == "difficulty")
+            {
+                if (sortOrder == "asc")
+                {
+                    rawDataQuery = rawDataQuery.OrderBy(ex => ex.DifficultyLevel);
+                }
+                else
+                {
+                    rawDataQuery = rawDataQuery.OrderByDescending(ex => ex.DifficultyLevel);
+                }
+            }
+            var rawData = await rawDataQuery
                 .Skip((p - 1) * s)
                 .Take(s)
                 .ToListAsync();
-
-
 
             // Transform to ExerciseViewModel client-side
             var listData = rawData.Select(x => new ExerciseViewModel(x.Exercise, x.SuccessfulUsers, x.IsCorrect)).ToList();
@@ -171,6 +196,8 @@ namespace HMCodingWeb.Controllers
             ViewBag.KindMarkingSearch = kM;
             ViewBag.AvailablePageSizes = new int[] { 5, 10, 20, 100 };
             ViewBag.UserId = userId;
+            ViewBag.SortOrder = sortOrder;
+            ViewBag.SortBy = sortBy;
             return PartialView(listData);
         }
 
@@ -484,10 +511,13 @@ namespace HMCodingWeb.Controllers
                 {
                     // If the marking is successful, add points to the user
                     pointGain = await _userPointService.AddPointPassedExercise(userId, ExerciseId);
+                    if (pointGain > 0)
+                    {
+                        await _rankingService.UpdateRankUser(userId);
+                    }
                 }
                 _context.Markings.Add(marking);
-                await _context.SaveChangesAsync();   
-
+                await _context.SaveChangesAsync();
                 return Json(new { status = true, data = new { marking.IsAllCorrect, marking.ResultContent, marking.Score, marking.IsError, pointGain} });
             }
             catch (Exception ex)
@@ -496,5 +526,7 @@ namespace HMCodingWeb.Controllers
                 return Json(new { status = false, error = ex.Message });
             }
         }
+
+    
     }
 }

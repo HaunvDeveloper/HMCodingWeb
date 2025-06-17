@@ -19,36 +19,37 @@
     <form asp-action="Index" asp-controller="Exercise" method="get" id="filter" class="container animation-hidden">
         <div class="row pt-4">
             <div class="col-12 col-md-6">
-                <input type="hidden" id="p" name="p" value="1"/>
-                <input type="hidden" id="s" name="s"/>
+                <input type="hidden" id="p" name="p" value="1" />
+                <input type="hidden" id="s" name="s" />
                 <div class="form-group">
                     <label for="Search" class="text-primary form-label"><b>Tìm kiếm:</b></label>
-                    @Html.TextBox("key", null, new { id="Search", @class = "form-control", placeholder = "Nhập mã bài hoặc tên bài" })
+                    @Html.TextBox("key", null, new { id = "Search", @class = "form-control", placeholder = "Nhập mã bài hoặc tên bài" })
                 </div>
                 <div class="form-group">
                     <label class="text-primary form-label">Thể loại chấm</label>
-                    @Html.DropDownList("kM", kindMarkings, "Thể loại chấm", new { @class = "form-control" })
+                    @Html.DropDownList("kM", kindMarkings, "-- Tất cả --", new { @class = "form-control" })
                 </div>
                 <div class="form-group">
                     <label class="text-primary form-label">Cách chấm chấm</label>
-                    @Html.DropDownList("tM", typeMarkings, "Cách chấm chấm", new { @class = "form-control" })
+                    @Html.DropDownList("tM", typeMarkings, "-- Tất cả --", new { @class = "form-control" })
                 </div>
             </div>
             <div class="col-12 col-md-6">
                 <div class="form-group">
                     <label class="text-primary form-label">Độ khó</label>
-                    @Html.DropDownList("dId", difficults, "Độ khó", new { @class = "form-control" })
+                    @Html.DropDownList("dId", difficults, "-- Tất cả --", new { @class = "form-control" })
                 </div>
                 <div class="form-group">
                     <label class="text-primary form-label">Chương</label>
-                    @Html.DropDownList("cId", chapters, "Chương", new { @class = "form-control" })
+                    @Html.DropDownList("cId", chapters, "-- Tất cả --", new { @class = "form-control" })
                 </div>
                 <div class="form-group">
                     <label class="text-primary form-label">Dạng bài</label>
-                    @Html.DropDownList("etId", exerciseType, "Dạng bài", new { @class = "form-control" })
+                    @Html.DropDownList("etId", exerciseType, "-- Tất cả --", new { @class = "form-control" })
                 </div>
             </div>
             <div class="text-center mt-3">
+                <a asp-action="Index" class="btn btn-secondary">CLEAR</a>
                 <button class="btn btn-info">TÌM KIẾM</button>
             </div>
         </div>
@@ -57,7 +58,7 @@
         <table id="listcodepad" class="table table-hover table-border table-striped ml-5 mr-3">
             <tbody>
                 <tr>
-                    <td colspan="6" class="flex justify-content-center gap-4 align-items-center">
+                    <td colspan="7" class="flex justify-content-center gap-4 align-items-center">
                         <div class="loaderBar"></div>
                         <h5>Loading.....</h5>
                     </td>
@@ -67,7 +68,6 @@
     </div>
 </div>
 
-
 @section Links {
     <link rel="stylesheet" href="~/css/codepad-index.css">
     <link rel="stylesheet"
@@ -75,17 +75,28 @@
 }
 
 @section Scripts {
-
     <script>
+        const loadingTable=$('.list').html();
+        // Hàm tiện ích để thêm tham số vào URL
+        function addParamToCurrentUrl(key, value) {
+            const url = new URL(window.location.href);
+            if (value && value !== "null") {
+                url.searchParams.set(key, value);
+            } else {
+                url.searchParams.delete(key);
+            }
+            window.history.pushState({}, '', url);
+        }
+
+        function getParamFromCurrentUrl(key) {
+            const urlObj = new URL(window.location.href);
+            return urlObj.searchParams.get(key);
+        }
+
         $('#show-filter').on('click', function () {
             $('#filter').toggleClass('animation-visible animation-hidden');
         });
 
-    </script>
-
-    @*Event Listening*@
-    <script>
-        const loadingTable = $('.list').html();
         async function loadListFormParams() {
             let p = getParamFromCurrentUrl('p') || 1;
             let s = getParamFromCurrentUrl('s') || 10;
@@ -95,47 +106,68 @@
             let etId = getParamFromCurrentUrl('etId') || null;
             let tM = getParamFromCurrentUrl('tM') || null;
             let kM = getParamFromCurrentUrl('kM') || null;
+            let sortBy = getParamFromCurrentUrl('sortBy') || null;
+            let sortOrder = getParamFromCurrentUrl('sortOrder') || null;
             $('#s').val(s);
-            await loadList(p, s, key, dId, cId, etId, tM, kM);
+            await loadList(p, s, key, dId, cId, etId, tM, kM, sortBy, sortOrder);
         }
 
-        $(document).ready(loadListFormParams());
-        $('#filter').submit(function (event){
-            event.preventDefault(); // Prevent the default form submission
-            let p = 1; // Reset to page 1 on new search
-            let s = $('#s').val() || 10; // Get page size from the input or default to 10
+        $(document).ready(function () {
+            loadListFormParams();
+
+            // Xử lý sự kiện click vào nút sắp xếp
+            $(document).on('click', '.sort-icon', function () {
+                const column = $(this).data('column');
+                const order = $(this).data('order');
+                addParamToCurrentUrl('sortBy', column);
+                addParamToCurrentUrl('sortOrder', order);
+                loadListFormParams();
+            });
+        });
+
+        $('#filter').submit(function (event) {
+            event.preventDefault();
+            let p = 1;
+            let s = $('#s').val() || 10;
             let key = $('#Search').val() || '';
             let dId = $('#dId').val() || null;
             let cId = $('#cId').val() || null;
             let etId = $('#etId').val() || null;
             let tM = $('#tM').val() || null;
             let kM = $('#kM').val() || null;
-            loadList(p, s, key, dId, cId, etId, tM, kM);
-        })
+            let sortBy = getParamFromCurrentUrl('sortBy') || null;
+            let sortOrder = getParamFromCurrentUrl('sortOrder') || null;
+            loadList(p, s, key, dId, cId, etId, tM, kM, sortBy, sortOrder);
+        });
 
         async function setPage(p) {
             let s = getParamFromCurrentUrl('s') || 10;
             let key = getParamFromCurrentUrl('key') || '';
             let dId = getParamFromCurrentUrl('dId') || null;
+            let cId = getParamFromCurrentUrl('cId') || null;
             let etId = getParamFromCurrentUrl('etId') || null;
             let tM = getParamFromCurrentUrl('tM') || null;
             let kM = getParamFromCurrentUrl('kM') || null;
-            await loadList(p, s, key, dId, etId, tM, kM);
+            let sortBy = getParamFromCurrentUrl('sortBy') || null;
+            let sortOrder = getParamFromCurrentUrl('sortOrder') || null;
+            await loadList(p, s, key, dId, cId, etId, tM, kM, sortBy, sortOrder);
         }
 
         async function changePageSize(elem) {
-            let params = new URLSearchParams(window.location.search);
             let key = getParamFromCurrentUrl('key') || '';
             let dId = getParamFromCurrentUrl('dId') || null;
+            let cId = getParamFromCurrentUrl('cId') || null;
             let etId = getParamFromCurrentUrl('etId') || null;
             let tM = getParamFromCurrentUrl('tM') || null;
             let kM = getParamFromCurrentUrl('kM') || null;
+            let sortBy = getParamFromCurrentUrl('sortBy') || null;
+            let sortOrder = getParamFromCurrentUrl('sortOrder') || null;
             $('#s').val($(elem).find("option:selected").val());
-            await loadList(1, $(elem).find("option:selected").val(), key, dId, etId, tM, kM);
+            await loadList(1, $(elem).find("option:selected").val(), key, dId, cId, etId, tM, kM, sortBy, sortOrder);
         }
-                
-        async function loadList(p, s, key, dId, cId, etId, tM, kM) {
-            $('.list').html(loadingTable); // Show loading state
+
+        async function loadList(p, s, key, dId, cId, etId, tM, kM, sortBy, sortOrder) {
+            $('.list').html(loadingTable);
             addParamToCurrentUrl('p', p);
             addParamToCurrentUrl('s', s);
             addParamToCurrentUrl('key', key);
@@ -144,22 +176,24 @@
             addParamToCurrentUrl('etId', etId);
             addParamToCurrentUrl('tM', tM);
             addParamToCurrentUrl('kM', kM);
+            addParamToCurrentUrl('sortBy', sortBy);
+            addParamToCurrentUrl('sortOrder', sortOrder);
 
             await $.ajax({
                 url: '@Url.Action("_GetList", "Exercise")',
-                data: { p: p, s: s, key: key, dId: dId, cId: cId, etId: etId, tM: tM, kM: kM},
+                data: { p: p, s: s, key: key, dId: dId, cId: cId, etId: etId, tM: tM, kM: kM, sortBy: sortBy, sortOrder: sortOrder },
                 method: 'GET',
                 success: function (data) {
                     $('.list').html(data);
                 },
                 error: function (xhr, status, error) {
                     console.error("Failed to load codepads:", error);
-                    $('.list').html('<tr><td colspan="6" class="text-center text-danger">Error loading codepads. Please try again.</td></tr>');
+                    $('.list').html('<tr><td colspan="7" class="text-center text-danger">Error loading codepads. Please try again.</td></tr>');
                 }
             });
         }
 
-        async function deleteRow(id){
+        async function deleteRow(id) {
             if (await confirmAction()) {
                 $.ajax({
                     url: '@Url.Action("Delete", "Exercise")',
@@ -168,7 +202,7 @@
                     success: function (response) {
                         if (response.status) {
                             showToast("success", "Xóa thành công!");
-                            loadListFormParams(); // Reload the list after deletion
+                            loadListFormParams();
                         } else {
                             alert("Xóa thất bại: " + response.message);
                         }
@@ -180,30 +214,21 @@
             }
         }
 
-    </script>
-    <script>
         $(function () {
-            // Toggle dropdown on click
-            $(document).on('click','.menu-toggle', function (e) {
+            $(document).on('click', '.menu-toggle', function (e) {
                 e.stopPropagation();
                 console.log("Dropdown clicked");
-                // Đóng các dropdown khác
                 $('.dropdown-menu-custom').not($(this).next()).hide();
-
-                // Toggle menu này
                 $(this).next('.dropdown-menu-custom').toggle();
             });
 
-            // Click ra ngoài thì ẩn dropdown
             $(document).on('click', function () {
                 $('.dropdown-menu-custom').hide();
             });
 
-            // Ngăn không đóng khi click bên trong dropdown
-            $(document).on('click','.dropdown-menu-custom', function (e) {
+            $(document).on('click', '.dropdown-menu-custom', function (e) {
                 e.stopPropagation();
             });
         });
     </script>
-
 }

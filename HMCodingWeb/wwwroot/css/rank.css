@@ -1,0 +1,82 @@
+﻿.rank-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 300px;
+    margin: 0 auto;
+    
+}
+
+.rank {
+    padding: 10px 15px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: transform 0.3s;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+    .rank:hover {
+        transform: scale(1.05);
+    }
+
+    /* Rank Styles */
+    .rank.copper {
+        background: linear-gradient(45deg, #b87333, #a0522d);
+        color: #fff;
+    }
+
+    .rank.silver {
+        background: linear-gradient(45deg, #c0c0c0, #d3d3d3);
+        color: #333;
+    }
+
+    .rank.gold {
+        background: linear-gradient(45deg, #ffd700, #f9a602);
+        color: #000;
+    }
+
+    .rank.platinum {
+        background: linear-gradient(45deg, #e5e4e2, #dcdcdc);
+        color: #111;
+    }
+
+    .rank.diamond {
+        background: linear-gradient(45deg, #b9f2ff, #00ffff);
+        color: #003f5c;
+        font-style: italic;
+    }
+
+    .rank.elite {
+        background: linear-gradient(45deg, #8e44ad, #9b59b6);
+        color: #fff;
+    }
+
+    .rank.master {
+        background: linear-gradient(45deg, #2c3e50, #34495e);
+        color: #ecf0f1;
+        font-family: 'Georgia', serif;
+    }
+
+    .rank.challenger {
+        background: linear-gradient(45deg, #ff416c, #ff4b2b);
+        color: white;
+        letter-spacing: 1px;
+    }
+
+    .rank.champion {
+        background: linear-gradient(45deg, #f7971e, #ffd200);
+        color: #222;
+        font-weight: 900;
+    }
+
+    .rank.supreme {
+        background: linear-gradient(45deg, #000428, #004e92);
+        color: #fff;
+        font-family: 'Cinzel', serif;
+        font-size: 1.3rem;
+        text-shadow: 0 0 10px rgba(255,255,255,0.6);
+    }

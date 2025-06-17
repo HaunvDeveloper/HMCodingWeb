@@ -46,5 +46,7 @@ namespace HMCodingWeb.Services
 
             return result.Point;
         }
+    
+        
     }
 }

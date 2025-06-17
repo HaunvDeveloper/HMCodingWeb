@@ -14,17 +14,19 @@ using System.Text.RegularExpressions;
 
 namespace HMCodingWeb.Controllers
 {
+    [Authorize]
     public class UserController : Controller
     {
         private readonly OnlineCodingWebContext _context;
         private readonly EmailSendService _emailSendService;
         private const long MaxAvatarSize = 2 * 1024 * 1024; // 2MB
 
-        public UserController(OnlineCodingWebContext context, EmailSendService emailSendService)
+        public UserController(OnlineCodingWebContext context, EmailSendService emailSendService, UserListService userListService)
         {
             _context = context;
             _emailSendService = emailSendService;
         }
+
 
 
         // GET: User/UserDetail/5
@@ -45,6 +47,12 @@ namespace HMCodingWeb.Controllers
             {
                 return NotFound();
             }
+            if(user.AvartarImage != null && user.AvartarImage.Length > 0)
+            {
+                string avatarBase64 = Convert.ToBase64String(user.AvartarImage);
+                HttpContext.Session.SetString("UserAvatar", avatarBase64);
+            }
+
             ViewBag.OwnUserId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
             return View(user);
         }
@@ -105,6 +113,8 @@ namespace HMCodingWeb.Controllers
                     using var memoryStream = new MemoryStream();
                     await avatarFile.CopyToAsync(memoryStream);
                     existingUser.AvartarImage = memoryStream.ToArray();
+                    string avatarBase64 = Convert.ToBase64String(existingUser.AvartarImage);
+                    HttpContext.Session.SetString("UserAvatar", avatarBase64);
                 }
 
                 await _context.SaveChangesAsync();
@@ -175,13 +185,11 @@ namespace HMCodingWeb.Controllers
 
             if (user == null || user.Auth == null)
             {
-                ViewBag.Alert = "Username hoặc Password không đúng!";
-                return View(model);
+                return Json(new { status = false, message = "Tài khoản hoặc mật khẩu không chính xác!" });
             }
             else if (user.IsBlock == true)
             {
-                ViewBag.Alert = "Tài khoản này đã bị khóa!!!";
-                return View(model);
+                return Json(new { status = false, message = "Tài khoản của bạn đã bị khóa!" });
             }
             else
             {
@@ -190,7 +198,7 @@ namespace HMCodingWeb.Controllers
                 {
                     new Claim(ClaimTypes.Name, user.Username),
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(ClaimTypes.Role, user.Auth.AuthCode)
+                    new Claim(ClaimTypes.Role, user.Auth.AuthCode),
                 };
 
                 var identity = new ClaimsIdentity(claims, "Cookies");
@@ -204,17 +212,18 @@ namespace HMCodingWeb.Controllers
                 };
 
                 await HttpContext.SignInAsync(principal, authProperties);
-
-                TempData["UserLogin"] = true;
-
-                if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl))
+                // Lưu avatar vào session
+                if (user.AvartarImage != null && user.AvartarImage.Length > 0)
                 {
-                    return Redirect(ReturnUrl);
+                    string avatarBase64 = Convert.ToBase64String(user.AvartarImage);
+                    HttpContext.Session.SetString("UserAvatar", avatarBase64);
                 }
                 else
                 {
-                    return RedirectToAction("Index", "Home");
+                    HttpContext.Session.Remove("UserAvatar"); // Xóa session nếu không có avatar
                 }
+
+                return Json(new { status = true, message = "Đăng nhập thành công!", redirectUrl = string.IsNullOrEmpty(ReturnUrl) ? Url.Action("Index", "Home") : ReturnUrl });
             }
         }
 
@@ -223,6 +232,7 @@ namespace HMCodingWeb.Controllers
         public async Task<IActionResult> Logout()
         {
             TempData.Clear();
+            HttpContext.Session.Remove("UserAvatar");
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login", "User");
         }
@@ -459,6 +469,7 @@ namespace HMCodingWeb.Controllers
             return RedirectToAction("ChangePassword", "User");
         }
 
+        [AllowAnonymous]
         public IActionResult ChangePassword()
         {
             if (TempData["ChangePassword"] == null)

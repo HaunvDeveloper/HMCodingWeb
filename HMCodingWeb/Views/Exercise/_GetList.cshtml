@@ -1,14 +1,43 @@
 ﻿@model List<HMCodingWeb.ViewModels.ExerciseViewModel>
 
-
 <table id="listcodepad" class="table table-sm table-hover table-border table-striped ml-5 mr-3">
     <thead>
         <tr class="table-dark">
             <th>Mã bài</th>
             <th>Tên bài</th>
-            <th>Độ khó</th>
+            <th>
+                Độ khó
+                <span class="sort-icon material-symbols-outlined"
+                      data-column="difficulty"
+                      data-order="@(ViewBag.SortBy == "difficulty" ? (ViewBag.SortOrder == "asc" ? "desc" : "asc") : "asc")"
+                      style="cursor: pointer; vertical-align: middle;">
+                    @if (ViewBag.SortBy == "difficulty")
+                    {
+                        @(ViewBag.SortOrder == "asc" ? "arrow_upward" : "arrow_downward")
+                    }
+                    else
+                    {
+                        @:sort
+                    }
+                </span>
+            </th>
             <th>Dạng bài</th>
-            <th class="d-sm-table-cell">Làm đúng</th>
+            <th class="d-sm-table-cell">
+                Làm đúng
+                <span class="sort-icon material-symbols-outlined"
+                      data-column="success"
+                      data-order="@(ViewBag.SortBy == "success" ? (ViewBag.SortOrder == "asc" ? "desc" : "asc") : "asc")"
+                      style="cursor: pointer; vertical-align: middle;">
+                    @if (ViewBag.SortBy == "success")
+                    {
+                        @(ViewBag.SortOrder == "asc" ? "arrow_upward" : "arrow_downward")
+                    }
+                    else
+                    {
+                        @:sort
+                    }
+                </span>
+            </th>
             <th class="d-sm-table-cel"></th>
             <th class="d-sm-table-cel"></th>
         </tr>
@@ -18,29 +47,23 @@
         {
             @foreach (var item in Model)
             {
-                <tr data-value="@item.Id" class="@(item.IsCorrect == "Passed" ? "table-success": item.IsCorrect == "Failed" ? "table-danger" : "")">
+                <tr data-value="@item.Id" class="@(item.IsCorrect == "Passed" ? "table-success" : item.IsCorrect == "Failed" ? "table-danger" : "")">
                     <td><a asp-action="Code" asp-controller="Exercise" asp-route-id="@item.Id">@item.ExerciseCode</a></td>
                     <td><a asp-action="Code" asp-controller="Exercise" asp-route-id="@item.Id">@item.ExerciseName</a></td>
                     <td><a asp-action="Code" asp-controller="Exercise" asp-route-id="@item.Id">@item.DifficultyName</a></td>
-                    <td>
-                        @item.ExerciseTypeName
-                    </td>
+                    <td>@item.ExerciseTypeName</td>
                     <td class="d-sm-table-cell">
-
                         <a asp-action="Index" asp-controller="Marking" asp-route-exId="@item.Id">@item.NumberSuccessful</a>
-
                     </td>
                     <td class="d-sm-table-cel">
-                        
                         @if (item.IsCorrect == "Passed")
                         {
                             <img style="width:30px;" src="~/assets/icons/circle-check-solid.svg" />
                         }
                         else if (item.IsCorrect == "Failed")
                         {
-                            <img style="width:30px;" src="~/assets/icons/circle-xmark-solid.svg"  />
+                            <img style="width:30px;" src="~/assets/icons/circle-xmark-solid.svg" />
                         }
-                        
                     </td>
                     <td class="d-sm-table-cel">
                         <div class="d-flex gap-2">
@@ -50,12 +73,10 @@
                                     <button class="btn btn-sm btn-outline-secondary menu-toggle d-flex justify-content-center align-items-center" type="button">
                                         <span class="material-symbols-outlined">more_vert</span>
                                     </button>
-
                                     <div class="dropdown-menu-custom" style="display: none; position: absolute; z-index: 1000; background: white; border: 1px solid #ccc; border-radius: 4px; min-width: 120px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
                                         <a class="dropdown-item-custom" href="@Url.Action("Edit", "Exercise", new { id = item.Id })" style="display: block; padding: 8px 12px; text-decoration: none; color: black;">
                                             ✏️ Edit
                                         </a>
-
                                         <button onclick="deleteRow(@item.Id)" class="dropdown-item-custom" style="display: block; padding: 8px 12px; width: 100%; border: none; background: none; color: red; text-align: left;">
                                             🗑️ Delete
                                         </button>
@@ -64,21 +85,17 @@
                             }
                             @if (item.AccessId != 3)
                             {
-                                <img style="width: 30px" src="~/assets/icons/eye-close.svg" id="eye" title="Bài đang được ẩn"/>
+                                <img style="width: 30px" src="~/assets/icons/eye-close.svg" id="eye" title="Bài đang được ẩn" />
                             }
                         </div>
-                        
                     </td>
-
-
-
                 </tr>
             }
         }
         else
         {
             <tr>
-                <td colspan="6" style="align-items: center;justify-content:center;">
+                <td colspan="7" style="align-items: center;justify-content:center;">
                     <h3 style="text-align:center;">Danh sách rỗng</h3>
                 </td>
             </tr>
@@ -97,14 +114,12 @@
             {
                 <option value="@size">@size</option>
             }
-
         }
     </select>
     <ul class="pagination pagination-lg">
         <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
-            <button class="page-link" onclick="setPage(@(ViewBag.CurrentPage - 1))">&laquo;</button>
+            <button class="page-link" onclick="setPage(@(ViewBag.CurrentPage - 1))">«</button>
         </li>
-
         @for (int i = 1; i <= ViewBag.TotalPages; i++)
         {
             <li class="page-item @(ViewBag.CurrentPage == i ? "active" : "")">
@@ -112,9 +127,7 @@
             </li>
         }
         <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
-            <button class="page-link" onclick="setPage(@(ViewBag.CurrentPage + 1))">&raquo;</button>
+            <button class="page-link" onclick="setPage(@(ViewBag.CurrentPage + 1))">»</button>
         </li>
     </ul>
 </div>
-
-
