@@ -100,7 +100,7 @@
             </div>
             <div class="header-content-child">
                 <span><b>Đăng bởi:</b></span>
-                <p class="header-content-value">@(Model.UserCreated.Username)</p>
+                <p class="header-content-value"><a asp-action="Details" asp-controller="User" asp-route-id="@Model.UserCreatedId">@(Model.UserCreated.Username)</a></p>
             </div>
             <div class="header-content-child">
                 <span><b>Độ khó:</b></span>
@@ -275,7 +275,7 @@
                         <b>Time limit:</b>
                     </div>
                     <div class="cfg-content w-50 mr-3">
-                        <input type="number" id="time-limit" class="form-control-sm w-100" disabled value="@((int)Model?.RuntimeLimit)">
+                        <input type="number" id="time-limit" class="form-control-sm w-100" disabled value="@((int?)Model?.RuntimeLimit ?? 1)">
                     </div>
                 </div>
 
@@ -291,7 +291,7 @@
                 <button id="btn-marking" class="btn btn-danger w-75 text-nowrap" role="button">
                     CHẤM ĐIỂM
                 </button>
-                <div id="test-case-results">
+                <div id="test-case-results" style="max-height:450px;overflow-y:auto;padding-right:5px;">
                 </div>
             </div>
 

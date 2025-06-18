@@ -1,7 +1,6 @@
 ﻿@{
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
-    var avatar = Context.Session.GetString("UserAvatar");
 }
 
 <!DOCTYPE html>
@@ -61,7 +60,7 @@
                             <a class="nav-link dropdown-toggle text-success @(currentController == "User" ? "active" : "")" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
 
                                 <img id="userAvatar"
-                                     src="@(avatar != null ? $"data:image/jpeg;base64,{avatar}" : "/assets/images/avartardefault.jpg")"
+                                     src="~/assets/images/avartardefault.jpg"
                                      class="rounded-circle me-2"
                                      style="width: 30px; height: 30px; object-fit: cover;"
                                      alt="User Avatar" />
@@ -100,7 +99,7 @@
     <div id="footer">
         <img src="~/assets/images/ToanhaA-01.png" alt="">
         <div class="container">
-            <p class="address1" style="display:flex;align-items:center;justify-content:center; gap:0.7rem;">Tác giả: Nguyễn Văn Hậu</p>
+            <p class="address1" style="display:flex;align-items:center;justify-content:center; gap:0.7rem;">Tác giả: Hậu Nguyễn và Thảo Lê</p>
             <p class="address2" style="display:flex;align-items:center;justify-content:center; gap:0.7rem;">Khoa Công nghệ Thông tin - Đại học Sư phạm TP. Hồ Chí Minh</p>
             <div class="phonenumber mt-0" style="display:flex;align-items:center;justify-content:center; gap:0.7rem;">
                 <p>Liên hệ: 0944746748</p>
@@ -117,26 +116,39 @@
     <script src="~/js/site.js"></script>
     <script src="https://kit.fontawesome.com/0f2d543076.js" crossorigin="anonymous"></script>
 
-@*     @if (User.Identity?.IsAuthenticated ?? false)
+    @if (User.Identity?.IsAuthenticated ?? false)
     {
+        <text>
         <script>
             $(document).ready(function () {
-                $.ajax({
-                    url: '/User/GetAvatar',
-                    type: 'GET',
-                    success: function (response) {
-                        if (response.status && response.avatar) {
-                            $("#userAvatar").attr("src", "data:image/jpeg;base64," + response.avatar);
+                var avatar = sessionStorage.getItem("UserAvatar");
+                if(avatar) {
+                    $("#userAvatar").attr("src", "data:image/jpeg;base64," + avatar);
+                } else {
+                    $.ajax({
+                        url: '/User/GetAvatar',
+                        type: 'GET',
+                        success: function (response) {
+                            if (response.status && response.avatar) {
+                                sessionStorage.setItem("UserAvatar", response.avatar);
+                                $("#userAvatar").attr("src", "data:image/jpeg;base64," + response.avatar);
+                            }else{
+                                $("#userAvatar").attr("src", "/assets/images/avartardefault.jpg");
+                            }
+                        },
+                        error: function () {
+                            console.log("Failed to load avatar.");
+                            $("#userAvatar").attr("src", "/assets/images/avartardefault.jpg");
                         }
-                    },
-                    error: function () {
-                        console.log("Failed to load avatar.");
-                    }
-                });
+                    });
+
+                }
+
             });
         </script>
-    } *@
-
+        </text>
+    }
+    
     @if (TempData["UserLogin"] != null)
     {
         <script id="tempShowToast">

@@ -1,5 +1,6 @@
 ﻿@model List<HMCodingWeb.ViewModels.ExerciseViewModel>
 
+
 <table id="listcodepad" class="table table-sm table-hover table-border table-striped ml-5 mr-3">
     <thead>
         <tr class="table-dark">
@@ -73,7 +74,7 @@
                                     <button class="btn btn-sm btn-outline-secondary menu-toggle d-flex justify-content-center align-items-center" type="button">
                                         <span class="material-symbols-outlined">more_vert</span>
                                     </button>
-                                    <div class="dropdown-menu-custom" style="display: none; position: absolute; z-index: 1000; background: white; border: 1px solid #ccc; border-radius: 4px; min-width: 120px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                    <div class="dropdown-menu-custom" style="display: none; position: absolute; right:0px; z-index: 1000; background: white; border: 1px solid #ccc; border-radius: 4px; min-width: 120px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
                                         <a class="dropdown-item-custom" href="@Url.Action("Edit", "Exercise", new { id = item.Id })" style="display: block; padding: 8px 12px; text-decoration: none; color: black;">
                                             ✏️ Edit
                                         </a>
@@ -102,32 +103,85 @@
         }
     </tbody>
 </table>
-<div class="flex gap-2">
-    <select class="form-control-sm p-1" id="pageSizeSelector" onchange="changePageSize(this)">
-        @foreach (var size in ViewBag.AvailablePageSizes)
-        {
-            if (size == ViewBag.PageSize)
+
+<div class="d-flex gap-2 align-items-center justify-content-between flex-wrap">
+    <div>
+        <select class="form-select-sm p-1" id="pageSizeSelector" onchange="changePageSize(this)">
+            @foreach (var size in ViewBag.AvailablePageSizes)
             {
-                <option value="@size" selected>@size</option>
+                if (size == ViewBag.PageSize)
+                {
+                    <option value="@size" selected>@size</option>
+                }
+                else
+                {
+                    <option value="@size">@size</option>
+                }
+            }
+        </select>
+        <label>entries per page</label>
+
+    </div>
+    
+    <ul class="pagination pagination mb-0">
+        <!-- Nút Previous -->
+        <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+            <button class="page-link" onclick="setPage(@(ViewBag.CurrentPage - 1))" aria-label="Previous">«</button>
+        </li>
+
+        <!-- Trang đầu -->
+        @if (ViewBag.CurrentPage > 4 && ViewBag.TotalPages > 7)
+        {
+            <li class="page-item">
+                <button class="page-link" onclick="setPage(1)">1</button>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link">...</span>
+            </li>
+        }
+
+        <!-- Các trang xung quanh CurrentPage -->
+        @{
+            int startPage = Math.Max(1, ViewBag.CurrentPage - 3);
+            int endPage = Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 3);
+            if (ViewBag.TotalPages > 7)
+            {
+                if (ViewBag.CurrentPage <= 4)
+                {
+                    endPage = Math.Min(7, ViewBag.TotalPages);
+                }
+                else if (ViewBag.CurrentPage >= ViewBag.TotalPages - 3)
+                {
+                    startPage = Math.Max(1, ViewBag.TotalPages - 6);
+                }
             }
             else
             {
-                <option value="@size">@size</option>
+                startPage = 1;
+                endPage = ViewBag.TotalPages;
             }
         }
-    </select>
-    <ul class="pagination pagination-lg">
-        <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
-            <button class="page-link" onclick="setPage(@(ViewBag.CurrentPage - 1))">«</button>
-        </li>
-        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+        @for (int i = startPage; i <= endPage; i++)
         {
             <li class="page-item @(ViewBag.CurrentPage == i ? "active" : "")">
                 <button class="page-link" onclick="setPage(@i)">@i</button>
             </li>
         }
+
+        <!-- Trang cuối -->
+        @if (ViewBag.CurrentPage < ViewBag.TotalPages - 3 && ViewBag.TotalPages > 7)
+        {
+            <li class="page-item disabled">
+                <span class="page-link">...</span>
+            </li>
+            <li class="page-item">
+                <button class="page-link" onclick="setPage(@ViewBag.TotalPages)">@ViewBag.TotalPages</button>
+            </li>
+        }
+
+        <!-- Nút Next -->
         <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
-            <button class="page-link" onclick="setPage(@(ViewBag.CurrentPage + 1))">»</button>
+            <button class="page-link" onclick="setPage(@(ViewBag.CurrentPage + 1))" aria-label="Next">»</button>
         </li>
     </ul>
 </div>

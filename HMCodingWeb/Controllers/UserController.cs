@@ -33,7 +33,8 @@ namespace HMCodingWeb.Controllers
         [Authorize]
         public async Task<IActionResult> Details(long? id)
         {
-            id ??= long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            long userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            id ??= userId;
             if (id <= 0)
             {
                 return NotFound();
@@ -47,13 +48,9 @@ namespace HMCodingWeb.Controllers
             {
                 return NotFound();
             }
-            if(user.AvartarImage != null && user.AvartarImage.Length > 0)
-            {
-                string avatarBase64 = Convert.ToBase64String(user.AvartarImage);
-                HttpContext.Session.SetString("UserAvatar", avatarBase64);
-            }
+            
 
-            ViewBag.OwnUserId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            ViewBag.OwnUserId = userId;
             return View(user);
         }
 
@@ -113,8 +110,7 @@ namespace HMCodingWeb.Controllers
                     using var memoryStream = new MemoryStream();
                     await avatarFile.CopyToAsync(memoryStream);
                     existingUser.AvartarImage = memoryStream.ToArray();
-                    string avatarBase64 = Convert.ToBase64String(existingUser.AvartarImage);
-                    HttpContext.Session.SetString("UserAvatar", avatarBase64);
+                    
                 }
 
                 await _context.SaveChangesAsync();
@@ -214,16 +210,7 @@ namespace HMCodingWeb.Controllers
                 };
 
                 await HttpContext.SignInAsync(principal, authProperties);
-                // Lưu avatar vào session
-                if (user.AvartarImage != null && user.AvartarImage.Length > 0)
-                {
-                    string avatarBase64 = Convert.ToBase64String(user.AvartarImage);
-                    HttpContext.Session.SetString("UserAvatar", avatarBase64);
-                }
-                else
-                {
-                    HttpContext.Session.Remove("UserAvatar"); // Xóa session nếu không có avatar
-                }
+                
 
                 return Json(new { status = true, message = "Đăng nhập thành công!", redirectUrl = string.IsNullOrEmpty(ReturnUrl) ? Url.Action("Index", "Home") : ReturnUrl });
             }

@@ -52,6 +52,7 @@
                     <th>Thời gian</th>
                     <th></th>
                     <th>Người dùng</th>
+                    <th>Mã bài</th>
                     <th>Tên bài</th>
                     <th>Kiểu chấm</th>
                     <th>Điểm</th>
@@ -131,6 +132,12 @@
                     "data": "userName",
                     "render": function (data, type, row) {
                         return `<a href="/User/Details/${row.userId}">${data}</a>`;
+                    }
+                },
+                {
+                    "data": "exerciseCode",
+                    "render": function (data, type, row) {
+                        return `<a href="/Exercise/Code/${row.exerciseId}">${data}</a>`;
                     }
                 },
                 {

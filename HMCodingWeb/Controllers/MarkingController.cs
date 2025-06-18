@@ -66,6 +66,7 @@ namespace HMCodingWeb.Controllers
                     UserName = x.User.Username,
                     Avatar = x.User.AvartarImage != null ? Convert.ToBase64String(x.User.AvartarImage) : null,
                     ExerciseName = x.Exercise.ExerciseName,
+                    ExerciseCode = x.Exercise.ExerciseCode,
                     ProgramLanguageName = x.ProgramLanguage.ProgramLanguageName,
                     Status = x.Status,
                     KindMarking = x.KindMarking,

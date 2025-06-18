@@ -15,12 +15,12 @@
         <div class="header-content-child">
             <span class="required"><b>Mã bài</b></span>
             <input type="text" id="ExerciseCode" placeholder="Nhập mã bài...." class="form-control header-content-input"
-                required>
+            required>
         </div>
         <div class="header-content-child">
             <span><b>Tên bài</b></span>
             <input type="text" id="ExerciseName" placeholder="Nhập tên bài...."
-                class="form-control header-content-input" required>
+            class="form-control header-content-input" required>
         </div>
         <div class="header-content-child">
             <span><b>Độ khó</b></span>
@@ -37,16 +37,26 @@
         </div>
         <div class="header-content-child">
             <span><b>Chương</b></span>
-            <select name="Chapter" id="Chapter" class="form-control" required>
-                @if (chapters != null)
-                {
-                    @foreach (var chapter in chapters)
+            <div class="input-group">
+                <select name="Chapter" id="Chapter" class="form-control" required>
+                    @if (chapters != null)
                     {
-                        <option class="select-option" value="@chapter.Id" data-value="@chapter.ChapterCode">@chapter.ChapterName
-                        </option>
+                        @foreach (var chapter in chapters)
+                        {
+                            <option class="select-option" value="@chapter.Id" data-value="@chapter.ChapterCode">
+                                @chapter.ChapterName
+                            </option>
+                        }
                     }
+                </select>
+                @if(User.IsInRole("admin") || User.IsInRole("teacher"))
+                {
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addChapterModal">
+                        + Thêm chương
+                    </button>
                 }
-            </select>
+                
+            </div>
         </div>
         <div class="header-content-child select-types">
             <span><b>Dạng bài</b></span>
@@ -141,7 +151,7 @@
 
         
     </div>
-    <div>
+    <div class="table-responsive">
         <h2 class="mt-4" style="font-weight: 700;">NỘI DUNG BÀI TẬP</h2>
         <!-- Tabbed Interface for Content -->
         <ul class="nav nav-tabs" id="contentTabs" role="tablist">
@@ -214,6 +224,7 @@
 
 </form>
 
+<!-- Row Test Case Clone -->
 <table id="row-clone" style="display: none;">
     <tr>
         <td class="mt-5"></td>
@@ -229,7 +240,38 @@
     </tr>
 </table>
 
-
+<!-- Add Chapter Modal -->
+<div class="modal fade" id="addChapterModal" tabindex="-1" aria-labelledby="addChapterModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addChapterModalLabel">Tạo Chương mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addChapterForm" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="chapterCode" class="form-label">Mã chương</label>
+                        <input type="text" class="form-control" id="chapterCode" placeholder="Enter chapter code" required />
+                        <div class="invalid-feedback">Please enter a ChapterCode code.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="chapterName" class="form-label">Tên chương</label>
+                        <input type="text" class="form-control" id="chapterName" placeholder="Enter chapter name" required />
+                        <div class="invalid-feedback">Please enter a chapter name.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="chapterDescription" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="chapterDescription" placeholder="Enter chapter description" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveChapterBtn">Save Chapter</button>
+            </div>
+        </div>
+    </div>
 
 
 @section Links {
@@ -364,7 +406,6 @@
         }
 
         document.getElementById('ExerciseCode').addEventListener('input', function (e) {
-
             const regex = /^[a-zA-Z0-9\-_+*\/]*$/;
             const input = e.target.value;
             if (!regex.test(input)) {
@@ -384,6 +425,28 @@
                 });
             }
         });
+        
+        document.getElementById('chapterCode').addEventListener('input', function (e) {
+                const regex = /^[a-zA-Z0-9\-_+*\/]*$/;
+                const input = e.target.value;
+                if (!regex.test(input)) {
+                    e.target.value = input.replace(/[^a-zA-Z0-9-_]/g, '');
+                    Swal.fire({
+                        toast: true,
+                        position: "top-end",
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.onmouseenter = Swal.stopTimer;
+                            toast.onmouseleave = Swal.resumeTimer;
+                        },
+                        icon: "error",
+                        title: "Mã chương không được tồn tại ký tự Tiếng Việt và khoảng trắng"
+                    });
+                }
+            });
+
         document.getElementById("IsExam").addEventListener('change', function () {
             const checked = this.checked;
             if (checked) {
@@ -399,6 +462,10 @@
                 $("#AccessRole").prop("disabled", false);
             }
         });
+
+
+
+        
     </script>
 
     @* Multiple selected system *@
@@ -521,7 +588,7 @@
                         if (response.status) {
                             Swal.fire({
                                 icon: "success",
-                                title: "Bài của bạn đang chờ kiểm duyệt...",
+                                title: response.message,
                                 showConfirmButton: false,
                                 timer: 2000
                             });
@@ -540,5 +607,59 @@
 
             }
         });
+    </script>
+    <script>
+            $('#saveChapterBtn').on('click', function () {
+                    const chapterCode = $('#chapterCode').val().trim();
+                    const chapterName = $('#chapterName').val().trim();
+                    const chapterDescription = $('#chapterDescription').val().trim();
+                    const chapterForm = $('#addChapterForm')[0];
+
+                    // Validate form
+                    if (!chapterCode || !chapterName) {
+                        if (!chapterCode) $('#chapterCode').addClass('is-invalid');
+                        else $('#chapterCode').removeClass('is-invalid');
+                        if (!chapterName) $('#chapterName').addClass('is-invalid');
+                        else $('#chapterName').removeClass('is-invalid');
+                        chapterForm.classList.add('was-validated');
+                        return;
+                    } else {
+                        $('#chapterCode').removeClass('is-invalid');
+                        $('#chapterName').removeClass('is-invalid');
+                    }
+
+                    $.ajax({
+                        url: '@Url.Action("Create", "Chapter", new{area="Admin"})',
+                        method: 'POST',
+                        data: {
+                            Id: 0,
+                            ChapterCode: chapterCode,
+                            ChapterName: chapterName,
+                            Description: chapterDescription || null
+                        },
+                        success: function (response) {
+                            if (response.status) {
+                                // Add new chapter to select list
+                                const newOption = $('<option>', {
+                                    value: response.chapterId,
+                                    text: response.chapterName
+                                });
+                                $('#Chapter').append(newOption);
+                                $('#Chapter').val(response.chapterId); // Select the new chapter
+                                $('#addChapterModal').modal('hide'); // Close modal
+                                $('#chapterCode').val(''); // Clear inputs
+                                $('#chapterName').val('');
+                                $('#chapterDescription').val('');
+                                $('#Chapter').trigger('change'); // Trigger code generation
+                                showToast("success", "Chapter created successfully!", 2000);
+                            } else {
+                                alert('Error: ' + (response.message || 'Failed to create chapter.'));
+                            }
+                        },
+                        error: function (xhr) {
+                            alert('An error occurred while creating the chapter: ' + xhr.statusText);
+                        }
+                    });
+                });
     </script>
 }

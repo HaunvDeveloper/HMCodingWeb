@@ -1,6 +1,4 @@
-﻿@{
-    var avatar = Context.Session.GetString("UserAvatar");
-}
+﻿
 
 <!DOCTYPE html>
 <html lang="en">
@@ -41,14 +39,14 @@
                     <li class="nav-item"> <a class="nav-link" href="#" data-lte-toggle="fullscreen"> <i data-lte-icon="maximize" class="bi bi-arrows-fullscreen"></i> <i data-lte-icon="minimize" class="bi bi-fullscreen-exit" style="display: none;"></i> </a> </li> <!--end::Fullscreen Toggle--> <!--begin::User Menu Dropdown-->
                     <li class="nav-item dropdown user-menu">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"> 
-                            <img src="@(avatar != null ? $"data:image/jpeg;base64,{avatar}" : "/assets/images/avartardefault.jpg")" class="user-image rounded-circle shadow" alt="User Image">
+                            <img src="~/assets/images/avartardefault.jpg" class="userAvatar user-image rounded-circle shadow" alt="User Image">
                             <span class="d-none d-md-inline">@User.FindFirst(ClaimTypes.GivenName)?.Value</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
                             <!--begin::User Image-->
                             <li class="user-header text-bg-primary">
-                                <img src="@(avatar != null ? $"data:image/jpeg;base64,{avatar}" : "/assets/images/avartardefault.jpg")"
-                                     class="rounded-circle shadow"
+                                <img src="~/assets/images/avartardefault.jpg"
+                                     class="rounded-circle shadow userAvatar"
                                      alt="User Image" />
                                 <p>
                                     @User.FindFirst(ClaimTypes.GivenName)?.Value
@@ -135,6 +133,38 @@
 
     <script src="https://cdn.jsdelivr.net/npm/jsvectormap@@1.5.3/dist/js/jsvectormap.min.js" integrity="sha256-/t1nN2956BT869E6H4V1dnt0X5pAQHPytli+1nTZm2Y=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsvectormap@@1.5.3/dist/maps/world.js" integrity="sha256-XPpPaZlU8S/HWf7FZLAncLg2SAkP8ScUTII89x9D3lY=" crossorigin="anonymous"></script> <!-- jsvectormap -->
+    @if (User.Identity?.IsAuthenticated ?? false)
+    {
+        <text>
+        <script>
+            $(document).ready(function () {
+                var avatar = sessionStorage.getItem("UserAvatar");
+                if(avatar) {
+                    $(".userAvatar").attr("src", "data:image/jpeg;base64," + avatar);
+                } else {
+                    $.ajax({
+                        url: '/User/GetAvatar',
+                        type: 'GET',
+                        success: function (response) {
+                            if (response.status && response.avatar) {
+                                sessionStorage.setItem("UserAvatar", response.avatar);
+                                $(".userAvatar").attr("src", "data:image/jpeg;base64," + response.avatar);
+                            }else{
+                                $(".userAvatar").attr("src", "/assets/images/avartardefault.jpg");
+                            }
+                        },
+                        error: function () {
+                            console.log("Failed to load avatar.");
+                            $(".userAvatar").attr("src", "/assets/images/avartardefault.jpg");
+                        }
+                    });
+
+                }
+
+            });
+        </script>
+        </text>
+    }
     
     @await RenderSectionAsync("Scripts", required: false)
 

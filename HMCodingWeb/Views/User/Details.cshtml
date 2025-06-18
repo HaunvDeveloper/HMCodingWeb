@@ -85,7 +85,7 @@
         <div class="col-lg-8 col-12 mt-2">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="mt-3">Bài tập đã hoàn thành</h3>
+                    <h3 class="mt-3">Bài tập đã hoàn thành <strong class="px-2 completed-ex-num"></strong></h3>
                 </div>
                 <div class="card-body table-responsive">
                     <table id="table-data" class="table table-bordered table-sm table-active">
@@ -124,6 +124,7 @@
                 },
                 "type": "POST",
                 "dataSrc": function (json) {
+                    $('.completed-ex-num').text(json    .recordsTotal + ' bài');
                     return json.data;
                 }
             },
@@ -150,5 +151,31 @@
         $(document).on('click', '.rank', function() {
                 window.location.href = `/rank`;
          });
+
+
+        @if ((long)ViewBag.OwnUserId == Model.Id)
+        {
+             <text>
+                    $(document).ready(function () {
+                        $.ajax({
+                                url: '/User/GetAvatar',
+                                type: 'GET',
+                                success: function (response) {
+                                    if (response.status && response.avatar) {
+                                        sessionStorage.setItem("UserAvatar", response.avatar);
+                                        $("#userAvatar").attr("src", "data:image/jpeg;base64," + response.avatar);
+                                    }else{
+                                        $("#userAvatar").attr("src", "/assets/images/avartardefault.jpg");
+                                    }
+                                },
+                                error: function () {
+                                    console.log("Failed to load avatar.");
+                                    $("#userAvatar").attr("src", "/assets/images/avartardefault.jpg");
+                                }
+                            });
+                    });
+             </text>
+        }
+        
     </script>
 }

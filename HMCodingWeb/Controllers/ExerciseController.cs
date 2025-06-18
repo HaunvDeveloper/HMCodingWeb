@@ -319,7 +319,7 @@ namespace HMCodingWeb.Controllers
 
                 _context.Exercises.Add(model);
                 await _context.SaveChangesAsync();
-                return Json(new { status = true, redirect = Url.Action("Index") });
+                return Json(new { status = true, redirect = Url.Action("Index"), isAccept = model.IsAccept, message = model.IsAccept ? "Đăng bài thành công" : "Bài của bạn đang chờ kiểm duyệt..." });
             }
             catch (Exception ex)
             {
@@ -380,7 +380,7 @@ namespace HMCodingWeb.Controllers
                 long userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
                 var user = await _context.Users.FindAsync(userId);
                 string userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "User";
-                if (userRole != "Admin" && userRole != "Teacher" && exercise.UserCreatedId != userId)
+                if (!(userRole == "admin" || userRole == "teacher" || exercise.UserCreatedId == userId))
                 {
                     return Json(new { status = false, error = "Bạn không có quyền sửa bài tập này" });
                 }
@@ -511,14 +511,19 @@ namespace HMCodingWeb.Controllers
                 {
                     // If the marking is successful, add points to the user
                     pointGain = await _userPointService.AddPointPassedExercise(userId, ExerciseId);
-                    if (pointGain > 0)
-                    {
-                        await _rankingService.UpdateRankUser(userId);
-                    }
+                    
                 }
                 _context.Markings.Add(marking);
                 await _context.SaveChangesAsync();
-                return Json(new { status = true, data = new { marking.IsAllCorrect, marking.ResultContent, marking.Score, marking.IsError, pointGain} });
+                var isGainRank = false;
+                var newRank = "";
+                if (pointGain > 0)
+                {
+                    var obj = await _rankingService.UpdateRankUser(userId);
+                    isGainRank = obj.isGain;
+                    newRank = obj.rankName;
+                }
+                return Json(new { status = true, data = new { marking.IsAllCorrect, marking.ResultContent, marking.Score, marking.IsError, pointGain, isGainRank, newRank } });
             }
             catch (Exception ex)
             {
@@ -526,7 +531,7 @@ namespace HMCodingWeb.Controllers
                 return Json(new { status = false, error = ex.Message });
             }
         }
-
+        
     
     }
 }

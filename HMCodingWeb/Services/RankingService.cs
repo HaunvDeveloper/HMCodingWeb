@@ -12,16 +12,15 @@ namespace HMCodingWeb.Services
         }
 
 
-        public async Task UpdateRankUser(long userId)
+        public async Task<(bool isGain, string rankName)> UpdateRankUser(long userId)
         {
             // Lấy thông tin user
             var user = await _context.Users
                 .Include(u => u.Auth)
                 .FirstOrDefaultAsync(u => u.Id == userId);
-
             if (user == null)
             {
-                return; // User không tồn tại
+                return (false, ""); // User không tồn tại
             }
 
             // Kiểm tra Tối Thượng (Supreme) - Chỉ dành cho admin hoặc teacher
@@ -29,8 +28,8 @@ namespace HMCodingWeb.Services
             {
                 user.RankId = 10; // Supreme
                 await _context.SaveChangesAsync();
-                return;
-            }
+                return (false, "");
+            } 
 
             // Đếm số bài hoàn thành theo mức độ
             var completedExercises = await _context.Markings
@@ -138,7 +137,10 @@ namespace HMCodingWeb.Services
             {
                 user.RankId = newRankId == 0 ? null : newRankId;
                 await _context.SaveChangesAsync();
+                return (true, _context.Ranks.AsNoTracking().SingleOrDefault(x => x.Id == newRankId).RankName ?? ""); // Rank đã được cập nhật
             }
+            // Không có thay đổi gì
+            return (false, ""); // Rank không thay đổi
         }
     }
 }
