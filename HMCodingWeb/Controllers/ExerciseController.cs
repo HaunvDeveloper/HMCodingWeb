@@ -504,6 +504,11 @@ namespace HMCodingWeb.Controllers
         {
             try
             {
+                if (HttpContext.Session.GetString("IsRunning") == "true")
+                {
+                    return Json(new { status = false, message = "Đang có một tiến trình chạy, vui lòng đợi!" });
+                }
+                HttpContext.Session.SetString("IsRunning", "true");
                 long userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
                 var marking = await _markingService.Marking(ExerciseId, ProgramLanguageId, SourceCode, userId);
                 int pointGain = 0;
@@ -523,6 +528,7 @@ namespace HMCodingWeb.Controllers
                     isGainRank = obj.isGain;
                     newRank = obj.rankName;
                 }
+                HttpContext.Session.SetString("IsRunning", "false");
                 return Json(new { status = true, data = new { marking.IsAllCorrect, marking.ResultContent, marking.Score, marking.IsError, pointGain, isGainRank, newRank } });
             }
             catch (Exception ex)

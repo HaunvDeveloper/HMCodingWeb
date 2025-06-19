@@ -96,7 +96,15 @@
         @RenderBody()
     </main>
 
+
+    <!-- Nội dung body khác -->
+    
     <div id="footer">
+        <div id="" class="pb-3 pt-3 bg-dark">
+            <div class="online-users" style="display:flex; align-items:center; justify-content:center; gap:0.7rem; color: gainsboro;font-weight:500;">
+                <b>Người dùng đang online: <span id="onlineUsersList">Đang tải...</span></b>
+            </div>
+        </div>
         <img src="~/assets/images/ToanhaA-01.png" alt="">
         <div class="container">
             <p class="address1" style="display:flex;align-items:center;justify-content:center; gap:0.7rem;">Tác giả: Hậu Nguyễn và Thảo Lê</p>
@@ -105,8 +113,11 @@
                 <p>Liên hệ: 0944746748</p>
                 <p>Email: haunv.cntt@gmail.com</p>
             </div>
+            
         </div>
     </div>
+
+    
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
@@ -115,6 +126,70 @@
     <script src="~/js/sweetalert2-extend.js"></script>
     <script src="~/js/site.js"></script>
     <script src="https://kit.fontawesome.com/0f2d543076.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        function getClassNameByAuth(auth){
+            switch (auth) {
+                case "admin":
+                    return "badge bg-danger";
+                case "teacher":
+                    return "badge bg-success";
+                case "hsgstudent":
+                    return "badge bg-info";
+                default:
+                    return "badge bg-secondary";
+            }
+        }
+        function getTitleByAuth(auth){
+            switch (auth) {
+                case "admin":
+                    return "Quản trị viên";
+                case "teacher":
+                    return "Giáo viên";
+                case "hsgstudent":
+                    return "Học sinh giỏi";
+                default:
+                    return "Người dùng";
+            }
+        }
+        // Kết nối tới SignalR Hub
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/onlineUsersHub")
+            .withAutomaticReconnect()
+            .build();
+
+        // Xử lý khi nhận danh sách người dùng online
+        connection.on("ReceiveOnlineUsers", function (users) {
+            const onlineUsersList = document.getElementById("onlineUsersList");
+            if (users && users.length > 0) {
+                const userList = users.map(user => `
+                    <a 
+                        style="text-decoration:none;"
+                        class="${getClassNameByAuth(user.auth)}" 
+                        title="${getTitleByAuth(user.auth)}"
+                        href="/user/details/${user.userId}">
+                        ${user.username}
+                    </a>`);
+                onlineUsersList.innerHTML = userList;
+            } else {
+                onlineUsersList.textContent = "Không có người dùng nào online";
+            }
+        });
+
+        // Bắt đầu kết nối
+        connection.start().then(function () {
+            // Gọi phương thức GetOnlineUsers khi kết nối thành công
+            connection.invoke("GetOnlineUsers").catch(function (err) {
+                console.error(err.toString());
+                document.getElementById("onlineUsersList").textContent = "Lỗi khi tải danh sách người dùng";
+            });
+        }).catch(function (err) {
+            console.error(err.toString());
+            document.getElementById("onlineUsersList").textContent = "Lỗi kết nối SignalR";
+        });
+    </script>
+
+
 
     @if (User.Identity?.IsAuthenticated ?? false)
     {

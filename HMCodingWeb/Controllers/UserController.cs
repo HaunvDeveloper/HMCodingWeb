@@ -11,6 +11,8 @@ using HMCodingWeb.Services;
 using Newtonsoft.Json;
 using Microsoft.Extensions.FileSystemGlobbing.Internal;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Caching.Memory;
+using HMCodingWeb.Middlewares;
 
 namespace HMCodingWeb.Controllers
 {
@@ -19,12 +21,14 @@ namespace HMCodingWeb.Controllers
     {
         private readonly OnlineCodingWebContext _context;
         private readonly EmailSendService _emailSendService;
+        private readonly OnlineUsersService _onlineUsersService;
         private const long MaxAvatarSize = 2 * 1024 * 1024; // 2MB
 
-        public UserController(OnlineCodingWebContext context, EmailSendService emailSendService, UserListService userListService)
+        public UserController(OnlineCodingWebContext context, EmailSendService emailSendService, UserListService userListService, OnlineUsersService onlineUsersService)
         {
             _context = context;
             _emailSendService = emailSendService;
+            _onlineUsersService = onlineUsersService;
         }
 
 
@@ -210,7 +214,7 @@ namespace HMCodingWeb.Controllers
                 };
 
                 await HttpContext.SignInAsync(principal, authProperties);
-                
+                _onlineUsersService.AddUser(user.Id.ToString(), user.Username, user.Fullname, user.Auth.AuthCode, null);
 
                 return Json(new { status = true, message = "Đăng nhập thành công!", redirectUrl = string.IsNullOrEmpty(ReturnUrl) ? Url.Action("Index", "Home") : ReturnUrl });
             }
@@ -220,8 +224,13 @@ namespace HMCodingWeb.Controllers
         [Route("logout")]
         public async Task<IActionResult> Logout()
         {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userId))
+            {
+                _onlineUsersService.RemoveUserByUserId(userId);
+            }
             TempData.Clear();
-            HttpContext.Session.Remove("UserAvatar");
+            HttpContext.Session.Clear();
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login", "User");
         }
@@ -351,7 +360,7 @@ namespace HMCodingWeb.Controllers
             };
 
             await HttpContext.SignInAsync(principal, authProperties);
-
+            _onlineUsersService.AddUser(user.Id.ToString(), user.Username, user.Fullname, "student", null);
 
             TempData["UserLogin"] = true;
             return RedirectToAction("Index", "Home");
@@ -509,6 +518,6 @@ namespace HMCodingWeb.Controllers
             return RedirectToAction("Login");
         }
 
-
+        
     }
 }

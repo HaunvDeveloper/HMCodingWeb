@@ -21,6 +21,7 @@ using HMCodingWeb.Services;
 using System.Security.Policy;
 using HMCodingWeb.Hubs;
 using OfficeOpenXml;
+using HMCodingWeb.Middlewares;
 
 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
@@ -38,6 +39,8 @@ builder.Services.AddScoped<MarkingService>();
 builder.Services.AddScoped<UserPointService>();
 builder.Services.AddScoped<UserListService>();
 builder.Services.AddScoped<RankingService>();
+builder.Services.AddSingleton<OnlineUsersService>();
+builder.Services.AddHostedService<UserCleanupService>();
 
 
 builder.Services.AddSession(options =>
@@ -46,7 +49,7 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
-
+builder.Services.AddMemoryCache();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme,
     options =>
@@ -83,7 +86,8 @@ app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapHub<MarkingHub>("/markingHub");
-
+app.MapHub<OnlineUsersHub>("/onlineUsersHub");
+app.UseMiddleware<UpdateLastActiveMiddleware>();
 
 app.MapControllerRoute(
     name: "areas",

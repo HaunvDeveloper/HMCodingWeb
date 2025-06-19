@@ -21,6 +21,106 @@ namespace HMCodingWeb.Services
             _userPointService = userPointService;
         }
 
+        public string GetColumnName(int columnIndex)
+        {
+            // Map DataTable column index to model property
+            switch (columnIndex)
+            {
+                case 0: return "markingDate";
+                case 2: return "userName";
+                case 3: return "exerciseCode";
+                case 4: return "exerciseName";
+                case 5: return "kindMarking";
+                case 6: return "score";
+                case 7: return "status";
+                case 8: return "programLanguageName";
+                default: return "markingDate"; // Default to rank
+            }
+        }
+
+        public IOrderedQueryable<Marking> ApplyOrder(IQueryable<Marking> query, string columnName, string direction)
+        {
+            switch (columnName)
+            {
+                case "markingDate":
+                    return direction == "asc"
+                        ? query.OrderBy(u => u.MarkingDate)
+                        : query.OrderByDescending(u => u.MarkingDate);
+                case "userName":
+                    return direction == "asc"
+                        ? query.OrderBy(u => u.User != null ? u.User.Username : "")
+                        : query.OrderByDescending(u => u.User != null ? u.User.Username : "");
+                case "exerciseCode":
+                    return direction == "asc"
+                        ? query.OrderBy(u => u.Exercise != null ? u.Exercise.ExerciseCode : "")
+                        : query.OrderByDescending(u => u.Exercise != null ? u.Exercise.ExerciseCode : "");
+                case "exerciseName":
+                    return direction == "asc"
+                        ? query.OrderBy(u => u.Exercise != null ? u.Exercise.ExerciseName : "")
+                        : query.OrderByDescending(u => u.Exercise != null ? u.Exercise.ExerciseName : "");
+                case "kindMarking":
+                    return direction == "asc"
+                        ? query.OrderBy(u => u.KindMarking)
+                        : query.OrderByDescending(u => u.KindMarking);
+                case "score":
+                    return direction == "asc"
+                        ? query.OrderBy(u => u.Score)
+                        : query.OrderByDescending(u => u.Score);
+                case "status":
+                    return direction == "asc"
+                        ? query.OrderBy(u => u.Status)
+                        : query.OrderByDescending(u => u.Status);
+                case "programLanguageName":
+                    return direction == "asc"
+                        ? query.OrderBy(u => u.Status)
+                        : query.OrderByDescending(u => u.Status);
+                default:
+                    return query.OrderByDescending(u => u.MarkingDate);
+            }
+        }
+
+        public IOrderedQueryable<Marking> ApplyThenOrder(IOrderedQueryable<Marking> query, string columnName, string direction)
+        {
+            switch (columnName)
+            {
+                case "markingDate":
+                    return direction == "asc"
+                        ? query.ThenBy(u => u.MarkingDate)
+                        : query.ThenByDescending(u => u.MarkingDate);
+                case "userName":
+                    return direction == "asc"
+                        ? query.ThenBy(u => u.User != null ? u.User.Username : "")
+                        : query.ThenByDescending(u => u.User != null ? u.User.Username : "");
+                case "exerciseCode":
+                    return direction == "asc"
+                        ? query.ThenBy(u => u.Exercise != null ? u.Exercise.ExerciseCode : "")
+                        : query.ThenByDescending(u => u.Exercise != null ? u.Exercise.ExerciseCode : "");
+                case "exerciseName":
+                    return direction == "asc"
+                        ? query.ThenBy(u => u.Exercise != null ? u.Exercise.ExerciseName : "")
+                        : query.ThenByDescending(u => u.Exercise != null ? u.Exercise.ExerciseName : "");
+                case "kindMarking":
+                    return direction == "asc"
+                        ? query.ThenBy(u => u.KindMarking)
+                        : query.ThenByDescending(u => u.KindMarking);
+                case "score":
+                    return direction == "asc"
+                        ? query.ThenBy(u => u.Score)
+                        : query.ThenByDescending(u => u.Score);
+                case "status":
+                    return direction == "asc"
+                        ? query.ThenBy(u => u.Status)
+                        : query.ThenByDescending(u => u.Status);
+                case "programLanguageName":
+                    return direction == "asc"
+                        ? query.ThenBy(u => u.Status)
+                        : query.ThenByDescending(u => u.Status);
+                default:
+                    return query.ThenByDescending(u => u.MarkingDate);
+            }
+        }
+
+
         public async Task<Marking> Marking(long ExerciseId, int ProgramLanguageId, string SourceCode, long userId)
         {
             var exercise = await _context.Exercises

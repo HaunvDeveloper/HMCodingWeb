@@ -671,9 +671,9 @@
                  swapTab();
             }
             editor.getSession().on('change', function () {
-                localStorage.setItem('saveCodepadExercise@(Model?.Id)', editor.getValue());
+                localStorage.setItem('saveCodepadExercise@(Model?.Id)_@(userInfo?.Id)', editor.getValue());
             });
-            var storedContent = localStorage.getItem('saveCodepadExercise@(Model?.Id)');
+            var storedContent = localStorage.getItem('saveCodepadExercise@(Model?.Id)_@(userInfo?.Id)');
             if (storedContent) {
                 editor.setValue(storedContent, -1);
             }

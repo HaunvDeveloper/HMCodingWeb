@@ -1,21 +1,33 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include<fstream>
 using namespace std;
 
-double s(double x, double kq) {
-
-    if(x < -1)
-        kq = pow(x, 1.0 / 3.0);
-    else if (x >= -1)
-        kq = acos(x);
-    else
-        kq = sin(x) + pow(M_E, sqrt(x));
-    return kq;
+bool isPrime(int x) {
+    if (x < 2) return false;
+    int sqrtX = x;
+    for (int i = 2; i < sqrtX; ++i) {
+        if (x % i == 0) return false;
+    }
+    return true;
 }
 
 int main() {
-    double x;
-    cin>>x;
-    double kq;
-    cout << fixed << setprecision(2) << s(x, kq);
+    ifstream fin("input.txt");
+    int n;
+    cin >> n;
+    vector<int> a(n);
+
+    int maxPrime = -1;
+
+    for (int i = 0; i < n; ++i) {
+        cin >> a[i];
+        if (isPrime(a[i])) {
+            maxPrime = max(maxPrime, a[i]);
+        }
+    }
+
+    cout << maxPrime << endl;
     return 0;
 }

@@ -1,9 +1,13 @@
 ﻿@model List<HMCodingWeb.ViewModels.ExerciseViewModel>
+@{
+    var startRecord = (((int?)ViewBag.CurrentPage ?? 1) - 1) * ((int?)ViewBag.PageSize ?? 1);
 
+}
 
 <table id="listcodepad" class="table table-sm table-hover table-border table-striped ml-5 mr-3">
     <thead>
         <tr class="table-dark">
+            <th>STT</th>
             <th>Mã bài</th>
             <th>Tên bài</th>
             <th>
@@ -49,6 +53,7 @@
             @foreach (var item in Model)
             {
                 <tr data-value="@item.Id" class="@(item.IsCorrect == "Passed" ? "table-success" : item.IsCorrect == "Failed" ? "table-danger" : "")">
+                    <td class="stt">@(++startRecord)</td>
                     <td><a asp-action="Code" asp-controller="Exercise" asp-route-id="@item.Id">@item.ExerciseCode</a></td>
                     <td><a asp-action="Code" asp-controller="Exercise" asp-route-id="@item.Id">@item.ExerciseName</a></td>
                     <td><a asp-action="Code" asp-controller="Exercise" asp-route-id="@item.Id">@item.DifficultyName</a></td>

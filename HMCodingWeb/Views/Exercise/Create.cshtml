@@ -272,7 +272,7 @@
             </div>
         </div>
     </div>
-
+</div>
 
 @section Links {
     <link rel="stylesheet" href="~/css/exercise-create.css">
@@ -579,12 +579,20 @@
                     IsAccept: false
 
                 }
-
+                Swal.fire({
+                    title: 'Đang xử lý...',
+                    text: 'Vui lòng chờ giây lát',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
                 $.ajax({
                     url: '/Exercise/Create',
                     method: 'post',
                     data: { model: model},
                     success: function (response) {
+                        Swal.close();
                         if (response.status) {
                             Swal.fire({
                                 icon: "success",
@@ -600,6 +608,7 @@
                         }
                     },
                     error: function(error){
+                        Swal.close();
                         Swal.fire("Đăng thất bại!", error, "error");
                     }
                 })

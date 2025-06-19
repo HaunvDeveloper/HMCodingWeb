@@ -1,4 +1,5 @@
 ﻿using HMCodingWeb.Models;
+using HMCodingWeb.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -9,12 +10,13 @@ namespace HMCodingWeb.Controllers
     {
         private readonly ILogger<MarkingController> _logger;
         private readonly OnlineCodingWebContext _context;
+        private readonly MarkingService _markingService;
 
-
-        public MarkingController(ILogger<MarkingController> logger, OnlineCodingWebContext context)
+        public MarkingController(ILogger<MarkingController> logger, OnlineCodingWebContext context, MarkingService markingService)
         {
             _logger = logger;
             _context = context;
+            _markingService = markingService;
         }
 
 
@@ -26,7 +28,7 @@ namespace HMCodingWeb.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> _GetList(long userId = 0, long exerciseId = 0, int start = 0, int length = 25, string keyword = "")
+        public async Task<IActionResult> _GetList(long userId = 0, long exerciseId = 0, int start = 0, int length = 25, string keyword = "", [FromForm] Dictionary<string, string>[] order = null)
         {
             var draw = Request.Form["draw"].ToString();
             var query = _context.Markings
@@ -50,35 +52,63 @@ namespace HMCodingWeb.Controllers
                 keyword = keyword.Trim().ToLower();
                 query = query.Where(mk => mk.Exercise.ExerciseName.ToLower().Contains(keyword) ||
                                           mk.User.Username.ToLower().Contains(keyword) ||
-                                          mk.ProgramLanguage.ProgramLanguageName.ToLower().Contains(keyword) ||
-                                          mk.MarkingDate.ToString("HH:mm:ss dd-MM-yyyy").Contains(keyword));
+                                          mk.ProgramLanguage.ProgramLanguageName.ToLower().Contains(keyword));
             }    
 
             var totalRecords = await query.CountAsync();
 
-            var list = await query
-                .OrderByDescending(x => x.MarkingDate)
-                .Skip(start)
-                .Take(length)
-                .Select(x => new 
+            // Apply sorting
+            if (order != null && order.Length > 0)
+            {
+                IOrderedQueryable<Marking> orderedQuery = null;
+                for (int i = 0; i < order.Length; i++)
                 {
-                    MarkingDate = x.MarkingDate.ToString("HH:mm:ss dd-MM-yyyy"),
-                    UserName = x.User.Username,
-                    Avatar = x.User.AvartarImage != null ? Convert.ToBase64String(x.User.AvartarImage) : null,
-                    ExerciseName = x.Exercise.ExerciseName,
-                    ExerciseCode = x.Exercise.ExerciseCode,
-                    ProgramLanguageName = x.ProgramLanguage.ProgramLanguageName,
-                    Status = x.Status,
-                    KindMarking = x.KindMarking,
-                    MarkingId = x.Id,
-                    CorrectTestNumber = x.CorrectTestNumber,
-                    UserId = x.UserId,
-                    ResultContent = x.ResultContent,
-                    TimeSpent = x.TimeSpent.Value.ToString("hh\\:mm\\:ss"),
-                    ExerciseId = x.ExerciseId,
-                    Score = x.Score,
-                })
-                .ToListAsync();
+                    var columnIndex = int.Parse(order[i]["column"]);
+                    var direction = order[i]["dir"].ToLower();
+                    var columnName = _markingService.GetColumnName(columnIndex);
+
+                    if (i == 0)
+                    {
+                        orderedQuery = _markingService.ApplyOrder(query, columnName, direction);
+                    }
+                    else
+                    {
+                        orderedQuery = _markingService.ApplyThenOrder(orderedQuery, columnName, direction);
+                    }
+                }
+                query = orderedQuery ?? query;
+            }
+            else
+            {
+                // Default sorting: MarkingDate descending
+                query = query.OrderByDescending(x => x.MarkingDate);
+            }
+
+
+
+
+                var list = await query
+                    .Skip(start)
+                    .Take(length)
+                    .Select(x => new
+                    {
+                        MarkingDate = x.MarkingDate.ToString("HH:mm:ss dd-MM-yyyy"),
+                        UserName = x.User.Username,
+                        Avatar = x.User.AvartarImage != null ? Convert.ToBase64String(x.User.AvartarImage) : null,
+                        ExerciseName = x.Exercise.ExerciseName,
+                        ExerciseCode = x.Exercise.ExerciseCode,
+                        ProgramLanguageName = x.ProgramLanguage.ProgramLanguageName,
+                        Status = x.Status,
+                        KindMarking = x.KindMarking,
+                        MarkingId = x.Id,
+                        CorrectTestNumber = x.CorrectTestNumber,
+                        UserId = x.UserId,
+                        ResultContent = x.ResultContent,
+                        TimeSpent = x.TimeSpent.Value.ToString("hh\\:mm\\:ss"),
+                        ExerciseId = x.ExerciseId,
+                        Score = x.Score,
+                    })
+                    .ToListAsync();
 
             return Json(new
             {

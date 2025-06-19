@@ -536,12 +536,20 @@
                     TestCases: getAllTestCases(),
                     IsAccept: @Model.IsAccept.ToString().ToLower()
                 }
-
+                Swal.fire({
+                    title: 'Đang xử lý...',
+                    text: 'Vui lòng chờ giây lát',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
                 $.ajax({
                     url: '/Exercise/Edit',
                     method: 'post',
                     data: { model: model },
                     success: function (response) {
+                        Swal.close();
                         if (response.status) {
                             Swal.fire({
                                 icon: "success",
@@ -557,6 +565,7 @@
                         }
                     },
                     error: function (error) {
+                        Swal.close();
                         Swal.fire("Cập nhật thất bại!", error.responseText || "Lỗi không xác định", "error");
                     }
                 });
