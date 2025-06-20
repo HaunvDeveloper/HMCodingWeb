@@ -43,6 +43,8 @@ public partial class Exercise
 
     public virtual Chapter Chapter { get; set; } = null!;
 
+    public virtual ICollection<CommentToExercise> CommentToExercises { get; set; } = new List<CommentToExercise>();
+
     public virtual ICollection<CopyPasteHistory> CopyPasteHistories { get; set; } = new List<CopyPasteHistory>();
 
     public virtual DifficultyLevel Difficulty { get; set; } = null!;
@@ -52,6 +54,4 @@ public partial class Exercise
     public virtual ICollection<Marking> Markings { get; set; } = new List<Marking>();
 
     public virtual ICollection<TestCase> TestCases { get; set; } = new List<TestCase>();
-
-    public virtual User UserCreated { get; set; } = null!;
 }

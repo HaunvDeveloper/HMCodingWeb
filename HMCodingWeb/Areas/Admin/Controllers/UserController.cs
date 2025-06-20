@@ -156,6 +156,13 @@ namespace HMCodingWeb.Areas.Admin.Controllers
                 // Xóa các liên kết với các bảng khác nếu cần
                 var codepads = _context.Codepads.Where(c => c.UserId == id);
                 _context.Codepads.RemoveRange(codepads);
+
+                var contact = _context.UserContactToCommentExes.Where(c => c.UserId == id);
+                _context.UserContactToCommentExes.RemoveRange(contact);
+
+                var comments = _context.CommentToExercises.Where(c => c.UserId == id);
+                _context.CommentToExercises.RemoveRange(comments);
+
                 await _context.SaveChangesAsync();
                 return Json(new { status = true });
             }
@@ -282,7 +289,7 @@ namespace HMCodingWeb.Areas.Admin.Controllers
                 using var package = new OfficeOpenXml.ExcelPackage(stream);
                 var worksheet = package.Workbook.Worksheets[0];
                 var rowCount = worksheet.Dimension.Rows;
-                var listUsers = new List<Models.User>();
+                var listUsers = new List<User>();
                 List<string> error = new List<string>();
                 int succNum = 0;
                 for (int row = 7; row <= rowCount; row++)
@@ -290,7 +297,7 @@ namespace HMCodingWeb.Areas.Admin.Controllers
                     try
                     {
                        
-                        var user = new Models.User
+                        var user = new User
                         {
                             Username = worksheet.Cells[row, 2].Text.Trim(),
                             Fullname = worksheet.Cells[row, 3].Text.Trim(),

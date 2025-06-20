@@ -5,6 +5,15 @@
     var userInfo = ViewBag.UserInfo as User;
     var programLanguageList = ViewBag.ProgramLanguageList as List<ProgramLanguage>;
     var exerciseId = Model?.Id ?? 0;
+    var userCreated = ViewBag.CreatedUser as User;
+    if(userCreated == null)
+    {
+        userCreated = new User
+        {
+            Id = Model?.UserCreatedId ?? 0,
+            Username = "Unknown"
+        };
+    }
 }
 
 
@@ -55,6 +64,49 @@
             font-size: 0.9rem;
         }
 
+        .comments-section {
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+
+        .comment-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-left: 10px solid ;
+            background-color: #fff;
+            border-radius: 4px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .comment-header {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .comment-content {
+            margin-bottom: 5px;
+        }
+
+        .comment-actions {
+            font-size: 0.85rem;
+        }
+
+        .replies{
+            margin-top: 1rem;
+        }
+
+        .reply-btn, .like-btn, .dislike-btn, .remove-cmt {
+            padding: 0;
+        }
+
+            .like-btn.active, .dislike-btn.active {
+                color: #007bff;
+                font-weight: bold;
+            }
+
+        #cancel-reply {
+            margin-left: 10px;
+        }
     </style>
 }
 @if (Model == null)
@@ -78,56 +130,59 @@
 
     <span id="code-title"><b>Làm bài</b></span>
 </div>
-
-<div id="content-section" class="container mt-3 mb-4">
-    <div id="content-container">
-        <div id="header-content">
-            <div class="header-content-child">
-                <span><b>Mã bài:</b></span>
-                <p class="header-content-value">@Model.ExerciseCode</p>
+<section id="view-content-section" class="container">
+    <div id="content-section" class="container mt-3 mb-4">
+        <div id="content-container">
+            <div id="header-content">
+                <div class="header-content-child">
+                    <span><b>Mã bài:</b></span>
+                    <p class="header-content-value">@Model.ExerciseCode</p>
+                </div>
+                <div class="header-content-child">
+                    <span><b>Tên bài:</b></span>
+                    <p class="header-content-value">@Model.ExerciseName</p>
+                </div>
+                <div class="header-content-child">
+                    <span><b>Thể loại chấm:</b></span>
+                    <p class="header-content-value">@Model.KindMarking</p>
+                </div>
+                <div class="header-content-child">
+                    <span><b>Thời gian:</b></span>
+                    <p class="header-content-value">@(Model.RuntimeLimit) giây</p>
+                </div>
+                <div class="header-content-child">
+                    <span><b>Đăng bởi:</b></span>
+                    <p class="header-content-value">
+                        <a asp-action="Details" asp-controller="User" asp-route-id="@Model.UserCreatedId"> @(userCreated.Username) </a></p>
+                </div>
+                <div class="header-content-child">
+                    <span><b>Độ khó:</b></span>
+                    <p class="header-content-value">@(Model.Difficulty.DifficultyName)</p>
+                </div>
+                <div class="header-content-child">
+                    <span><b>Dạng nhập:</b></span>
+                    <p class="header-content-value">@(Model.InputFile != null ? Model.InputFile : "stdin")</p>
+                </div>
+                <div class="header-content-child">
+                    <span><b>Dạng xuất:</b></span>
+                    <p class="header-content-value">@(Model.OutputFile != null ? Model.OutputFile : "stdout")</p>
+                </div>
             </div>
-            <div class="header-content-child">
-                <span><b>Tên bài:</b></span>
-                <p class="header-content-value">@Model.ExerciseName</p>
-            </div>
-            <div class="header-content-child">
-                <span><b>Thể loại chấm:</b></span>
-                <p class="header-content-value">@Model.KindMarking</p>
-            </div>
-            <div class="header-content-child">
-                <span><b>Thời gian:</b></span>
-                <p class="header-content-value">@(Model.RuntimeLimit) giây</p>
-            </div>
-            <div class="header-content-child">
-                <span><b>Đăng bởi:</b></span>
-                <p class="header-content-value"><a asp-action="Details" asp-controller="User" asp-route-id="@Model.UserCreatedId">@(Model.UserCreated.Username)</a></p>
-            </div>
-            <div class="header-content-child">
-                <span><b>Độ khó:</b></span>
-                <p class="header-content-value">@(Model.Difficulty.DifficultyName)</p>
-            </div>
-            <div class="header-content-child">
-                <span><b>Dạng nhập:</b></span>
-                <p class="header-content-value">@(Model.InputFile != null ? Model.InputFile : "stdin")</p>
-            </div>
-            <div class="header-content-child">
-                <span><b>Dạng xuất:</b></span>
-                <p class="header-content-value">@(Model.OutputFile != null ? Model.OutputFile : "stdout")</p>
-            </div>
+            @* <iframe id="content-iframe" style="width: 90%; border: none;" onload="resizeIframe(this)"></iframe> *@
+            <div class="p-2 table-responsive" id="inner-content">@Html.Raw(Model != null ? Model.ExerciseContent : "")</div>
+            
         </div>
-        @* <iframe id="content-iframe" style="width: 90%; border: none;" onload="resizeIframe(this)"></iframe> *@
-        <div class="p-2 table-responsive" id="inner-content">@Html.Raw(Model != null ? Model.ExerciseContent : "")</div>
+        
     </div>
-</div>
+    
+</section>
 
 <section class="container">
-
-
     <div id="code-section" class="row mr-0 mt-2 d-none">
         <div id="codepad" class="col-sm-9 mt-4 flex flex-column">
             <div id="code-head">
                 <div class="form-floating w-75">
-                    <input type="text" class="form-control w-75" placeholder="Name" name="file-name" id='file-name' value="@(Model.ExerciseName ?? "None Name")" readonly />
+                    <input type="text" class="form-control w-75" placeholder="Name" name="file-name" id='file-name' value="@(Model?.ExerciseName ?? "None Name")" readonly />
                     <label for="file-name">Tên bài</label>
                 </div>
                 <button id="copy-code" class="btn btn-outline-secondary" role="button">Sao chép</button>
@@ -211,7 +266,18 @@
         </div>
 
         <div id="right-side" class="col-3">
-            <div id="setting" class=" bg-dark mt-5 mb-2 pt-4 pb-4 ">
+            <div id="marking" class="mt-3 bg-warning pt-4 pb-4">
+                <h3 class="text-light">Chấm điểm</h3>
+                <div class="line"></div>
+                <button id="btn-marking" class="btn btn-danger w-75 text-nowrap" role="button">
+                    CHẤM ĐIỂM
+                </button>
+                <div id="test-case-results" style="max-height:450px;overflow-y:auto;padding-right:5px;">
+                </div>
+            </div>
+
+
+            <div id="setting" class=" bg-dark mt-1 mb-3 pt-4 pb-4 ">
                 <h3 class="text-light">Cài đặt</h3>
                 <div class="line"></div>
                 <div class="cfg-option px-3">
@@ -285,21 +351,40 @@
                 </button>
             </div>
 
-            <div id="marking" class=" bg-warning mt-1 mb-5 pt-4 pb-4">
-                <h3 class="text-light">Chấm điểm</h3>
-                <div class="line"></div>
-                <button id="btn-marking" class="btn btn-danger w-75 text-nowrap" role="button">
-                    CHẤM ĐIỂM
-                </button>
-                <div id="test-case-results" style="max-height:450px;overflow-y:auto;padding-right:5px;">
-                </div>
-            </div>
+            
 
         </div>
     </div>
 
 </section>
-
+<!-- Phần bình luận -->
+<div class="container comments-section mt-4">
+    <h4>Bình luận (<span id="comment-count">0</span>)</h4>
+    <!-- Danh sách bình luận -->
+    <div class="comments-list" id="comments-list">
+        <p>Đang tải bình luận...</p>
+    </div>
+    <!-- Form viết bình luận -->
+    @if (User?.Identity?.IsAuthenticated ?? false)
+    {
+        <div class="comment-form mb-4">
+            <h5>Viết bình luận</h5>
+            <form id="comment-form" asp-action="AddComment" asp-controller="Exercise" method="post">
+                <input type="hidden" name="ExerciseId" value="@Model?.Id" />
+                <input type="hidden" name="AnswerToCmtId" id="answer-to-cmt-id" value="" />
+                <div class="form-group">
+                    <textarea id="comment-content" name="Content" class="form-control" rows="5"></textarea>
+                </div>
+                <button id="btn-send-comment" type="submit" class="btn btn-primary mt-2">Gửi bình luận</button>
+                <button type="button" class="btn btn-secondary mt-2 d-none" id="cancel-reply">Hủy trả lời</button>
+            </form>
+        </div>
+    }
+    else
+    {
+        <p>Vui lòng <a asp-action="Login" asp-controller="Account">đăng nhập</a> để bình luận.</p>
+    }
+</div>
 
 @section Scripts {
 
@@ -309,6 +394,199 @@
     <script src="~/lib/ace-builds/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="~/lib/ace-builds/src-min-noconflict/ext-language_tools.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
+    <!-- Xử lý bình luận -->
+    <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+    <script>
+        // Khởi tạo CKEditor
+        CKEDITOR.replace('comment-content', {
+            height: 150,
+            toolbar: [
+                ['Bold', 'Italic', 'Underline'],
+                ['Link', 'Unlink'],
+                ['NumberedList', 'BulletedList'],
+                ['Undo', 'Redo']
+            ]
+        });
+
+        function removeCKENotification(){
+            try{
+                $('.cke_notifications_area').remove();
+
+                if($('.cke_notifications_area')){
+                    setTimeout(removeCKENotification, 200);
+                }
+            }
+            catch(e){
+                setTimeout(removeCKENotification, 200);
+            }
+        }
+        removeCKENotification();
+        // Hàm render bình luận
+        function renderComments(comments) {
+            var container = $('#comments-list');
+            container.empty();
+            if (comments.length === 0) {
+                container.html('<p>Chưa có bình luận nào.</p>');
+                return;
+            }
+
+            comments.forEach(comment => {
+                var likeClass = comment.userLiked ? 'fa-solid fa-thumbs-up' : 'fa-regular fa-thumbs-up';
+                var dislikeClass = comment.userDisliked ? 'fa-solid fa-thumbs-down' : 'fa-regular fa-thumbs-down';
+                var btnRemove = `<button class="btn remove-cmt me-2" data-comment-id="${comment.id}"><i class="fa-solid fa-trash" style="color: #ff0000;"></i> Xóa</button>`;
+                var commentHtml = `
+                    <div class="comment-item mb-3">
+                        <div class="comment-header">
+                            <b>
+                                <a href="/user/details/${comment.userId}">${comment.username}</a>
+                                ${comment.answerToUserId != null ? ` đã trả lời <a class="text-danger" href="/user/details/${comment.answerToUserId}">${comment.answerToUser}</a>` : ''}
+                            </b>
+                            <span class="text-muted"> - ${new Date(comment.createdDate).toLocaleString('vi-VN')}</span>
+                            
+                        </div>
+                        <hr/>
+                        <div class="comment-content">${comment.content}</div>
+
+                        <div class="comment-actions mt-3">
+                            <button class="btn  btn reply-btn me-3" data-comment-id="${comment.id}">Trả lời</button>
+                            <button class="btn  like-btn me-2" data-comment-id="${comment.id}">
+                                <i class="${likeClass}"></i> (${comment.likeCount})
+                            </button>
+                            <button class="btn  dislike-btn me-2" data-comment-id="${comment.id}">
+                                <i class="${dislikeClass}"></i> (${comment.dislikeCount})
+                            </button>
+                            ${comment.canDelete ? btnRemove : ''}
+                        </div>
+                    </div>
+                `;
+
+                container.append(commentHtml);
+                
+            });
+        }
+
+        // Tải bình luận khi trang load
+        $(document).ready(function () {
+            $.get('@Url.Action("GetComments", "Exercise")', { exerciseId: @Model.Id }, function (response) {
+                if (response.status) {
+                    $('#comment-count').text(response.comments.length);
+                    renderComments(response.comments);
+                } else {
+                    $('#comments-list').html('<p>Chưa có bình luận nào.</p>');
+                }
+            });
+        });
+
+        // Xử lý form bình luận qua AJAX
+        $('#comment-form').submit(function (e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+            formData.set('Content', CKEDITOR.instances['comment-content'].getData());
+            $('#btn-send-comment').prop('disabled', true).text('Đang gửi...');
+            $.ajax({
+                url: '@Url.Action("AddComment", "Exercise")',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    $('#btn-send-comment').prop('disabled', false).text('Gửi bình luận');
+                    if (response.status) {
+                        $.get('@Url.Action("GetComments", "Exercise")', { exerciseId: @Model.Id }, function (res) {
+                            if (res.status) {
+                                $('#comment-count').text(res.comments.length);
+                                renderComments(res.comments, $('#comments-list'));
+                            }
+                        });
+                        CKEDITOR.instances['comment-content'].setData('');
+                        $('#answer-to-cmt-id').val('');
+                        $('#cancel-reply').addClass('d-none');
+                    } else {
+                        alert(response.message || 'Có lỗi xảy ra.');
+                    }
+                },
+                error: function () {
+                    $('#btn-send-comment').prop('disabled', false).text('Gửi bình luận');
+                    alert('Lỗi kết nối server.');
+                }
+            });
+        });
+
+        // Xử lý nút trả lời
+        $(document).on('click', '.reply-btn', function () {
+            var commentId = $(this).data('comment-id');
+            $('#answer-to-cmt-id').val(commentId);
+            $('#cancel-reply').removeClass('d-none');
+            $('#comment-content').focus();
+            CKEDITOR.instances['comment-content'].setData('');
+            $('html, body').animate({
+                scrollTop: $('#comment-form').offset().top
+            }, 500);
+        });
+
+        // Hủy trả lời
+        $('#cancel-reply').click(function () {
+            $('#answer-to-cmt-id').val('');
+            $(this).addClass('d-none');
+            CKEDITOR.instances['comment-content'].setData('');
+        });
+
+        // Xử lý like
+        $(document).on('click', '.like-btn', function () {
+            var commentId = $(this).data('comment-id');
+            $.post('@Url.Action("LikeComment", "Exercise")', { commentId: commentId }, function (response) {
+                if (response.status) {
+                    $.get('@Url.Action("GetComments", "Exercise")', { exerciseId: @Model.Id }, function (res) {
+                        if (res.status) {
+                            $('#comment-count').text(res.comments.length);
+                            renderComments(res.comments, $('#comments-list'));
+                        }
+                    });
+                } else {
+                    alert(response.message || 'Có lỗi xảy ra.');
+                }
+            });
+        });
+
+        // Xử lý dislike
+        $(document).on('click', '.dislike-btn', function () {
+            var commentId = $(this).data('comment-id');
+            $.post('@Url.Action("DislikeComment", "Exercise")', { commentId: commentId }, function (response) {
+                if (response.status) {
+                    $.get('@Url.Action("GetComments", "Exercise")', { exerciseId: @Model.Id }, function (res) {
+                        if (res.status) {
+                            $('#comment-count').text(res.comments.length);
+                            renderComments(res.comments, $('#comments-list'));
+                        }
+                    });
+                } else {
+                    alert(response.message || 'Có lỗi xảy ra.');
+                }
+            });
+        });
+
+        // Xử lý xóa bình luận
+        $(document).on('click', '.remove-cmt', async function () {
+            var commentId = $(this).data('comment-id');
+            if (await confirmAction("Bạn có chắc muốn xóa bình luận này?")) {
+                $.post('@Url.Action("DeleteComment", "Exercise")', { commentId: commentId }, function (response) {
+                    if (response.status) {
+                        $.get('@Url.Action("GetComments", "Exercise")', { exerciseId: @Model.Id }, function (res) {
+                            if (res.status) {
+                                $('#comment-count').text(res.comments.length);
+                                renderComments(res.comments, $('#comments-list'));
+                            }
+                        });
+                    } else {
+                        alert(response.message || 'Có lỗi xảy ra.');
+                    }
+                });
+            }
+        });
+    </script>
+    
+    
     <script>
 
         // CODE SECTION
@@ -534,6 +812,12 @@
                 }
             }
 
+            // Handle connection closed event
+            connection.onclose(async () => {
+                console.warn("SignalR connection closed. Attempting to reconnect...");
+                await startSignalR();
+            });
+
             connection.on("ReceiveTestCaseResult", function (testCaseResult) {
                 console.log("Received test case result: ", testCaseResult);
 
@@ -551,7 +835,7 @@
 
                 // Generate result HTML
                 const resultHtml = `
-                    <div class="test-case-result ${testCaseResult.isCorrect ? 'passed' : 'failed'} ">
+                    <div class="test-case-no-${testCaseResult.testCaseIndex} test-case-result ${testCaseResult.isCorrect ? 'passed' : 'failed'} ">
                         <div class="d-flex align-items-center">
                             <span class="status-icon">
                                 ${testCaseResult.isCorrect ? '✅' : '❌'}
@@ -566,7 +850,11 @@
                     </div>
                 `;
                 $("#test-case-results").append(resultHtml);
-
+                document.querySelector(`.test-case-no-${testCaseResult.testCaseIndex}`).scrollIntoView({
+                    behavior: 'smooth', // 'auto' hoặc 'smooth'
+                    block: 'center'     // 'start', 'center', 'end', 'nearest'
+                });
+                
                 // Update marking status badge
                 $("#marking-status").text(testCaseResult.isFinalResult ? "Hoàn tất" : "Đang chấm...");
 
@@ -607,12 +895,11 @@
 
                 // Clear previous results
                 $("#test-case-results").empty();
-
-
+                
 
                 try {
                     await $.ajax({
-                        url: "/Exercise/Marking",
+                        url: "/Marking/Marking",
                         type: "POST",
                         data: {
                             ExerciseId: exerciseId,
@@ -622,7 +909,7 @@
                         success: function (response) {
                             if (response.status) {
                                 const resultHtml = `
-                                    <div class="alert ${response.data.isAllCorrect ? 'alert-success' : 'alert-warning'}">
+                                    <div class="finalresult alert ${response.data.isAllCorrect ? 'alert-success' : 'alert-warning'}">
                                         <h5>Kết quả chấm điểm:</h5>
                                         <p><strong>Trạng thái:</strong> ${response.data.isAllCorrect ? 'Tất cả đúng' : 'Có test case sai'}</p>
                                         <p><strong>Điểm số:</strong> ${response.data.score}/100</p>
@@ -632,6 +919,10 @@
                                 `;
                                 $("#test-case-results").prepend(resultHtml); // Prepend instead of append
                                 $("#btn-marking").prop("disabled", false).text("CHẤM ĐIỂM");
+                                document.querySelector('.finalresult').scrollIntoView({
+                                    behavior: 'smooth', // 'auto' hoặc 'smooth'
+                                    block: 'center'     // 'start', 'center', 'end', 'nearest'
+                                });
                             } else {
                                 const errorHtml = `
                                     <div class="alert alert-danger">
@@ -688,7 +979,7 @@
                 addParamToCurrentUrl("tab", "code");
                 $("#view-title").removeClass("active");
                 $("#code-title").addClass("active");
-                $("#content-section").slideUp(300, function () {
+                $("#view-content-section").slideUp(300, function () {
                     $("#input-tab").addClass("d-none");
                     $("#code-section").removeClass("d-none").slideDown(300);
                 });
@@ -698,7 +989,7 @@
                 $("#code-title").removeClass("active");
                 $("#code-section").slideUp(300, function () {
                     $("#input-tab").addClass("d-none");
-                    $("#content-section").removeClass("d-none").slideDown(300);
+                    $("#view-content-section").removeClass("d-none").slideDown(300);
                 });
             }
         }

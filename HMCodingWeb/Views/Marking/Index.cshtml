@@ -188,9 +188,9 @@
                         var sourceCode = response.data.sourceCode || '';
                         var language = getProgramLanguageMode(response.data.programLanguageName);
 
+                        editor.setTheme(response.data.theme);
                         editor.session.setMode(language);
                         editor.setValue(sourceCode, -1); // -1 to move cursor to start
-
                         // Set result content in textarea
                         $('#resultContent').val(response.data.resultContent || '');
 

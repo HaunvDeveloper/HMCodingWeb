@@ -32,25 +32,25 @@
                 <input type="hidden" asp-for="Id" />
 
                 <div class="form-group mb-3">
-                    <label asp-for="Fullname" class="form-label"></label>
+                    <label asp-for="Fullname" class="form-label">Họ và tên</label>
                     <input asp-for="Fullname" class="form-control" />
                     <span asp-validation-for="Fullname" class="text-danger"></span>
                 </div>
 
                 <div class="form-group mb-3">
-                    <label asp-for="Email" class="form-label"></label>
+                    <label asp-for="Email" class="form-label">Email</label>
                     <input asp-for="Email" class="form-control" />
                     <span asp-validation-for="Email" class="text-danger"></span>
                 </div>
 
                 <div class="form-group mb-3">
-                    <label asp-for="PhoneNumber" class="form-label"></label>
+                    <label asp-for="PhoneNumber" class="form-label">Số điện thoại</label>
                     <input asp-for="PhoneNumber" class="form-control" />
                     <span asp-validation-for="PhoneNumber" class="text-danger"></span>
                 </div>
 
                 <div class="form-group mb-3">
-                    <label asp-for="Birthday" class="form-label"></label>
+                    <label asp-for="Birthday" class="form-label">Ngày sinh</label>
                     <input asp-for="Birthday" class="form-control" type="date" />
                     <span asp-validation-for="Birthday" class="text-danger"></span>
                 </div>
@@ -58,7 +58,7 @@
                 
 
                 <div class="form-group mb-3">
-                    <label asp-for="ThemeCodeId" class="form-label">Theme</label>
+                    <label asp-for="ThemeCodeId" class="form-label">Theme Code</label>
                     <select asp-for="ThemeCodeId" class="form-control"
                             asp-items="@(new SelectList(ViewBag.Themes, "Id", "ThemeCode"))"></select>
                     <span asp-validation-for="ThemeCodeId" class="text-danger"></span>
@@ -98,7 +98,10 @@
                          class="img-fluid mt-2" style="max-width: 100px;" alt="Current Avatar" />
                 } *@
             </div>
-            
+            <div class="form-group mt-4 text-lg-end">
+                <a asp-action="ChangePasswordProfile" asp-controller="User"
+                   class="btn btn-danger ms-2">Đổi mật khẩu</a>
+            </div>
             <div class="form-group mt-4 text-lg-end">
                 <button id="btn-submit" type="submit" class="btn btn-primary">Save Changes</button>
                 <a asp-action="Details" asp-controller="User" asp-route-id="@Model.Id"

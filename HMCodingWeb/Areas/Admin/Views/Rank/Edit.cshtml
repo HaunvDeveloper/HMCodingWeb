@@ -1,0 +1,118 @@
+﻿@model HMCodingWeb.Areas.Admin.Models.EditRankViewModel
+
+@{
+    ViewData["Title"] = "Chỉnh sửa Rank";
+}
+@section Links {
+    <link rel="stylesheet" href="~/css/course.css">
+
+}<!-- Không cần dùng form -->
+<div class="container">
+    <div class="table-container m-4 table-responsive">
+        <input type="hidden" id="RankId" value="@Model.Id" />
+
+        <div class="mb-3">
+            <label class="form-label">Rank Code</label>
+            <input id="RankCode" class="form-control" value="@Model.RankCode" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Rank Name</label>
+            <input id="RankName" class="form-control" value="@Model.RankName" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Min Limit Point</label>
+            <input id="MinLimitPoint" type="number" class="form-control" value="@Model.MinLimitPoint" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Max Limit Point</label>
+            <input id="MaxLimitPoint" type="number" class="form-control" value="@Model.MaxLimitPoint" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea id="Description" class="form-control">@Model.Description</textarea>
+        </div>
+
+        <hr />
+        <h4>Thiết lập điều kiện theo độ khó</h4>
+        <table class="table table-bordered">
+            <thead class="table-primary">
+                <tr>
+                    <th>Độ khó</th>
+                    <th>Số bài yêu cầu (AtLeast)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.DifficultyPrerequisites.Count; i++)
+                {
+                    <tr>
+                        <td>
+                            @Model.DifficultyPrerequisites[i].DifficultyName
+                            <input type="hidden" class="diff-id" value="@Model.DifficultyPrerequisites[i].DifficultyId" />
+                            <input type="hidden" class="diff-name" value="@Model.DifficultyPrerequisites[i].DifficultyName" />
+                        </td>
+                        <td>
+                            <input type="number" min="0" class="form-control at-least" value="@Model.DifficultyPrerequisites[i].AtLeast" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <button id="saveRankBtn" class="btn btn-primary">Lưu thay đổi</button>
+        <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        $('#saveRankBtn').on('click', function () {
+            const data = {
+                Id: $('#RankId').val(),
+                RankCode: $('#RankCode').val(),
+                RankName: $('#RankName').val(),
+                MinLimitPoint: parseInt($('#MinLimitPoint').val()),
+                MaxLimitPoint: parseInt($('#MaxLimitPoint').val()),
+                Description: $('#Description').val(),
+                DifficultyPrerequisites: []
+            };
+
+            // Duyệt từng dòng bảng điều kiện độ khó
+            $('tbody tr').each(function () {
+                const row = $(this);
+                const difficultyId = parseInt(row.find('.diff-id').val());
+                const difficultyName = row.find('.diff-name').val();
+                const atLeast = parseInt(row.find('.at-least').val());
+
+                data.DifficultyPrerequisites.push({
+                    DifficultyId: difficultyId,
+                    DifficultyName: difficultyName,
+                    AtLeast: atLeast
+                });
+            });
+
+            $.ajax({
+                url: '@Url.Action("Edit")',
+                type: 'POST',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                success: function (response) {
+                    if (!response.status) {
+                        alert("Có lỗi xảy ra: " + response.message);
+                        return;
+                    }
+                    showAlert('success', "Lưu thành công!");
+                    setTimeout(function () {
+                        window.location.href = '@Url.Action("Index")';
+                    }, 1000);   
+                },
+                error: function (xhr) {
+                    alert("Có lỗi xảy ra!");
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+    </script>
+}

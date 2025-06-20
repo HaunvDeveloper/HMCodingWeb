@@ -1,20 +1,18 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
-#include<fstream>
 using namespace std;
 
 bool isPrime(int x) {
     if (x < 2) return false;
-    int sqrtX = x;
-    for (int i = 2; i < sqrtX; ++i) {
+    int sqrtX = sqrt(x);
+    for (int i = 2; i <= sqrtX; ++i) {
         if (x % i == 0) return false;
     }
     return true;
 }
 
 int main() {
-    ifstream fin("input.txt");
     int n;
     cin >> n;
     vector<int> a(n);

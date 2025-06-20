@@ -11,12 +11,16 @@ namespace HMCodingWeb.Controllers
         private readonly ILogger<MarkingController> _logger;
         private readonly OnlineCodingWebContext _context;
         private readonly MarkingService _markingService;
+        private readonly UserPointService _userPointService;
+        private readonly RankingService _rankingService;
 
-        public MarkingController(ILogger<MarkingController> logger, OnlineCodingWebContext context, MarkingService markingService)
+        public MarkingController(ILogger<MarkingController> logger, OnlineCodingWebContext context, MarkingService markingService, UserPointService userPointService, RankingService rankingService)
         {
             _logger = logger;
             _context = context;
             _markingService = markingService;
+            _userPointService = userPointService;
+            _rankingService = rankingService;
         }
 
 
@@ -126,7 +130,11 @@ namespace HMCodingWeb.Controllers
             long userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             string userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? string.Empty;
 
-
+            var userTheme = _context.Users
+                .Include(u => u.ThemeCode)
+                .Where(u => u.Id == userId)
+                .Select(u => u.ThemeCode.ThemeCode)
+                .FirstOrDefault();
 
             var marking = await _context.Markings
                 .Include(x => x.ProgramLanguage)
@@ -135,8 +143,10 @@ namespace HMCodingWeb.Controllers
                     Id = m.Id,
                     SourceCode = m.SourceCode,
                     ResultContent = m.ResultContent,
+                    Theme = "ace/theme/" + userTheme,
                     ProgramLanguageName = m.ProgramLanguage.ProgramLanguageCode,
                     UserId = m.UserId,
+                    ExerciseId = m.ExerciseId,
                 })
                 .FirstOrDefaultAsync(m => m.Id == id);
 
@@ -145,11 +155,56 @@ namespace HMCodingWeb.Controllers
             {
                 return Json(new { status = false, error = "Không tìm thấy bài nộp" });
             }
-            if(marking.UserId != userId && userRole != "admin" && userRole != "teacher")
+            if(marking.UserId != userId && userRole != "admin" && userRole != "teacher" && _context.Markings.Any(x => x.IsAllCorrect == true && x.ExerciseId == marking.ExerciseId && x.UserId == userId))
             {
                 return Json(new { status = false, error = "Bạn không có quyền xem bài nộp này" });
             }
             return Json(new { status = true, data = marking });
         }
+
+
+        [HttpPost]
+        public async Task<IActionResult> Marking(long ExerciseId, int ProgramLanguageId, string SourceCode)
+        {
+            try
+            {
+                if (HttpContext.Session.GetString("IsRunning") == "true")
+                {
+                    return Json(new { status = false, message = "Đang có một tiến trình chạy, vui lòng đợi!" });
+                }
+                HttpContext.Session.SetString("IsRunning", "true");
+                long userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+                var marking = await _markingService.Marking(ExerciseId, ProgramLanguageId, SourceCode, userId);
+                HttpContext.Session.SetString("IsRunning", "false");
+
+
+                int pointGain = 0;
+                if (marking.IsAllCorrect)
+                {
+                    // If the marking is successful, add points to the user
+                    pointGain = await _userPointService.AddPointPassedExercise(userId, ExerciseId);
+                }
+                _context.Markings.Add(marking);
+                await _context.SaveChangesAsync();
+
+                var isGainRank = false;
+                var newRank = "";
+                if (pointGain > 0)
+                {
+                    var obj = await _rankingService.UpdateRankUser(userId);
+                    isGainRank = obj.isGain;
+                    newRank = obj.rankName;
+                }
+                return Json(new { status = true, data = new { marking.IsAllCorrect, marking.ResultContent, marking.Score, marking.IsError, pointGain, isGainRank, newRank } });
+            }
+            catch (Exception ex)
+            {
+                HttpContext.Session.SetString("IsRunning", "false");
+                _logger.LogError(ex, "Error during marking");
+                return Json(new { status = false, error = ex.Message });
+            }
+        }
+
+
     }
 }

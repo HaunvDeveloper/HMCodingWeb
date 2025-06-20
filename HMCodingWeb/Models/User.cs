@@ -41,15 +41,19 @@ public partial class User
 
     public byte[]? AvartarImage { get; set; }
 
+    public virtual ICollection<Announcement> Announcements { get; set; } = new List<Announcement>();
+
     public virtual Authority Auth { get; set; } = null!;
 
     public virtual ICollection<Codepad> Codepads { get; set; } = new List<Codepad>();
 
+    public virtual ICollection<CommentToExercise> CommentToExercises { get; set; } = new List<CommentToExercise>();
+
     public virtual ICollection<CopyPasteHistory> CopyPasteHistories { get; set; } = new List<CopyPasteHistory>();
 
-    public virtual ICollection<Exercise> Exercises { get; set; } = new List<Exercise>();
-
     public virtual ICollection<Marking> Markings { get; set; } = new List<Marking>();
+
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
     public virtual ProgramLanguage ProgramLanguage { get; set; } = null!;
 

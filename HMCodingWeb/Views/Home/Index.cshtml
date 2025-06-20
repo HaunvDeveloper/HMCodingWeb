@@ -1,4 +1,350 @@
-﻿
-<div class="text-center mt-5">
-    <h1 class="display-4">Welcome</h1>
+﻿@{
+    ViewData["Title"] = "Thông báo mới nhất";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var exercises = ViewBag.NewExercises as List<HMCodingWeb.Models.Exercise>;
+}
+
+<div class="container mt-4 mb-3">
+    @if (User.IsInRole("admin") || User.IsInRole("teacher"))
+    {
+        <button id="show-create" class="btn ml-2 btn-outline-info">VIẾT BÀI ĐĂNG</button>
+        <div id="create-editor" class="card shadow-sm border-0 mt-2 rounded-4 p-0 animation-hidden">
+            <h2 class="mb-4">✍️ Tạo Thông Báo Mới</h2>
+            <div>
+                <div class="mb-3">
+                    <label for="Title" class="form-label">Tiêu đề</label>
+                    <input id="Title" name="Title" class="form-control" placeholder="Nhập tiêu đề" />
+                    <span for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label for="Content" class="form-label">Nội dung</label>
+                    <textarea name="Content" class="form-control" id="editor"></textarea>
+                    <span for="Content" class="text-danger"></span>
+                </div>
+
+                <button id="btn-send" type="submit" class="btn btn-primary">Đăng thông báo</button>
+            </div>
+        </div>
+    }
+
+    <h2 class="mb-4 mt-3">📰 Thông báo mới nhất</h2>
+
+    <div class="container my-4">
+        <div class="row flex-lg-nowrap">
+            <!-- LEFT SIDE -->
+            <div class="col-lg-8 col-12 mb-4">
+                <div class="d-flex flex-column gap-3">
+                    <div id="announcement-list" class="grid gap-4"></div>
+                    <div id="load-more-container" class="text-center mt-3">
+                        <button id="load-more" class="btn btn-outline-primary">XEM THÊM</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT SIDE (Sidebar / Bài tập hôm nay) -->
+            <div class="col-lg-4 col-12">
+                <div class="sticky-top" style="top: 80px;">
+                    <div class="card shadow border-0 rounded-4">
+                        <div class="card-header bg-primary text-white rounded-top-4">
+                            <i class="bi bi-person-fill"></i> <strong>BÀI TẬP MỚI NHẤT</strong>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                @if (exercises != null && exercises.Any())
+                                {
+                                    @foreach (var ex in exercises)
+                                    {
+                                        <li class="list-group-item">
+                                            <a asp-action="Code" asp-controller="Exercise" asp-route-id="@ex.Id" style="text-decoration:none">
+                                                ✔️ @ex.ExerciseName
+                                            </a>
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.ckeditor.com/4.22.1/full/ckeditor.js"></script>
+
+    <script>
+                
+        CKEDITOR.replace('editor', {
+            extraPlugins: 'justify,table,link',
+            toolbar: [
+                { name: 'document', items: ['Source', '-', 'NewPage', 'Preview', 'Print', '-', 'Templates'] },
+                { name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'] },
+                { name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'SpellChecker', 'Scayt'] },
+                { name: 'forms', items: ['Form', 'Checkbox', 'Radio', 'TextField', 'Textarea', 'Select', 'Button', 'ImageButton', 'HiddenField'] },
+                '/',
+                { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat'] },
+                { name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl', 'Language'] },
+                { name: 'links', items: ['Link', 'Unlink', 'Anchor'] },
+                { name: 'insert', items: ['Image', 'Flash', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak', 'Iframe'] },
+                '/',
+                { name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize'] },
+                { name: 'colors', items: ['TextColor', 'BGColor'] },
+                { name: 'tools', items: ['Maximize', 'ShowBlocks'] },
+                { name: 'others', items: ['Ruler'] }
+            ]
+        });
+
+        function removeCKENotification(){
+            try{
+                $('.cke_notifications_area').remove();
+                if($('.cke_notifications_area')){
+                    setTimeout(removeCKENotification, 100);
+                }
+            }
+            catch(e){
+                setTimeout(removeCKENotification, 100);
+            }
+        }
+        removeCKENotification();
+    </script>
+    <script>
+        $(document).ready(function () {
+            let start = 0;
+            const pageSize = 5;
+
+            function loadAnnouncements(startIndex = 0, append = false){
+                $.getJSON(`/Home/GetLatestAnnouncements?start=${startIndex}&length=${pageSize}`, function (data) {
+                    var container = $('#announcement-list');
+                    if (data.length === 0 && startIndex === 0) {
+                        container.append('<div class="text-muted">Không có thông báo nào.</div>');
+                        $('#load-more-container').hide();
+                        return;
+                    }
+                    if(!append){
+                        container.empty(); // Clear previous announcements
+                    }
+
+                    data.forEach(item => {
+                        const canEdit = item.canEdit ? `
+                            <button class="btn btn-sm btn-outline-secondary me-2 edit-btn" data-id="${item.id}">
+                                <i class="fa-solid fa-pen"></i> Sửa
+                            </button>` : '';
+                        const canDelete = item.canEdit ? `
+                            <button class="btn btn-sm btn-outline-danger remove-item me-2" data-id="${item.id}">
+                                <i class="fa-solid fa-trash"></i> Xóa
+                            </button>` : '';
+                        const card = `
+                        <div class="card shadow-sm border-0 mb-3 rounded-4" data-id="${item.id}">
+                            <div class="card-header bg-primary text-white rounded-top-4 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-person-fill"></i>
+                                    <a class="text-success" href="/user/details/${item.createdByUserId}">${item.createdByUserName}</a>
+                                    | ${item.createdAt}
+                                </div>
+                                <div>
+                                    ${canEdit}
+                                    ${canDelete}
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title" id="title-${item.id}">${item.title}</h5>
+                                <hr/>
+                                <div class="card-text announcement-content" id="content-${item.id}" style="white-space:normal;">
+                                    ${item.content}
+                                </div>
+                            </div>
+                        </div>`;
+
+                        container.append(card);
+                    });
+
+                    // Hide "Load More" button if fewer than pageSize records are returned
+                    if (data.length < pageSize) {
+                        $('#load-more-container').hide();
+                    } else {
+                        $('#load-more-container').show();
+                    }
+                });
+            }
+            loadAnnouncements();
+
+            $('#load-more').on('click', function () {
+                start += pageSize;
+                loadAnnouncements(start, true);
+            });
+
+            $('#show-create').on('click', function () {
+                $('#create-editor').toggleClass('animation-visible animation-hidden');
+                $('#create-editor').toggleClass('p-4 p-0');
+                $(this).text($(this).text() === 'VIẾT BÀI ĐĂNG' ? 'ẨN FORM' : 'VIẾT BÀI ĐĂNG');
+            });
+
+            $('#btn-send').on('click', function (){
+                var model = {
+                    Title: $('#Title').val(),
+                    Content: CKEDITOR.instances.editor.getData()
+                }
+                var btn = $(this);
+                btn.prop('disabled', true);
+                $.ajax({
+                    url: '/Home/CreateAnnouncement',
+                    type: 'POST',
+                    data: {model},
+                    success: function (response) {
+                        btn.prop('disabled', false);
+                        if (response.status) {
+                             showToast('success', 'Đăng thành công');
+                            loadAnnouncements();
+                        } else {
+                            showToast('error', 'Đăng không thành công: ' + response.message);
+                        }
+                    },
+                    error: function () {
+                        btn.prop('disabled', false);
+                        alert('Đã xảy ra lỗi khi gửi yêu cầu. Vui lòng thử lại sau.');
+                    }
+                });
+            });
+
+            $(document).on('click', '.edit-btn', function () {
+                var id = $(this).data('id');
+                var $titleDiv = $(`#title-${id}`);
+                var $contentDiv = $(`#content-${id}`);
+
+                // Lưu bản gốc phòng khi cancel
+                var originalTitle = $titleDiv.text();
+                var originalContent = $contentDiv.html();
+                // Thêm nút lưu và hủy
+                $contentDiv.after(`
+                        <button class="btn btn-primary btn-sm mt-2" id="save-${id}">
+                            💾 Lưu thay đổi
+                        </button>
+
+                        <button class="btn btn-outline-secondary btn-sm mt-2 ms-2 cancel-edit" id="cancel-${id}">
+                            ❌ Hủy
+                        </button>
+
+                        `);
+                // Thêm input cho tiêu đề và textarea cho nội dung
+                $titleDiv.replaceWith(`
+                    <div class="mb-3">
+                        <label for="edit-title-${id}" class="form-label">Tiêu đề</label>
+                        <input id="edit-title-${id}" class="form-control" value="${originalTitle}" />
+                    </div>
+                `);
+                $contentDiv.replaceWith(`
+                    <div class="mb-3">
+                        <label for="edit-box-${id}" class="form-label">Nội dung</label>
+                        <textarea id="edit-box-${id}" class="form-control">${originalContent}</textarea>
+                    </div>
+                `);
+
+                // Khởi tạo CKEditor cho nội dung
+                CKEDITOR.replace(`edit-box-${id}`, {
+                    height: 400
+                });
+
+                
+            });
+
+            $(document).on('click', '[id^="cancel-"]', function () {
+                var id = $(this).attr('id').replace('cancel-', '');
+                var editorId = `edit-box-${id}`;
+                var titleId = `edit-title-${id}`;
+                var originalTitle = $(`#${titleId}`).val();
+                var originalContent = CKEDITOR.instances[editorId].getData();
+
+                // Gỡ CKEditor
+                CKEDITOR.instances[editorId].destroy();
+
+                // Trả lại nội dung gốc
+                $(`#${titleId}`).parent().replaceWith(`
+                    <h5 class="card-title" id="title-${id}">${originalTitle}</h5>
+                `);
+                $(`#${editorId}`).parent().replaceWith(`
+                    <div class="card-text announcement-content" id="content-${id}" style="white-space:normal;">
+                        ${originalContent}
+                    </div>
+                `);
+
+                // Xóa nút lưu và hủy
+                $(`#save-${id}, #cancel-${id}`).remove();
+            });
+
+            $(document).on('click', '[id^="save-"]', function () {
+                var id = $(this).attr('id').replace('save-', '');
+                var editorId = `edit-box-${id}`;
+                var titleId = `edit-title-${id}`;
+                var newTitle = $(`#${titleId}`).val();
+                var newContent = CKEDITOR.instances[editorId].getData();
+
+                if(newTitle.trim() === '' || newContent.trim() === '') {
+                    showToast('error', 'Tiêu đề và nội dung không được để trống');
+                    return;
+                }
+
+                // Disable nút lưu tạm thời
+                var $btn = $(this);
+                $btn.prop('disabled', true).text('Đang lưu...');
+
+                $.ajax({
+                    url: '/Home/EditAnnouncement',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        title: newTitle,
+                        content: newContent
+                    },
+                    success: function (res) {
+                        if (res.status) {
+                            // Gỡ editor và cập nhật HTML mới
+                            CKEDITOR.instances[editorId].destroy();
+                            $(`#${titleId}`).parent().replaceWith(`
+                                <h5 class="card-title" id="title-${id}">${newTitle}</h5>
+                            `);
+                            $(`#${editorId}`).parent().replaceWith(`
+                                <div class="card-text announcement-content" id="content-${id}" style="white-space:normal;">
+                                    ${newContent}
+                                </div>
+                            `);
+                            $(`#save-${id}, #cancel-${id}`).remove();
+                            showToast('success', 'Cập nhật thành công');
+                        } else {
+                            showToast('error', 'Cập nhật thất bại: ' + res.message);
+                            $btn.prop('disabled', false).text('💾 Lưu thay đổi');
+                        }
+                    },
+                    error: function () {
+                        showToast('error', 'Lỗi kết nối đến server');
+                        $btn.prop('disabled', false).text('💾 Lưu thay đổi');
+                    }
+                });
+            });
+
+            $(document).on('click', '.remove-item', async function () {
+                var id = $(this).data('id');
+                if (await confirmAction('Bạn có chắc chắn muốn xóa thông báo này?')) {
+                    $.ajax({
+                        url: '/Home/DeleteAnnouncement',
+                        type: 'POST',
+                        data: { id: id },
+                        success: function (response) {
+                            if (response.status) {
+                                showToast('success', 'Xóa thành công');
+                                $(`.card[data-id="${id}"]`).remove();
+                            } else {
+                                showToast('error', 'Xóa không thành công: ' + response.message);
+                            }
+                        },
+                        error: function () {
+                            showToast('error', 'Đã xảy ra lỗi khi gửi yêu cầu. Vui lòng thử lại sau.');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

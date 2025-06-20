@@ -128,21 +128,29 @@ namespace HMCodingWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> RunProcessCodepad(RunProcessViewModel model)
         {
-            if (HttpContext.Session.GetString("IsRunning") == "true")
+            try
             {
-                return Json(new { IsError = true, Error = "Đang có một tiến trình chạy, vui lòng đợi!" });
+                if (HttpContext.Session.GetString("IsRunning") == "true")
+                {
+                    return Json(new { IsError = true, Error = "Đang có một tiến trình chạy, vui lòng đợi!" });
+                }
+                HttpContext.Session.SetString("IsRunning", "true");
+                model.UserId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+                model.FileName = "codepadProcess";
+                if (model.RunTime <= 0)
+                    model.RunTime = 1;
+                if (model.RunTime > 10)
+                    model.RunTime = 10;
+                var result = await _runProcessService.RunProcessWithInput(model);
+                HttpContext.Session.SetString("IsRunning", "false");
+
+                return Json(new { IsError = result.IsError, Error = result.Error, Output = result.Output, RunTime = model.RunTime });
             }
-            HttpContext.Session.SetString("IsRunning", "true");
-            model.UserId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-            model.FileName = "codepadProcess";
-            if (model.RunTime <= 0)
-                model.RunTime = 1;
-            if (model.RunTime > 10)
-                model.RunTime = 10;
-            var result = await _runProcessService.RunProcessWithInput(model);
-            HttpContext.Session.SetString("IsRunning", "false");
-            
-            return Json(new { IsError = result.IsError, Error = result.Error, Output = result.Output, RunTime = model.RunTime });
+            catch (Exception ex)
+            {
+                HttpContext.Session.SetString("IsRunning", "false");
+                return Json(new { IsError = true, Error = ex.ToString() });
+            }
         }
 
         [HttpPost]

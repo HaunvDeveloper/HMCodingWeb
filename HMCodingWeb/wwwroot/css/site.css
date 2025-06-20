@@ -95,3 +95,8 @@ main#main{
     opacity: 1;
     transition: max-height 0.7s ease, opacity 0.7s ease;
 }
+
+
+.cke_notifications_area{
+    display: none !important;
+}

@@ -88,7 +88,21 @@
                      Swal.close();
                     if (response.status) {
                         showAlert('success', response.message);
-                        // Kiểm tra redirectUrl, tránh chuỗi "null"
+                        $.ajax({
+                                url: '/User/GetAvatar',
+                                type: 'GET',
+                                success: function (response) {
+                                    if (response.status) {
+                                        if(response.avatar){
+                                            sessionStorage.setItem("UserAvatar", response.avatar);
+                                        } else {
+                                            sessionStorage.removeItem("UserAvatar");
+                                        }
+                                    }else{
+                                        sessionStorage.removeItem("UserAvatar");
+                                    }
+                                }
+                            });
                         var redirectUrl = response.redirectUrl && response.redirectUrl !== "null" ? response.redirectUrl : '/';
                         setTimeout(function () {
                             window.location.href = redirectUrl;

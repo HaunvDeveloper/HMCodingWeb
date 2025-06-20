@@ -17,11 +17,15 @@ public partial class OnlineCodingWebContext : DbContext
 
     public virtual DbSet<AccessRole> AccessRoles { get; set; }
 
+    public virtual DbSet<Announcement> Announcements { get; set; }
+
     public virtual DbSet<Authority> Authorities { get; set; }
 
     public virtual DbSet<Chapter> Chapters { get; set; }
 
     public virtual DbSet<Codepad> Codepads { get; set; }
+
+    public virtual DbSet<CommentToExercise> CommentToExercises { get; set; }
 
     public virtual DbSet<CopyPasteHistory> CopyPasteHistories { get; set; }
 
@@ -37,6 +41,10 @@ public partial class OnlineCodingWebContext : DbContext
 
     public virtual DbSet<MarkingDetail> MarkingDetails { get; set; }
 
+    public virtual DbSet<Notification> Notifications { get; set; }
+
+    public virtual DbSet<Prerequisite> Prerequisites { get; set; }
+
     public virtual DbSet<ProgramLanguage> ProgramLanguages { get; set; }
 
     public virtual DbSet<Rank> Ranks { get; set; }
@@ -46,6 +54,8 @@ public partial class OnlineCodingWebContext : DbContext
     public virtual DbSet<Theme> Themes { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
+
+    public virtual DbSet<UserContactToCommentEx> UserContactToCommentExes { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     { }
@@ -62,6 +72,24 @@ public partial class OnlineCodingWebContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.AccessName).HasMaxLength(50);
             entity.Property(e => e.Description).HasMaxLength(256);
+        });
+
+        modelBuilder.Entity<Announcement>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Announce__3213E83F996492C0");
+
+            entity.ToTable("Announcement");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.IsVisible).HasDefaultValue(true);
+            entity.Property(e => e.Title).HasMaxLength(255);
+
+            entity.HasOne(d => d.CreatedByUser).WithMany(p => p.Announcements)
+                .HasForeignKey(d => d.CreatedByUserId)
+                .HasConstraintName("FK_Announcement_User");
         });
 
         modelBuilder.Entity<Authority>(entity =>
@@ -112,6 +140,29 @@ public partial class OnlineCodingWebContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Codepad_User");
+        });
+
+        modelBuilder.Entity<CommentToExercise>(entity =>
+        {
+            entity.ToTable("CommentToExercise");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CreatedDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.IsApproved).HasDefaultValue(true);
+
+            entity.HasOne(d => d.AnswerToCmt).WithMany(p => p.InverseAnswerToCmt)
+                .HasForeignKey(d => d.AnswerToCmtId)
+                .HasConstraintName("FK_CommentToExercise_CommentToExercise");
+
+            entity.HasOne(d => d.Exercise).WithMany(p => p.CommentToExercises)
+                .HasForeignKey(d => d.ExerciseId)
+                .HasConstraintName("FK_CommentToExercise_Exercise");
+
+            entity.HasOne(d => d.User).WithMany(p => p.CommentToExercises)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_CommentToExercise_User");
         });
 
         modelBuilder.Entity<CopyPasteHistory>(entity =>
@@ -172,11 +223,6 @@ public partial class OnlineCodingWebContext : DbContext
                 .HasForeignKey(d => d.DifficultyId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Exercise_DifficultyLevel");
-
-            entity.HasOne(d => d.UserCreated).WithMany(p => p.Exercises)
-                .HasForeignKey(d => d.UserCreatedId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Exercise_User");
         });
 
         modelBuilder.Entity<ExerciseBelongType>(entity =>
@@ -254,6 +300,42 @@ public partial class OnlineCodingWebContext : DbContext
             entity.HasOne(d => d.Marking).WithMany(p => p.MarkingDetails)
                 .HasForeignKey(d => d.MarkingId)
                 .HasConstraintName("FK_MarkingDetail_Marking");
+        });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.ToTable("Notification");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedNever()
+                .HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Title).HasMaxLength(255);
+            entity.Property(e => e.Type)
+                .HasMaxLength(50)
+                .HasDefaultValue("system");
+
+            entity.HasOne(d => d.ToUser).WithMany(p => p.Notifications)
+                .HasForeignKey(d => d.ToUserId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Notification_User");
+        });
+
+        modelBuilder.Entity<Prerequisite>(entity =>
+        {
+            entity.HasKey(e => new { e.RankId, e.DifficultyId });
+
+            entity.HasOne(d => d.Difficulty).WithMany(p => p.Prerequisites)
+                .HasForeignKey(d => d.DifficultyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Prerequisites_DifficultyLevel");
+
+            entity.HasOne(d => d.Rank).WithMany(p => p.PrerequisitesNavigation)
+                .HasForeignKey(d => d.RankId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Prerequisites_Rank");
         });
 
         modelBuilder.Entity<ProgramLanguage>(entity =>
@@ -345,6 +427,23 @@ public partial class OnlineCodingWebContext : DbContext
                 .HasForeignKey(d => d.ThemeCodeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_User_Theme");
+        });
+
+        modelBuilder.Entity<UserContactToCommentEx>(entity =>
+        {
+            entity.HasKey(e => new { e.UserId, e.CommentExId });
+
+            entity.ToTable("UserContactToCommentEx");
+
+            entity.Property(e => e.ContactDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.IsLike).HasDefaultValue(true);
+
+            entity.HasOne(d => d.CommentEx).WithMany(p => p.UserContactToCommentExes)
+                .HasForeignKey(d => d.CommentExId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_UserContactToCommentEx_CommentToExercise");
         });
 
         OnModelCreatingPartial(modelBuilder);

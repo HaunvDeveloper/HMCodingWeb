@@ -67,7 +67,7 @@
     min-width: 260px;
     height: fit-content;
    
-    top: 5px;
+    top: 55px;
     position: -webkit-sticky;
     position: sticky;
     display: flex;
@@ -401,6 +401,7 @@ span.active{
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     gap: 3px;
     padding: 16px;
+    justify-content:center;
 }
 
 .header-content-child {

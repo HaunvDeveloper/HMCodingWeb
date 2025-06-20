@@ -103,6 +103,9 @@ namespace HMCodingWeb.Services
                     var stopwatch = new Stopwatch();
                     stopwatch.Start();
                     runProcess.Start();
+                    var stdoutTask = runProcess.StandardOutput.ReadToEndAsync();
+                    var stderrTask = runProcess.StandardError.ReadToEndAsync();
+                    var processTask = Task.CompletedTask;
 
                     if (!string.IsNullOrEmpty(model.InputFile))
                     {
@@ -113,22 +116,30 @@ namespace HMCodingWeb.Services
                         {
                             runProcess.StartInfo.Arguments = $" < {inputFilePath}";
                         }
+                        processTask = Task.Run(() =>
+                        {
+                            runProcess.WaitForExit();
+                        });
                     }
-
-                    //STDIN
-                    if (string.IsNullOrEmpty(model.InputFile) && !string.IsNullOrEmpty(model.Input))
+                    else if (!string.IsNullOrEmpty(model.Input))
                     {
-                        await runProcess.StandardInput.WriteLineAsync(model.Input);
-                        await runProcess.StandardInput.FlushAsync();
+                        processTask = Task.Run(async () =>
+                        {
+                            await runProcess.StandardInput.WriteLineAsync(model.Input);
+                            await runProcess.StandardInput.FlushAsync();
+                            runProcess.StandardInput.Close();
+                            runProcess.WaitForExit();
+                        });
                     }
-
-                    runProcess.StandardInput.Close();
-
-                    // Create a task to monitor the process exit
-                    var processTask = Task.Run(() =>
+                    else
                     {
-                        runProcess.WaitForExit();
-                    });
+                        // Create a task to monitor the process exit
+                        processTask = Task.Run(() =>
+                        {
+                            runProcess.WaitForExit();
+                        });
+                    }
+                        
 
                     //wating run time exit
                     if (await Task.WhenAny(processTask, Task.Delay(model.TimeLimit * 1000 ?? 1000)) == processTask)
@@ -154,10 +165,10 @@ namespace HMCodingWeb.Services
                         else
                         {
                             // Read the output if output file is not used
-                            model.Output = await runProcess.StandardOutput.ReadToEndAsync();
+                            model.Output = await stdoutTask;
                         }
 
-                        var runErrors = await runProcess.StandardError.ReadToEndAsync();
+                        var runErrors = await stderrTask;
 
                         // Check for runtime errors
                         if (!string.IsNullOrEmpty(runErrors))
@@ -227,6 +238,9 @@ namespace HMCodingWeb.Services
                     var stopwatch = new Stopwatch();
                     stopwatch.Start();
                     runProcess.Start();
+                    var stdoutTask = runProcess.StandardOutput.ReadToEndAsync();
+                    var stderrTask = runProcess.StandardError.ReadToEndAsync();
+                    var processTask = Task.CompletedTask;
 
                     if (!string.IsNullOrEmpty(model.InputFile))
                     {
@@ -237,20 +251,29 @@ namespace HMCodingWeb.Services
                         {
                             runProcess.StartInfo.Arguments += $" < {inputFilePath}";
                         }
+                        processTask = Task.Run(() =>
+                        {
+                            runProcess.WaitForExit();
+                        });
+                    }else if (!string.IsNullOrEmpty(model.Input))
+                    {
+                        processTask = Task.Run(async () =>
+                        {
+                            await runProcess.StandardInput.WriteLineAsync(model.Input);
+                            await runProcess.StandardInput.FlushAsync();
+                            runProcess.StandardInput.Close();
+                            runProcess.WaitForExit();
+                        });
+                    }
+                    else
+                    {
+                        processTask = Task.Run(() =>
+                        {
+                            runProcess.WaitForExit();
+                        });
                     }
 
-                    if (string.IsNullOrEmpty(model.InputFile) && !string.IsNullOrEmpty(model.Input))
-                    {
-                        await runProcess.StandardInput.WriteLineAsync(model.Input);
-                        await runProcess.StandardInput.FlushAsync();
-                    }
-
-                    runProcess.StandardInput.Close();
-
-                    var processTask = Task.Run(() =>
-                    {
-                        runProcess.WaitForExit();
-                    });
+                    
 
                     if (await Task.WhenAny(processTask, Task.Delay(model.TimeLimit * 1000 ?? 1000)) == processTask)
                     {
@@ -273,10 +296,10 @@ namespace HMCodingWeb.Services
                         }
                         else
                         {
-                            model.Output = await runProcess.StandardOutput.ReadToEndAsync();
+                            model.Output = await stdoutTask;
                         }
 
-                        var runErrors = await runProcess.StandardError.ReadToEndAsync();
+                        var runErrors = await stderrTask;
 
                         if (!string.IsNullOrEmpty(runErrors))
                         {

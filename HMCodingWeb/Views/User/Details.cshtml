@@ -161,10 +161,15 @@
                                 url: '/User/GetAvatar',
                                 type: 'GET',
                                 success: function (response) {
-                                    if (response.status && response.avatar) {
-                                        sessionStorage.setItem("UserAvatar", response.avatar);
-                                        $("#userAvatar").attr("src", "data:image/jpeg;base64," + response.avatar);
+                                    if (response.status) {
+                                        if(response.avatar){
+                                            sessionStorage.setItem("UserAvatar", response.avatar);
+                                        } else {
+                                            sessionStorage.removeItem("UserAvatar");
+                                            $("#userAvatar").attr("src", "/assets/images/avartardefault.jpg");
+                                        }
                                     }else{
+                                        sessionStorage.removeItem("UserAvatar");
                                         $("#userAvatar").attr("src", "/assets/images/avartardefault.jpg");
                                     }
                                 },

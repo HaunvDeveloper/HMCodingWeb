@@ -52,10 +52,13 @@
                         <li class="nav-item">
                             <a class="nav-link @(currentController == "Rank" && currentAction=="RankingList" ? "active" : "")" asp-action="RankingList" asp-controller="Rank">Xếp hạng</a>
                         </li>
-                        
+
                     </ul>
                     @if (User.Identity?.IsAuthenticated ?? false)
                     {
+                        @* <div class="nav-item">
+                            <i class="fa-solid fa-bell mt-3 mb-3" style="color: #065693;font-size:23px"></i>
+                        </div> *@
                         <div class="nav-item dropdown mt-1" style="z-index:1001;">
                             <a class="nav-link dropdown-toggle text-success @(currentController == "User" ? "active" : "")" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
 
@@ -98,7 +101,7 @@
 
 
     <!-- Nội dung body khác -->
-    
+
     <div id="footer">
         <div id="" class="pb-3 pt-3 bg-dark">
             <div class="online-users" style="display:flex; align-items:center; justify-content:center; gap:0.7rem; color: gainsboro;font-weight:500;">
@@ -113,11 +116,11 @@
                 <p>Liên hệ: 0944746748</p>
                 <p>Email: haunv.cntt@gmail.com</p>
             </div>
-            
+
         </div>
     </div>
 
-    
+
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
@@ -163,9 +166,9 @@
             const onlineUsersList = document.getElementById("onlineUsersList");
             if (users && users.length > 0) {
                 const userList = users.map(user => `
-                    <a 
+                    <a
                         style="text-decoration:none;"
-                        class="${getClassNameByAuth(user.auth)}" 
+                        class="${getClassNameByAuth(user.auth)}"
                         title="${getTitleByAuth(user.auth)}"
                         href="/user/details/${user.userId}">
                         ${user.username}
@@ -194,36 +197,41 @@
     @if (User.Identity?.IsAuthenticated ?? false)
     {
         <text>
-        <script>
-            $(document).ready(function () {
-                var avatar = sessionStorage.getItem("UserAvatar");
-                if(avatar) {
-                    $("#userAvatar").attr("src", "data:image/jpeg;base64," + avatar);
-                } else {
-                    $.ajax({
-                        url: '/User/GetAvatar',
-                        type: 'GET',
-                        success: function (response) {
-                            if (response.status && response.avatar) {
-                                sessionStorage.setItem("UserAvatar", response.avatar);
-                                $("#userAvatar").attr("src", "data:image/jpeg;base64," + response.avatar);
-                            }else{
-                                $("#userAvatar").attr("src", "/assets/images/avartardefault.jpg");
-                            }
-                        },
-                        error: function () {
-                            console.log("Failed to load avatar.");
-                            $("#userAvatar").attr("src", "/assets/images/avartardefault.jpg");
-                        }
-                    });
+            <script>
+                $(document).ready(function () {
+                    var avatar = sessionStorage.getItem("UserAvatar");
+                    if(avatar) {
+                        $("#userAvatar").attr("src", "data:image/jpeg;base64," + avatar);
+                    } else {
+                        $.ajax({
+                                    url: '/User/GetAvatar',
+                                    type: 'GET',
+                                    success: function (response) {
+                                        if (response.status) {
+                                            if(response.avatar){
+                                                sessionStorage.setItem("UserAvatar", response.avatar);
+                                            } else {
+                                                sessionStorage.removeItem("UserAvatar");
+                                                $("#userAvatar").attr("src", "/assets/images/avartardefault.jpg");
+                                            }
+                                        }else{
+                                            sessionStorage.removeItem("UserAvatar");
+                                            $("#userAvatar").attr("src", "/assets/images/avartardefault.jpg");
+                                        }
+                                    },
+                                    error: function () {
+                                        console.log("Failed to load avatar.");
+                                        $("#userAvatar").attr("src", "/assets/images/avartardefault.jpg");
+                                    }
+                                });
 
-                }
+                    }
 
-            });
-        </script>
+                });
+            </script>
         </text>
     }
-    
+
     @if (TempData["UserLogin"] != null)
     {
         <script id="tempShowToast">

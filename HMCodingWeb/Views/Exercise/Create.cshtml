@@ -306,9 +306,44 @@
     <script src="https://cdn.ckeditor.com/4.22.1/full/ckeditor.js"></script>
 
     <script>
-        
+        CKEDITOR.plugins.add('insertCustomHtml', {
+            icons: 'insertCustomHtml',
+            init: function(editor) {
+                editor.ui.addButton('InsertCustomHtml', {
+                    label: 'Chèn bảng mẫu',
+                    command: 'insertHtmlCommand',
+                    toolbar: 'insert',
+                    icon: 'https://cdn-icons-png.flaticon.com/512/60/60794.png' // hoặc icon tuỳ chọn
+                });
+
+                editor.addCommand('insertHtmlCommand', {
+                    exec: function(editor) {
+                        const htmlContent = `
+                            <table align="center" border="1" cellpadding="1" cellspacing="1" style="width:500px">
+                                <tbody>
+                                    <tr>
+                                        <td style="text-align:center"><strong>INPUT&nbsp;&nbsp;</strong></td>
+                                        <td style="text-align:center"><strong>OUTPUT</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        `;
+                        editor.insertHtml(htmlContent);
+                    }
+                });
+            }
+        });
+
         CKEDITOR.replace('ex-content', {
-            extraPlugins: 'justify,table,link',
+            extraPlugins: 'justify,table,link,insertCustomHtml',
             height: 600,
             toolbar: [
                 { name: 'document', items: ['Source', '-', 'NewPage', 'Preview', 'Print', '-', 'Templates'] },
@@ -319,7 +354,7 @@
                 { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat'] },
                 { name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl', 'Language'] },
                 { name: 'links', items: ['Link', 'Unlink', 'Anchor'] },
-                { name: 'insert', items: ['Image', 'Flash', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak', 'Iframe'] },
+                { name: 'insert', items: ['Image', 'Flash', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak', 'Iframe', 'InsertCustomHtml'] },
                 '/',
                 { name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize'] },
                 { name: 'colors', items: ['TextColor', 'BGColor'] },
@@ -364,9 +399,19 @@
             }
             
         });
-        setTimeout(()=>{
-             document.querySelector('.cke_notification_close').click();
-         }, 500);
+        function removeCKENotification(){
+            try{
+                $('.cke_notifications_area').remove();
+
+                if($('.cke_notifications_area')){
+                    setTimeout(removeCKENotification, 200);
+                }
+            }
+            catch(e){
+                setTimeout(removeCKENotification, 200);
+            }
+        }
+        removeCKENotification();
     </script>
 
     @* Add or Remove Row Testcase *@

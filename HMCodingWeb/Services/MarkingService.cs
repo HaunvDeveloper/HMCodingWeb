@@ -245,13 +245,8 @@ namespace HMCodingWeb.Services
             }
             else if (TypeMarking == "Tương đối")
             {
-                // Extract numerical values using regex, ignoring whitespace, tabs, and newlines
-                var regex = new Regex(@"[-]?\d*\.?\d+");
-                var numbersA = regex.Matches(a ?? "").Select(m => m.Value).ToList();
-                var numbersB = regex.Matches(b ?? "").Select(m => m.Value).ToList();
-
-                // Compare the lists of numbers
-                return numbersA.SequenceEqual(numbersB);
+                return a.Trim().Equals(b?.Trim(), StringComparison.OrdinalIgnoreCase) ||
+                       (a != null && b != null && Regex.Replace(a, @"\s+", "").Equals(Regex.Replace(b, @"\s+", ""), StringComparison.OrdinalIgnoreCase));
             }
             throw new ArgumentException("Invalid TypeMarking value");
         }

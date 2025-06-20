@@ -266,6 +266,13 @@ namespace HMCodingWeb.Controllers
                     return View(model);
                 }
 
+                //Check password length
+                if(model.Password.Length < 8)
+                {
+                    ViewBag.Alert = "Password có ít nhất 8 ký tự!";
+                    return View(model);
+                }
+
                 Random random = new Random();
                 model.IsBlock = true;
                 model.Otp = random.Next(100000, 999999).ToString();
@@ -518,6 +525,43 @@ namespace HMCodingWeb.Controllers
             return RedirectToAction("Login");
         }
 
-        
+        [Authorize]
+        public IActionResult ChangePasswordProfile()
+        {
+            var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            var user = _context.Users.Find(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return View(user);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> ChangePasswordProfile(string oldpassword, string password)
+        {
+            var currentUserId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            var user = await _context.Users.FindAsync(currentUserId);
+            if (user?.Password != oldpassword)
+            {
+                ViewBag.Alert = "Mật khẩu cũ không chính xác!"; 
+                return View();
+            }
+            if (string.IsNullOrEmpty(password) || password.Length < 8)
+            {
+                ViewBag.Alert = "Mật khẩu mới phải có ít nhất 8 ký tự.";
+                return View();
+            }
+            if (password == oldpassword)
+            {
+                ViewBag.Alert = "Mật khẩu mới không được trùng với mật khẩu cũ.";
+                return View();
+            }
+            user.Password = password;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Details", new { id = currentUserId });
+        }
     }
 }

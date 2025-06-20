@@ -14,4 +14,6 @@ public partial class DifficultyLevel
     public int Point { get; set; }
 
     public virtual ICollection<Exercise> Exercises { get; set; } = new List<Exercise>();
+
+    public virtual ICollection<Prerequisite> Prerequisites { get; set; } = new List<Prerequisite>();
 }

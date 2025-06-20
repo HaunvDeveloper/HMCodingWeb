@@ -1,0 +1,73 @@
+﻿@model IEnumerable<HMCodingWeb.Areas.Admin.Models.RankViewModel>
+
+@{
+    ViewData["Title"] = "Danh sách Rank";
+}
+@section Links {
+    <link rel="stylesheet" href="~/css/course.css">
+   
+}
+<div class="container">
+    <div class="table-container m-4 table-responsive">
+        <h4 class="text-center mb-4 mt-2 text-danger" style="font-size:30px;font-weight:bold;">DANH SÁCH RANK</h4>
+        <div class="d-flex justify-content-start mb-3 align-items-center flex-wrap gap-2">
+            <button class="btn btn-primary btn-update-all">Cập nhật rank tất cả</button>
+        </div>
+        <table class="table table-bordered table-hover">
+            <thead class="table-primary">
+                <tr>
+                    <th class="text-light">Id</th>
+                    <th class="text-light">Mã Rank</th>
+                    <th class="text-light">Tên Rank</th>
+                    <th class="text-light">Số người đạt</th>
+                    <th class="text-light">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var rank in Model)
+                {
+                    <tr>
+                        <td>@rank.Id</td>
+                        <td>@rank.RankCode</td>
+                        <td>@rank.RankName</td>
+                        <td>@rank.UserCount</td>
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@rank.Id" class="btn btn-sm btn-primary">Sửa</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts{
+    <script>
+        $('.btn-update-all').on('click', function (event){
+            event.preventDefault();
+            if (confirm("Bạn có chắc muốn cập nhật rank cho tất cả người dùng?")) {
+                Swal.fire({
+                    title: 'Đang xử lý...',
+                    text: 'Vui lòng chờ giây lát',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                $.ajax({
+                    url: '@Url.Action("UpdateAllRanks", "Rank")',
+                    type: 'POST',
+                    success: function (response) {
+                        Swal.close();
+                        alert("Cập nhật rank thành công!");
+                        location.reload();
+                    },
+                    error: function (xhr, status, error) {
+                        Swal.close();
+                        alert("Đã xảy ra lỗi khi cập nhật rank: " + error);
+                    }
+                });
+            }
+        })
+    </script>
+}
