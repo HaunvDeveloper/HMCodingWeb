@@ -12,36 +12,10 @@
             <th>Tên bài</th>
             <th>
                 Độ khó
-                <span class="sort-icon material-symbols-outlined"
-                      data-column="difficulty"
-                      data-order="@(ViewBag.SortBy == "difficulty" ? (ViewBag.SortOrder == "asc" ? "desc" : "asc") : "asc")"
-                      style="cursor: pointer; vertical-align: middle;">
-                    @if (ViewBag.SortBy == "difficulty")
-                    {
-                        @(ViewBag.SortOrder == "asc" ? "arrow_upward" : "arrow_downward")
-                    }
-                    else
-                    {
-                        @:sort
-                    }
-                </span>
             </th>
             <th>Dạng bài</th>
             <th class="d-sm-table-cell">
                 Làm đúng
-                <span class="sort-icon material-symbols-outlined"
-                      data-column="success"
-                      data-order="@(ViewBag.SortBy == "success" ? (ViewBag.SortOrder == "asc" ? "desc" : "asc") : "asc")"
-                      style="cursor: pointer; vertical-align: middle;">
-                    @if (ViewBag.SortBy == "success")
-                    {
-                        @(ViewBag.SortOrder == "asc" ? "arrow_upward" : "arrow_downward")
-                    }
-                    else
-                    {
-                        @:sort
-                    }
-                </span>
             </th>
             <th class="d-sm-table-cel"></th>
             <th class="d-sm-table-cel"></th>

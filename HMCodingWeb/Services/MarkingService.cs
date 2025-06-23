@@ -3,6 +3,7 @@ using HMCodingWeb.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
+using HMCodingWeb.ViewModels;
 
 namespace HMCodingWeb.Services
 {
@@ -130,6 +131,12 @@ namespace HMCodingWeb.Services
                 throw new Exception("Exercise not found");
             }
 
+
+            var testCases = _context.TestCases
+                .Where(tc => tc.ExerciseId == ExerciseId)
+                .OrderBy(tc => tc.Position)
+                .ToList();
+
             var model = new Marking
             {
                 ExerciseId = ExerciseId,
@@ -147,13 +154,11 @@ namespace HMCodingWeb.Services
                 IsAllCorrect = false,
                 Score = 0,
                 CorrectTestNumber = 0,
-                ResultContent = string.Empty
+                ResultContent = string.Empty,
+                TotalTestNumber = testCases.Count,
             };
 
-            var testCases = _context.TestCases
-                .Where(tc => tc.ExerciseId == ExerciseId)
-                .OrderBy(tc => tc.Position)
-                .ToList();
+            
 
             for (int i = 0; i < testCases.Count; i++)
             {
@@ -190,7 +195,7 @@ namespace HMCodingWeb.Services
                 model.MarkingDetails.Add(markingDetail);
 
                 // Send test case result to client via SignalR
-                await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveTestCaseResult", markingDetail);
+                await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveTestCaseResult", new MarkingDetailViewModel(markingDetail));
 
                 if (markingDetail.IsCorrect)
                 {

@@ -1,6 +1,8 @@
-﻿using HMCodingWeb.Models;
+﻿using HMCodingWeb.Hubs;
+using HMCodingWeb.Models;
 using HMCodingWeb.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
@@ -13,14 +15,16 @@ namespace HMCodingWeb.Controllers
         private readonly MarkingService _markingService;
         private readonly UserPointService _userPointService;
         private readonly RankingService _rankingService;
+        private readonly IHubContext<MarkingHub> _hubContext;
 
-        public MarkingController(ILogger<MarkingController> logger, OnlineCodingWebContext context, MarkingService markingService, UserPointService userPointService, RankingService rankingService)
+        public MarkingController(ILogger<MarkingController> logger, OnlineCodingWebContext context, MarkingService markingService, UserPointService userPointService, RankingService rankingService, IHubContext<MarkingHub> hubContext)
         {
             _logger = logger;
             _context = context;
             _markingService = markingService;
             _userPointService = userPointService;
             _rankingService = rankingService;
+            _hubContext = hubContext;
         }
 
 
@@ -59,7 +63,7 @@ namespace HMCodingWeb.Controllers
                                           mk.ProgramLanguage.ProgramLanguageName.ToLower().Contains(keyword));
             }    
 
-            var totalRecords = await query.CountAsync();
+            var totalRecords = await _context.Markings.CountAsync();
 
             // Apply sorting
             if (order != null && order.Length > 0)
@@ -105,7 +109,7 @@ namespace HMCodingWeb.Controllers
                         Status = x.Status,
                         KindMarking = x.KindMarking,
                         MarkingId = x.Id,
-                        CorrectTestNumber = x.CorrectTestNumber,
+                        CorrectTestNumber = x.CorrectTestNumber.ToString() + "/" + x.TotalTestNumber,
                         UserId = x.UserId,
                         ResultContent = x.ResultContent,
                         TimeSpent = x.TimeSpent.Value.ToString("hh\\:mm\\:ss"),
@@ -188,6 +192,9 @@ namespace HMCodingWeb.Controllers
                 }
                 _context.Markings.Add(marking);
                 await _context.SaveChangesAsync();
+
+                //Send MarkingHub SendReloadMarkingList
+                await _hubContext.Clients.All.SendAsync("AnnouncementToReload", true);
 
                 var isGainRank = false;
                 var newRank = "";

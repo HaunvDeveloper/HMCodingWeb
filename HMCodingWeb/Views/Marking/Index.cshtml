@@ -54,7 +54,7 @@
                     <th>Người dùng</th>
                     <th>Mã bài</th>
                     <th>Tên bài</th>
-                    <th>Kiểu chấm</th>
+                    <th>Testcase Đúng</th>
                     <th>Điểm</th>
                     <th>Trạng thái</th>
                     <th>Ngôn ngữ</th>
@@ -147,7 +147,7 @@
                         return `<a href="/Exercise/Code/${row.exerciseId}">${data}</a>`;
                     }
                 },
-                { "data": "kindMarking" },
+                { "data": "correctTestNumber" },
                 { "data": "score" },
                 {
                     "data": "status",
@@ -222,4 +222,38 @@
             });
         }
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        $(document).ready(function () {
+        // Initialize SignalR connection
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/markingHub")
+                .configureLogging(signalR.LogLevel.Information)
+                .build();
+
+            // Start SignalR connection
+            async function startSignalR() {
+                try {
+                    await connection.start();
+                    console.log("SignalR Connected.");
+                } catch (err) {
+                    console.error("SignalR Connection Error: ", err);
+                    setTimeout(startSignalR, 5000); // Retry after 5 seconds
+                }
+            }
+            startSignalR();
+            // Handle connection closed event
+            connection.onclose(async () => {
+                console.warn("SignalR connection closed. Attempting to reconnect...");
+                await startSignalR();
+            });
+
+            connection.on("AnnouncementToReload", function (result) {
+                if(result){
+                    table.ajax.reload(null, false);
+                }
+            });
+        });
+    </script>
+
 }

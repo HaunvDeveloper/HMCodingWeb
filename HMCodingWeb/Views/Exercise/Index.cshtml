@@ -12,9 +12,17 @@
         <b>DANH SÁCH BÀI TẬP</b>
     </h1>
 
-    <div class="container flex-center flex-wrap justify-content-between">
+    <div class="container flex-center flex-wrap justify-content-between mb-3">
         <a class="btn btn-primary" asp-action="Create" asp-controller="Exercise">Tạo Bài tập</a>
         <button id="show-filter" class="btn ml-2 btn-outline-info">LỌC</button>
+    </div>
+    <div class="container flex-center flex-wrap justify-content-center gap-3 align-items-center">
+
+        <button data-sort-by="createdDate" data-sort-order="desc" class="btn-sort btn btn-sm btn-info">Mới nhất</button>
+        <button data-sort-by="difficulty" data-sort-order="asc" class="btn-sort btn btn-sm btn-success">Dễ đến khó</button>
+        <button data-sort-by="difficulty" data-sort-order="desc" class="btn-sort btn btn-sm btn-danger">Khó đến Dễ</button>
+        <button data-sort-by="success" data-sort-order="desc" class="btn-sort btn btn-sm btn-dark">Nhiều người làm</button>
+        <button data-sort-by="success" data-sort-order="asc" class="btn-sort btn btn-sm btn-warning">Ít người làm</button>
     </div>
     <form asp-action="Index" asp-controller="Exercise" method="get" id="filter" class="container animation-hidden">
         <div class="row pt-4">
@@ -116,9 +124,9 @@
             loadListFormParams();
 
             // Xử lý sự kiện click vào nút sắp xếp
-            $(document).on('click', '.sort-icon', function () {
-                const column = $(this).data('column');
-                const order = $(this).data('order');
+            $(document).on('click', '.btn-sort', function () {
+                const column = $(this).data('sort-by');
+                const order = $(this).data('sort-order');
                 addParamToCurrentUrl('sortBy', column);
                 addParamToCurrentUrl('sortOrder', order);
                 loadListFormParams();

@@ -17,6 +17,8 @@ public partial class Marking
 
     public int CorrectTestNumber { get; set; }
 
+    public int TotalTestNumber { get; set; }
+
     public DateTime MarkingDate { get; set; }
 
     public bool IsExam { get; set; }

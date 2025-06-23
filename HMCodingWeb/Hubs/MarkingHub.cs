@@ -9,5 +9,13 @@ namespace HMCodingWeb.Hubs
         {
             await Clients.User(userId).SendAsync("ReceiveTestCaseResult", result);
         }
+
+        //Send announcement to reload the list marking
+        public async Task SendReloadMarkingList(bool reload)
+        {
+            await Clients.Caller.SendAsync("AnnouncementToReload", reload);
+        }
+
+
     }
 }

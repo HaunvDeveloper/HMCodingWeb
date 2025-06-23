@@ -2,9 +2,12 @@
     transition-delay: 0.3s;
     background-color: #d3d3d39c;
 }
-:root {
-    --primary-color: rgb(26,26,26);
-}
+
+    
+
+    :root {
+        --primary-color: rgb(26,26,26);
+    }
 
 main#main{
     min-height: 400px;

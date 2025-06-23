@@ -151,9 +151,20 @@ namespace HMCodingWeb.Controllers
                             .Select(m => m.IsAllCorrect ? "Passed" : "Failed")
                             .FirstOrDefault() ?? ""
                 })
-                .AsNoTracking()
-                .OrderByDescending(x => x.Exercise.CreatedDate);
-                
+                .AsNoTracking();
+            
+            if(sortBy == "createdDate")
+            {
+                if (sortOrder == "asc")
+                {
+                    rawDataQuery = rawDataQuery.OrderBy(ex => ex.Exercise.CreatedDate);
+                }
+                else
+                {
+                    rawDataQuery = rawDataQuery.OrderByDescending(ex => ex.Exercise.CreatedDate);
+                }
+            }
+
             if (sortBy == "success")
             {
                 if (sortOrder == "asc")

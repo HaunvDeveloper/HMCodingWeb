@@ -63,7 +63,7 @@ namespace HMCodingWeb.Services
                         StartInfo = new ProcessStartInfo
                         {
                             FileName = "sudo",
-                            Arguments = $"-u sandbox {GetCompilerPath("g++")} \"{model.FileName}\" -o \"{Path.ChangeExtension(model.FileName, "exe")}\" -std=c++11",
+                            Arguments = $"-u sandbox {GetCompilerPath("g++")} \"{model.FileName}\" -o \"{Path.ChangeExtension(model.FileName, "exe")}\" -std=c++14",
                             RedirectStandardOutput = true,
                             RedirectStandardError = true,
                             UseShellExecute = false,
@@ -71,7 +71,6 @@ namespace HMCodingWeb.Services
                             WorkingDirectory = userDirectory
                         }
                     };
-
 
 
                     compileProcess.Start();
@@ -136,6 +135,7 @@ namespace HMCodingWeb.Services
                         // Create a task to monitor the process exit
                         processTask = Task.Run(() =>
                         {
+                            runProcess.StandardInput.Close();
                             runProcess.WaitForExit();
                         });
                     }
@@ -269,6 +269,7 @@ namespace HMCodingWeb.Services
                     {
                         processTask = Task.Run(() =>
                         {
+                            runProcess.StandardInput.Close();
                             runProcess.WaitForExit();
                         });
                     }
