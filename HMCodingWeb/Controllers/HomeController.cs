@@ -42,7 +42,8 @@ namespace HMCodingWeb.Controllers
             var announcements = _context.Announcements
                 .Include(x => x.CreatedByUser)
                 .Where(a => a.IsVisible)
-                .OrderByDescending(a => a.CreatedAt)
+                .OrderByDescending(a => a.Priority)
+                    .ThenByDescending(a => a.CreatedAt)
                 .Skip(start)
                 .Take(length)
                 .Select(a => new
@@ -53,7 +54,8 @@ namespace HMCodingWeb.Controllers
                     a.CreatedByUserId,
                     CreatedByUserName = a.CreatedByUser.Username,
                     CreatedAt = a.CreatedAt.ToString("dd-MM-yyyy HH:mm"),
-                    CanEdit = User.IsInRole("admin") || User.IsInRole("teacher")
+                    CanEdit = User.IsInRole("admin") || User.IsInRole("teacher"),
+                    IsPin = a.Priority > 0 // Assuming priority 1 means pinned
                 })
                 .ToList();
 
@@ -72,6 +74,7 @@ namespace HMCodingWeb.Controllers
             model.CreatedByUserId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             model.CreatedAt = DateTime.Now;
             model.IsVisible = true;
+            model.Priority = 0; // Default priority, can be adjusted later
 
             _context.Announcements.Add(model);
             _context.SaveChanges();
@@ -119,7 +122,32 @@ namespace HMCodingWeb.Controllers
             return Json(new { status = true });
         }
 
+        [HttpPost]
+        public IActionResult PinAnnouncement(int id)
+        {
+            var announcement = _context.Announcements.FirstOrDefault(a => a.Id == id);
+            if (announcement == null)
+                return Json(new { status = false, message = "Không tìm thấy thông báo" });
+            // Check quyền pin
+            var currentUserId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var isAdminOrTeacher = User.IsInRole("admin") || User.IsInRole("teacher");
+            if (announcement.CreatedByUserId != currentUserId && !isAdminOrTeacher)
+                return Json(new { status = false, message = "Bạn không có quyền pin thông báo này" });
+           
+            if (announcement.Priority > 0)
+            {
+                // Unpin the announcement
+                announcement.Priority = 0;
+            }
+            else
+            {
+                // Pin the announcement with priority 1
+                announcement.Priority = 1;
+            }
 
+            _context.SaveChanges();
+            return Json(new { status = true, isPin = announcement.Priority > 0 });
+        }
 
         public IActionResult Privacy()
         {

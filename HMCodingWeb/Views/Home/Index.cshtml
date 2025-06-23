@@ -129,6 +129,9 @@
 
                     data.forEach(item => {
                         const canEdit = item.canEdit ? `
+                            <button class="btn btn-sm btn${item.isPin ? "" : "-outline"}-info me-2 pin-btn" data-id="${item.id}">
+                                <img src="/assets/icons/pin.png" style="width: 30px;" />
+                            </button>
                             <button class="btn btn-sm btn-outline-secondary me-2 edit-btn" data-id="${item.id}">
                                 <i class="fa-solid fa-pen"></i> Sửa
                             </button>` : '';
@@ -144,7 +147,7 @@
                                     <a class="text-success" href="/user/details/${item.createdByUserId}">${item.createdByUserName}</a>
                                     | ${item.createdAt}
                                 </div>
-                                <div>
+                                <div class="d-flex gap-1">
                                     ${canEdit}
                                     ${canDelete}
                                 </div>
@@ -345,6 +348,33 @@
                     });
                 }
             });
+        
+            $(document).on('click', '.pin-btn', function (){
+                var id = $(this).data('id');
+                var $btn = $(this);
+                $btn.prop("disabled", true);
+
+                $.ajax({
+                    url: '/Home/PinAnnouncement',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+
+                        $btn.prop("disabled", false);
+                        if (response.status) {
+                            showToast('success', 'Cập nhật thành công');
+                            loadAnnouncements(); // Reload announcements to reflect changes
+                        } else {
+                            showToast('error', 'Cập nhật không thành công: ' + response.message);
+                        }
+                    },
+                    error: function () {
+                        $btn.prop("disabled", false);
+                        showToast('error', 'Đã xảy ra lỗi khi gửi yêu cầu. Vui lòng thử lại sau.');
+                    }
+                });
+            });
+        
         });
     </script>
 }

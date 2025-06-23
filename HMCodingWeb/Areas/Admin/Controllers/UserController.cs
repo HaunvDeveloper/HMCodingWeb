@@ -351,5 +351,26 @@ namespace HMCodingWeb.Areas.Admin.Controllers
             }
         }
 
+
+        [HttpGet]
+        public async Task<IActionResult> GetUserByUsername(string id)
+        {
+            if (string.IsNullOrEmpty(id) || id.Length < 3)
+            {
+                return BadRequest("Vui lòng nhập ít nhất 3 ký tự.");
+            }
+
+            var users = _context.Users
+                .Where(s => s.Fullname.Contains(id) || s.Id.ToString().Contains(id) || s.Username.Contains(id))
+                .Select(s => new
+                {
+                    Id = s.Id,
+                    Username = s.Username
+                })
+                .Take(30) // Giới hạn kết quả
+                .ToList();
+
+            return Ok(users);
+        }
     }
 }

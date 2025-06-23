@@ -17,5 +17,7 @@ public partial class Announcement
 
     public bool IsVisible { get; set; }
 
+    public int Priority { get; set; }
+
     public virtual User CreatedByUser { get; set; } = null!;
 }

@@ -27,12 +27,21 @@ namespace HMCodingWeb.Services
                 return (false, "");
             }
 
-            // Đếm số bài hoàn thành đúng theo từng mức độ khó
-            var completedByDifficulty = await _context.Markings
+            // Bước 1: Lấy danh sách các ExerciseId đã hoàn thành đúng ít nhất 1 lần
+            var correctExerciseIds = await _context.Markings
                 .Where(m => m.UserId == userId && m.IsAllCorrect)
-                .GroupBy(m => m.Exercise.DifficultyId, m => m.ExerciseId)
+                .Select(m => m.ExerciseId)
+                .Distinct()
+                .ToListAsync();
+
+            // Bước 2: Lấy DifficultyId của các bài đã làm đúng, rồi đếm theo độ khó
+            var completedByDifficulty = await _context.Exercises
+                .Where(e => correctExerciseIds.Contains(e.Id))
+                .GroupBy(e => e.DifficultyId)
                 .Select(g => new { DifficultyId = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(g => g.DifficultyId, g => g.Count);
+
+
 
             // Lấy tất cả Rank (trừ Supreme), sắp xếp theo độ khó giảm dần
             var ranks = await _context.Ranks

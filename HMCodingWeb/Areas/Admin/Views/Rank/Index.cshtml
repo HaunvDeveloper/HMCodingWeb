@@ -5,13 +5,15 @@
 }
 @section Links {
     <link rel="stylesheet" href="~/css/course.css">
-   
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 }
 <div class="container">
     <div class="table-container m-4 table-responsive">
         <h4 class="text-center mb-4 mt-2 text-danger" style="font-size:30px;font-weight:bold;">DANH SÁCH RANK</h4>
         <div class="d-flex justify-content-start mb-3 align-items-center flex-wrap gap-2">
             <button class="btn btn-primary btn-update-all">Cập nhật rank tất cả</button>
+            <a data-bs-toggle="modal" data-bs-target="#myModal" class="btn btn-add-course">Cập nhật Rank một User</a>
+
         </div>
         <table class="table table-bordered table-hover">
             <thead class="table-primary">
@@ -41,7 +43,33 @@
     </div>
 </div>
 
+<div class="modal" id="myModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h4 class="modal-title">Cập nhật rank user</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body text-center">
+                <div class="form-group d-flex flex-column">
+                    <label for="" class="form-label">Nhập Username</label>
+                    <select id="user-select" class="select2 w-100 form-control">
+                    </select>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-update" type="submit" class="btn btn-primary" data-bs-dismiss="modal">Cập nhật</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Đóng</button>
+            </div>
+
+        </div>
+    </div>
+</div>
 @section Scripts{
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
         $('.btn-update-all').on('click', function (event){
             event.preventDefault();
@@ -68,6 +96,70 @@
                     }
                 });
             }
-        })
+        });
+
+
+        $(document).ready(function () {
+            $('#myModal').on('shown.bs.modal', function () {
+                $('#user-select').select2({
+                    placeholder: 'Tìm kiếm user...',
+                    minimumInputLength: 3,
+                    dropdownParent: $('#myModal'),
+                    ajax: {
+                        url: '/admin/user/getuserbyusername',
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+                            return {
+                                id: params.term
+                            };
+                        },
+                        processResults: function (data) {
+                            return {
+                                results: data.map(function (user) {
+                                    return {
+                                        id: user.id,
+                                        text: `${user.id} - ${user.username}`
+                                    };
+                                })
+                            };
+                        },
+                        cache: true
+                    }
+                });
+            });
+            $('#user-select').on('select2:select', function (e) {
+                var data = e.params.data; // Lấy dữ liệu của option được chọn
+                console.log('Selected:', data);
+            });
+            $('#btn-update').on('click', function () {
+                var id = $('#user-select').val();
+                Swal.fire({
+                    title: 'Đang xử lý...',
+                    text: 'Vui lòng chờ giây lát',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                $.ajax({
+                    url: '@Url.Action("UpdateRankUser", "Rank", new { area = "Admin" })',
+                    method: 'post',
+                    data: {id},
+                    success: function (response) {
+                        Swal.close();
+                        if (response.status) {
+                            showAlert("success", "Cập nhật thành công", response.message);
+                        } else {
+                            showAlert("error", "Tạo thất bại", response.error);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        Swal.close();
+                        showAlert("error", "Lỗi", "Đã xảy ra lỗi khi cập nhật rank: " + error);
+                    }
+                })
+            });
+         });
     </script>
 }

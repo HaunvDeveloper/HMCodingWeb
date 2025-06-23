@@ -22,13 +22,11 @@ namespace HMCodingWeb.Controllers
             return View(ranks);
         }
 
-        [Authorize]
         public IActionResult RankingList()
         {
             return View();
         }
 
-        [Authorize]
         public async Task<IActionResult> _GetRankingList(int draw, int start, int length, string keyword = "", [FromForm] Dictionary<string, string>[] order = null)
         {
             // Base query to get users with their program language and rank

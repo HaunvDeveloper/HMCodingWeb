@@ -4,6 +4,7 @@ using HMCodingWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml.ConditionalFormatting.Contracts;
 
 namespace HMCodingWeb.Areas.Admin.Controllers
 {
@@ -121,6 +122,20 @@ namespace HMCodingWeb.Areas.Admin.Controllers
             foreach (var user in allUsers)
             {
                 await _rankingService.UpdateRankUser(user.Id);
+            }
+            return Ok(new { status = true, message = "Cập nhật xếp hạng thành công" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateRankUser(long id)
+        {
+            if(!_context.Users.Any(u => u.Id == id))
+                return Ok(new {status=false, error="Không tìm thấy người dùng"});
+
+            var (isGain, rankName) = await _rankingService.UpdateRankUser(id);
+            if (isGain)
+            {
+                return Ok(new { status = true, message = $"Cập nhật xếp hạng thành công. User đã đạt được xếp hạng: {rankName}" });
             }
             return Ok(new { status = true, message = "Cập nhật xếp hạng thành công" });
         }

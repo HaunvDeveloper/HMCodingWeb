@@ -64,7 +64,7 @@ namespace HMCodingWeb.Controllers
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> _GetList(int p = 1, int s = 10, string key = "", int? dId = null, int? cId = null, int? etId = null, string? tM = null, string? kM = null, string? sortBy = null, string? sortOrder = null)
+        public async Task<IActionResult> _GetList(int p = 1, int s = 10, string key = "", int? dId = null, int? cId = null, int? etId = null, string? tM = null, string? kM = null, string? sortBy = "difficulty", string? sortOrder = "asc")
         {
             // Validate pagination parameters
             p = Math.Max(1, p);
@@ -158,7 +158,8 @@ namespace HMCodingWeb.Controllers
             {
                 if (sortOrder == "asc")
                 {
-                    rawDataQuery = rawDataQuery.OrderBy(ex => ex.SuccessfulUsers);
+                    rawDataQuery = rawDataQuery
+                        .OrderBy(ex => ex.SuccessfulUsers);
                 }
                 else
                 {
@@ -169,11 +170,15 @@ namespace HMCodingWeb.Controllers
             {
                 if (sortOrder == "asc")
                 {
-                    rawDataQuery = rawDataQuery.OrderBy(ex => ex.DifficultyLevel);
+                    rawDataQuery = rawDataQuery
+                        .OrderBy(ex => ex.DifficultyLevel)
+                            .ThenByDescending(ex => ex.SuccessfulUsers);
                 }
                 else
                 {
-                    rawDataQuery = rawDataQuery.OrderByDescending(ex => ex.DifficultyLevel);
+                    rawDataQuery = rawDataQuery
+                        .OrderByDescending(ex => ex.DifficultyLevel)
+                            .ThenBy(ex => ex.SuccessfulUsers);
                 }
             }
             var rawData = await rawDataQuery

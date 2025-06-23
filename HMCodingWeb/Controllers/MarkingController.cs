@@ -155,7 +155,9 @@ namespace HMCodingWeb.Controllers
             {
                 return Json(new { status = false, error = "Không tìm thấy bài nộp" });
             }
-            if(marking.UserId != userId && userRole != "admin" && userRole != "teacher" && _context.Markings.Any(x => x.IsAllCorrect == true && x.ExerciseId == marking.ExerciseId && x.UserId == userId))
+            var isUserDone = _context.Markings
+                .Any(x => x.IsAllCorrect == true && x.ExerciseId == marking.ExerciseId && x.UserId == userId);
+            if (!(marking.UserId == userId || userRole == "admin" || userRole == "teacher" || isUserDone))
             {
                 return Json(new { status = false, error = "Bạn không có quyền xem bài nộp này" });
             }
