@@ -132,7 +132,7 @@
 </div>
 <section id="view-content-section" class="container">
     <div id="content-section" class="container mt-3 mb-4">
-        <div id="content-container">
+        <div id="content-container" class="table-responsive">
             <div id="header-content">
                 <div class="header-content-child">
                     <span><b>Mã bài:</b></span>
@@ -169,7 +169,7 @@
                 </div>
             </div>
             @* <iframe id="content-iframe" style="width: 90%; border: none;" onload="resizeIframe(this)"></iframe> *@
-            <div class="p-2 table-responsive" id="inner-content">@Html.Raw(Model != null ? Model.ExerciseContent : "")</div>
+            <div class="p-2 " id="inner-content">@Html.Raw(Model != null ? Model.ExerciseContent : "")</div>
             
         </div>
         

@@ -74,10 +74,11 @@ namespace HMCodingWeb.Services
 
 
                     compileProcess.Start();
+                    var compileErrorsTask = compileProcess.StandardError.ReadToEndAsync();
                     await compileProcess.WaitForExitAsync();
 
+                    var compileErrors = await compileErrorsTask;
                     //IF COMPILE ERRROR
-                    var compileErrors = await compileProcess.StandardError.ReadToEndAsync();
                     if (!string.IsNullOrEmpty(compileErrors))
                     {
                         model.Error = compileErrors;

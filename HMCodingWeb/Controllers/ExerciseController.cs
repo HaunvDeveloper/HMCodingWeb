@@ -203,6 +203,7 @@ namespace HMCodingWeb.Controllers
             // Set ViewBag properties
             ViewBag.CurrentPage = p;
             ViewBag.PageSize = s;
+            ViewBag.TotalRecords = totalRecords;
             ViewBag.TotalPages = (int)Math.Ceiling((double)totalRecords / s);
             ViewBag.SearchKey = key;
             ViewBag.DifficultId = dId;
@@ -216,10 +217,15 @@ namespace HMCodingWeb.Controllers
             ViewBag.SortBy = sortBy;
             return PartialView(listData);
         }
-
-        [HttpPost]
-        public async Task<IActionResult> _GetCompletedExByUser(int draw, int start, int length, string keyword = "", long? userId = null)
+        public class OrderParameter
         {
+            public string column { get; set; }
+            public string dir { get; set; }
+        }
+        [HttpPost]
+        public async Task<IActionResult> _GetCompletedExByUser(long? userId = null, int start = 0, int length = 5, string keyword = "", [FromForm] List<OrderParameter> order = null )
+        {
+            var draw = Request.Form["draw"].ToString();
             // Nếu không có userId, lấy từ Claims (nếu có)
             if (!userId.HasValue)
             {
@@ -234,11 +240,26 @@ namespace HMCodingWeb.Controllers
 
             // Áp dụng tìm kiếm theo keyword
             var query = _context.Exercises
-                .Where(e => completedExerciseIdsQuery.Contains(e.Id))
+                .Where(e => completedExerciseIdsQuery.Contains(e.Id) && e.IsAccept == true && e.AccessId == 3)
                 .Join(_context.DifficultyLevels,
                     e => e.DifficultyId,
                     d => d.Id,
-                    (e, d) => new { Exercise = e, Difficulty = d.DifficultyName });
+                    (e, d) => new 
+                    { 
+                        Exercise = e, 
+                        DifficultyId = d.Id,
+                        Difficulty = d.DifficultyName,
+                        FirstMarkingTime = _context.Markings
+                            .Where(m => m.UserId == userId && m.ExerciseId == e.Id)
+                            .OrderBy(m => m.MarkingDate)
+                            .Select(m => m.MarkingDate)
+                            .FirstOrDefault(),
+                        FirstCorrectMarkingTime = _context.Markings
+                            .Where(m => m.UserId == userId && m.ExerciseId == e.Id && m.IsAllCorrect == true)
+                            .OrderBy(m => m.MarkingDate)
+                            .Select(m => m.MarkingDate)
+                            .FirstOrDefault()
+                    });
 
             if (!string.IsNullOrEmpty(keyword))
             {
@@ -250,9 +271,38 @@ namespace HMCodingWeb.Controllers
             // Lấy tổng số bản ghi
             var totalRecords = await query.CountAsync();
 
+            // Xử lý sắp xếp
+            if (order != null && order.Count > 0)
+            {
+                foreach (var ord in order)
+                {
+                    var column = ord.column;
+                    var dir = ord.dir;
+                    if (column == "0") // ExerciseCode
+                    {
+                        query = dir == "asc" ? query.OrderBy(x => x.Exercise.ExerciseCode) : query.OrderByDescending(x => x.Exercise.ExerciseCode);
+                    }
+                    else if (column == "1") // ExerciseName
+                    {
+                        query = dir == "asc" ? query.OrderBy(x => x.Exercise.ExerciseName) : query.OrderByDescending(x => x.Exercise.ExerciseName);
+                    }
+                    else if (column == "2") // Difficulty
+                    {
+                        query = dir == "asc" ? query.OrderBy(x => x.DifficultyId) : query.OrderByDescending(x => x.DifficultyId);
+                    }
+                    else if (column == "3") // FirstMarkingTime
+                    {
+                        query = dir == "asc" ? query.OrderBy(x => x.FirstMarkingTime) : query.OrderByDescending(x => x.FirstMarkingTime);
+                    }
+                    else if (column == "4") // FirstCorrectMarkingTime
+                    {
+                        query = dir == "asc" ? query.OrderBy(x => x.FirstCorrectMarkingTime) : query.OrderByDescending(x => x.FirstCorrectMarkingTime);
+                    }
+                }
+            }
+
             // Lấy dữ liệu phân trang
             var completedExercises = await query
-                .OrderByDescending(x => x.Exercise.CreatedDate) // Sắp xếp theo CreatedDate của Exercise
                 .Skip(start)
                 .Take(length)
                 .Select(x => new
@@ -261,16 +311,8 @@ namespace HMCodingWeb.Controllers
                     x.Exercise.ExerciseCode,
                     x.Exercise.ExerciseName,
                     Difficulty = x.Difficulty,
-                    FirstMarkingTime = _context.Markings
-                        .Where(m => m.UserId == userId && m.ExerciseId == x.Exercise.Id)
-                        .OrderBy(m => m.MarkingDate)
-                        .Select(m => m.MarkingDate)
-                        .FirstOrDefault(),
-                    FirstCorrectMarkingTime = _context.Markings
-                        .Where(m => m.UserId == userId && m.ExerciseId == x.Exercise.Id && m.IsAllCorrect == true)
-                        .OrderBy(m => m.MarkingDate)
-                        .Select(m => m.MarkingDate)
-                        .FirstOrDefault()
+                    FirstMarkingTime = x.FirstMarkingTime,
+                    FirstCorrectMarkingTime = x.FirstCorrectMarkingTime
                 })
                 .AsNoTracking()
                 .ToListAsync();
@@ -295,6 +337,9 @@ namespace HMCodingWeb.Controllers
                 data = data
             });
         }
+        
+        
+        
         public IActionResult Create()
         {
             ViewBag.AccessRole = _context.AccessRoles.ToList();
@@ -471,8 +516,6 @@ namespace HMCodingWeb.Controllers
         }
 
 
-
-
         public IActionResult Code(long? id)
         {
             if (id == null)
@@ -489,7 +532,21 @@ namespace HMCodingWeb.Controllers
             long userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             var user = _context.Users.Find(userId);
 
-            
+            if (user == null)
+            {
+                return View("Error");
+            }
+
+            if (exercise.IsAccept == false && userId != exercise.UserCreatedId && user.AuthId != 1 && user.AuthId != 2)
+            {
+                return View("NotAccess");
+            }
+
+            if (exercise.AccessId == 1 && userId != exercise.UserCreatedId && user.AuthId != 1 && user.AuthId != 2)
+            {
+                return View("NotAccess");
+            }
+
             ViewBag.ListTheme = _context.Themes.ToList();
             ViewBag.UserInfo = user;
             ViewBag.ProgramLanguageList = _context.ProgramLanguages.ToList();

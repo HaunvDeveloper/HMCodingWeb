@@ -214,7 +214,7 @@ namespace HMCodingWeb.Controllers
                 };
 
                 await HttpContext.SignInAsync(principal, authProperties);
-                _onlineUsersService.AddUser(user.Id.ToString(), user.Username, user.Fullname, user.Auth.AuthCode, null);
+                _onlineUsersService.AddUser(user.Id.ToString(), user.Username, user.Fullname ?? "", user.Auth.AuthCode, null);
 
                 return Json(new { status = true, message = "Đăng nhập thành công!", redirectUrl = string.IsNullOrEmpty(ReturnUrl) ? Url.Action("Index", "Home") : ReturnUrl });
             }

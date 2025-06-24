@@ -87,7 +87,7 @@ namespace HMCodingWeb.Controllers
             ViewBag.PageSize = s;
             ViewBag.TotalPages = (int)Math.Ceiling((double)totalItems / s);
             ViewBag.AvailablePageSizes = new List<int> { 5, 10, 20, 50, 100 };
-
+            ViewBag.TotalRecords = totalItems;
 
             return PartialView(codepadList);
         }

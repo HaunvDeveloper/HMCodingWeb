@@ -8,22 +8,23 @@
 }
 
 <div id="codepad" class="m-5 flex-center flex-column">
-    <h1 class="title text-center">
-        <b>DANH SÁCH BÀI TẬP</b>
+    <h1 class="title text-center mb-3">
+        <b>DANH&nbsp;SÁCH BÀI&nbsp;TẬP</b>
     </h1>
 
     <div class="container flex-center flex-wrap justify-content-between mb-3">
         <a class="btn btn-primary" asp-action="Create" asp-controller="Exercise">Tạo Bài tập</a>
-        <button id="show-filter" class="btn ml-2 btn-outline-info">LỌC</button>
-    </div>
-    <div class="container flex-center flex-wrap justify-content-center gap-3 align-items-center">
+        <div class="flex-center flex-wrap justify-content-center gap-3 align-items-center mt-2">
 
-        <button data-sort-by="createdDate" data-sort-order="desc" class="btn-sort btn btn-sm btn-info">Mới nhất</button>
-        <button data-sort-by="difficulty" data-sort-order="asc" class="btn-sort btn btn-sm btn-success">Dễ đến khó</button>
-        <button data-sort-by="difficulty" data-sort-order="desc" class="btn-sort btn btn-sm btn-danger">Khó đến Dễ</button>
-        <button data-sort-by="success" data-sort-order="desc" class="btn-sort btn btn-sm btn-dark">Nhiều người làm</button>
-        <button data-sort-by="success" data-sort-order="asc" class="btn-sort btn btn-sm btn-warning">Ít người làm</button>
+            <button data-sort-by="createdDate" data-sort-order="desc" class="btn-sort btn btn-sm btn-info">Mới nhất</button>
+            <button data-sort-by="difficulty" data-sort-order="asc" class="btn-sort btn btn-sm btn-success">Dễ đến khó</button>
+            <button data-sort-by="difficulty" data-sort-order="desc" class="btn-sort btn btn-sm btn-danger">Khó đến Dễ</button>
+            <button data-sort-by="success" data-sort-order="desc" class="btn-sort btn btn-sm btn-dark">Nhiều người làm</button>
+            <button data-sort-by="success" data-sort-order="asc" class="btn-sort btn btn-sm btn-warning">Ít người làm</button>
+        </div>
+        <button id="show-filter" class="btn ml-2 btn-outline-info mt-2">LỌC</button>
     </div>
+    
     <form asp-action="Index" asp-controller="Exercise" method="get" id="filter" class="container animation-hidden">
         <div class="row pt-4">
             <div class="col-12 col-md-6">

@@ -125,6 +125,11 @@
     .tab-pane {
         max-width: 95% !important;
     }
+
+    #test-case-results{
+        width: 80%;
+    }
+
 }
 
 
@@ -394,6 +399,14 @@ span.active{
     justify-content: center;
     background-color: white;
 }
+
+@media (max-width: 999px) {
+    #content-container {
+        width: 100%;
+    }
+}
+
+
 #header-content {
     width: 100%;
     max-width: 100%;    

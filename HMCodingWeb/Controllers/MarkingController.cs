@@ -1,6 +1,7 @@
 ﻿using HMCodingWeb.Hubs;
 using HMCodingWeb.Models;
 using HMCodingWeb.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ using System.Security.Claims;
 
 namespace HMCodingWeb.Controllers
 {
+    [Authorize]
     public class MarkingController : Controller
     {
         private readonly ILogger<MarkingController> _logger;
@@ -27,15 +29,16 @@ namespace HMCodingWeb.Controllers
             _hubContext = hubContext;
         }
 
-
-        public IActionResult Index(long exId, string uName)
+        [AllowAnonymous]
+        public IActionResult Index(long exId, long uId)
         {
             ViewBag.ExerciseId = exId;
-            ViewBag.UserName = uName;
+            ViewBag.UserId = uId;
             return View();
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> _GetList(long userId = 0, long exerciseId = 0, int start = 0, int length = 25, string keyword = "", [FromForm] Dictionary<string, string>[] order = null)
         {
             var draw = Request.Form["draw"].ToString();
@@ -63,7 +66,7 @@ namespace HMCodingWeb.Controllers
                                           mk.ProgramLanguage.ProgramLanguageName.ToLower().Contains(keyword));
             }    
 
-            var totalRecords = await _context.Markings.CountAsync();
+            var totalRecords = await query.CountAsync();
 
             // Apply sorting
             if (order != null && order.Length > 0)

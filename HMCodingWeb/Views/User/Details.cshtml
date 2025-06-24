@@ -124,12 +124,13 @@
                 },
                 "type": "POST",
                 "dataSrc": function (json) {
-                    $('.completed-ex-num').text(json    .recordsTotal + ' bài');
+                    $('.completed-ex-num').text(json.recordsTotal + ' bài');
                     return json.data;
                 }
             },
             "pageLength": 5,
             "lengthMenu": [5, 10, 25, 50, 100],
+            "order": [[4, "desc"]],
             "columns": [
                     {
                         "data": "exerciseCode",
@@ -145,8 +146,17 @@
                     },
                     { "data": "difficulty" },
                     { "data": "firstMarkingTime" },
-                    { "data": "firstCorrectMarkingTime" }
-            ]
+                    { "data": "firstCorrectMarkingTime"}
+            ],
+            "language": {
+                    "emptyTable": "Không có dữ liệu",
+                    "info": "Hiển thị _START_ đến _END_ trong tổng số _TOTAL_ mục",
+                    "infoEmpty": "Hiển thị 0 đến 0 trong tổng số 0 mục",
+                    "infoFiltered": "(được lọc từ tổng số _MAX_ mục)",
+                    "lengthMenu": "Hiển thị _MENU_ mục",
+                    "search": "Tìm kiếm:",
+                    "zeroRecords": "Không tìm thấy kết quả"
+                },
         });
         $(document).on('click', '.rank', function() {
                 window.location.href = `/rank`;

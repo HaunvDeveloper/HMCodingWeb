@@ -297,6 +297,15 @@
             };
         });
 
+        document.getElementById("copy-code").addEventListener("click", function () {
+            const button = this;
+            button.innerText = "Đã sao chép";
+            setTimeout(function () {
+                button.innerText = "Sao chép";
+            }, 800);
+            const content = editor.getValue();
+            executeCopy(content);
+        });
 
         function executeCopy(text) {
             let input = document.createElement('textarea');

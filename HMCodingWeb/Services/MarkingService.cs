@@ -250,8 +250,7 @@ namespace HMCodingWeb.Services
             }
             else if (TypeMarking == "Tương đối")
             {
-                return a.Trim().Equals(b?.Trim(), StringComparison.OrdinalIgnoreCase) ||
-                       (a != null && b != null && Regex.Replace(a, @"\s+", "").Equals(Regex.Replace(b, @"\s+", ""), StringComparison.OrdinalIgnoreCase)); // Remove all whitespace and compare 
+                return a.Trim().Equals(b?.Trim(), StringComparison.OrdinalIgnoreCase); // Remove all whitespace and compare 
             }
             throw new ArgumentException("Invalid TypeMarking value");
         }

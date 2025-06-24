@@ -1,5 +1,8 @@
 ﻿@model IEnumerable<Codepad>
 @{
+    var startRecord = (((int?)ViewBag.CurrentPage ?? 1) - 1) * ((int?)ViewBag.PageSize ?? 1);
+    var endRecord = startRecord + ((int?)ViewBag.PageSize ?? 1);
+    var totalRecords = ViewBag.TotalRecords ?? 0;
 }
 
 
@@ -56,6 +59,7 @@
 
 <div class="d-flex gap-2 align-items-center justify-content-between flex-wrap">
     <div>
+        <label>Hiển thị: </label>
         <select class="form-select-sm p-1" id="pageSizeSelector" onchange="changePageSize(this)">
             @foreach (var size in ViewBag.AvailablePageSizes)
             {
@@ -69,7 +73,9 @@
                 }
             }
         </select>
-        <label>entries per page</label>
+        <label>mục</label>
+        <br />
+        <label class="mt-2">Hiển thị @(startRecord + 1) đến @(endRecord) trong tổng số @(totalRecords) mục</label>
 
     </div>
 

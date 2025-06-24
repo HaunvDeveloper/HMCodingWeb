@@ -29,7 +29,7 @@
     <header>
         <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">HM Coding</a>
+                <a class="navbar-brand" href="/">HM Coding</a>
                 <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -175,7 +175,7 @@
                     </a>`);
                 onlineUsersList.innerHTML = userList;
             } else {
-                onlineUsersList.textContent = "Không có người dùng nào online";
+                onlineUsersList.textContent = "Không có";
             }
         });
 
@@ -190,6 +190,16 @@
             console.error(err.toString());
             document.getElementById("onlineUsersList").textContent = "Lỗi kết nối SignalR";
         });
+
+        //Reconnect
+        connection.onreconnected(function () {
+            console.log("Reconnected to SignalR Hub");
+            connection.invoke("GetOnlineUsers").catch(function (err) {
+                console.error(err.toString());
+                document.getElementById("onlineUsersList").textContent = "Lỗi khi tải danh sách người dùng";
+            });
+        });
+
     </script>
 
 

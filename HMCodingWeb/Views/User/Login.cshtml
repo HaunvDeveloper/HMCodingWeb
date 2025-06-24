@@ -87,7 +87,7 @@
                 success: function (response) {
                      Swal.close();
                     if (response.status) {
-                        showAlert('success', response.message);
+                        showAlert('success', "Đăng&nbsp;nhập thành&nbsp;công");
                         $.ajax({
                                 url: '/User/GetAvatar',
                                 type: 'GET',
@@ -108,7 +108,7 @@
                             window.location.href = redirectUrl;
                         }, 1500);
                     } else {
-                        showAlert("error", "Đăng nhập thất bại", response.message, false, false, 1000);
+                        showAlert("error", "Đăng nhập&nbsp;thất bại", response.message, false, false, 1000);
                     }
                 },
                 error: function () {
