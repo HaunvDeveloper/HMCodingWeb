@@ -194,6 +194,7 @@ namespace HMCodingWeb.Services
                 
                 model.MarkingDetails.Add(markingDetail);
 
+
                 // Send test case result to client via SignalR
                 await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveTestCaseResult", new MarkingDetailViewModel(markingDetail));
 

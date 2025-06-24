@@ -38,6 +38,7 @@ namespace HMCodingWeb.ViewModels
         public bool IsError { get; set; }
 
         public string? ErrorContent { get; set; }
+
     }
 
 }

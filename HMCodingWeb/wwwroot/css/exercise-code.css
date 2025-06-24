@@ -355,7 +355,7 @@ tr td {
 #select-tab {
     width: 100%;
     height: 2.5rem;
-    background-color: #4d525c;
+    background-color: var(--bs-dark);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -369,6 +369,28 @@ tr td {
 #select-tab>span{
     color: white;
     font-size: 17px;
+}
+    #select-tab > a {
+        position: absolute;
+        left: 4%;
+    }
+
+        #select-tab > a:hover {
+            color: #fff200;
+            text-shadow: 0 0 10px #fff200, 0 0 40px #fff200, 0 0 80px #fff200;
+        }
+
+@media (max-width: 600px) {
+    #select-tab{
+        gap: 2rem;
+    }
+        #select-tab span b {
+            display: none;
+        }
+    #select-tab > a {
+        font-size: 15px;
+        position: relative;
+    }
 }
 
 span.active{
@@ -389,10 +411,9 @@ span.active{
     overflow: auto;
 }
 #content-container {
+    margin: 1rem;
     width: 80%;
-    border: 1px solid black;
     box-shadow: 0.3rem 0.3rem 0.3rem;
-    border-radius: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
