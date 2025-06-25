@@ -1,0 +1,183 @@
+﻿.medals-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .medals-header h1 {
+            font-size: 2.8rem;
+            color: #3498db;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+
+        .medals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+.medal-card {
+    background: var(--bs-dark);
+    border-radius: 20px;
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+    text-align: center;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    max-width: 300px;
+    cursor: pointer;
+}
+
+
+    .medal-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 1px 3px 15px rgb(255 255 255 / 32%);
+    }
+
+        .medal-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #fff;
+            position: relative;
+            border: 3px solid transparent;
+            animation: glow 2s infinite ease-in-out;
+        }
+
+        .medal-icon::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+            opacity: 0.5;
+            animation: sparkle 3s infinite ease-in-out;
+        }
+
+        .medal-card h3 {
+            font-size: 1.4rem;
+            color: #e0e0e0;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Rank-specific styles */
+.copper .medal-icon {
+    background: linear-gradient(135deg, #b87333, #8c5522);
+    border: 2px solid #8c5522;
+    box-shadow: 0 0 10px rgba(140, 85, 34, 0.6);
+}
+
+.silver .medal-icon {
+    background: linear-gradient(135deg, #d9d9d9, #a1a1a1);
+    color: #333;
+    border: 2px solid #a1a1a1;
+    box-shadow: 0 0 12px rgba(161, 161, 161, 0.7);
+}
+
+.gold .medal-icon {
+    background: linear-gradient(135deg, #ffd700, #b8860b);
+    color: #333;
+    border: 2px solid #b8860b;
+    box-shadow: 0 0 15px rgba(184, 134, 11, 0.8);
+}
+
+.platinum .medal-icon {
+    background: linear-gradient(135deg, #e5e4e2, #b0b0b0);
+    color: #333;
+    border: 2px solid #b0b0b0;
+    box-shadow: 0 0 18px rgba(176, 176, 176, 0.9);
+}
+
+.diamond .medal-icon {
+    background: linear-gradient(135deg, #b9f2ff, #40c4ff);
+    border: 2px solid #0288d1;
+    box-shadow: 0 0 20px rgba(2, 136, 209, 1);
+    animation: pulse 2s infinite;
+}
+
+.elite .medal-icon {
+    background: linear-gradient(135deg, #7b1fa2, #4a148c);
+    border: 2px solid #4a148c;
+    box-shadow: 0 0 22px rgba(74, 20, 140, 1);
+    animation: pulse 1.8s infinite;
+}
+
+.master .medal-icon {
+    background: linear-gradient(135deg, #d32f2f, #7f0000);
+    border: 2px solid #b8860b;
+    box-shadow: 0 0 25px rgba(127, 0, 0, 1);
+    animation: pulse 1.6s infinite;
+}
+
+.challenger .medal-icon {
+    background: linear-gradient(135deg, #00e676, #00c853);
+    border: 2px solid #00e676;
+    box-shadow: 0 0 28px rgba(0, 230, 118, 1);
+    animation: pulse 1.4s infinite;
+}
+
+.champion .medal-icon {
+    background: linear-gradient(135deg, #ffeb3b, #fbc02d);
+    color: #333;
+    border: 3px solid #fbc02d;
+    box-shadow: 0 0 30px rgba(251, 192, 45, 1);
+    animation: pulse 1.2s infinite;
+}
+
+.supreme .medal-icon {
+    background: linear-gradient(135deg, #212121, #6200ea);
+    border: 3px solid #6200ea;
+    box-shadow: 0 0 35px rgba(98, 0, 234, 1), 0 0 50px rgba(255, 255, 255, 0.5);
+    animation: pulse 1s infinite;
+}
+
+        .supreme .medal-icon::before {
+            animation: sparkle 2s infinite ease-in-out;
+        }
+
+        @keyframes glow {
+            0% { box-shadow: 0 0 12px rgba(255, 255, 255, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(255, 255, 255, 0.9); }
+            100% { box-shadow: 0 0 12px rgba(255, 255, 255, 0.5); }
+        }
+
+        @keyframes sparkle {
+            0% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+            100% { opacity: 0.3; transform: scale(1); }
+        }
+
+        @media (max-width: 768px) {
+            .medals-header h1 {
+                font-size: 2.2rem;
+            }
+
+            .medal-card {
+                padding: 1.2rem;
+            }
+
+            .medal-icon {
+                width: 90px;
+                height: 90px;
+                font-size: 2.2rem;
+            }
+
+            .medal-card h3 {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .medals-grid {
+                grid-template-columns: 1fr;
+            }
+        }

@@ -217,11 +217,7 @@ namespace HMCodingWeb.Controllers
             ViewBag.SortBy = sortBy;
             return PartialView(listData);
         }
-        public class OrderParameter
-        {
-            public string column { get; set; }
-            public string dir { get; set; }
-        }
+        
         [HttpPost]
         public async Task<IActionResult> _GetCompletedExByUser(long? userId = null, int start = 0, int length = 5, string keyword = "", [FromForm] List<OrderParameter> order = null )
         {

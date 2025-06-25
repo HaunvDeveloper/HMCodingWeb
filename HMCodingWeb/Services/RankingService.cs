@@ -95,5 +95,89 @@ namespace HMCodingWeb.Services
             return (false, "");
         }
 
+
+
+        public async Task<(Rank CurrentRank, Rank NextRank, Dictionary<int, int> MissingPrerequisites)> GetNextRankPrerequisites(long userId)
+        {
+            // Lấy user và rank hiện tại
+            var user = await _context.Users
+                .Include(u => u.Rank)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+                return (null, null, null);
+
+            // Nếu user là admin (Supreme) hoặc không có rank, trả về null
+            if (user.Auth?.AuthCode == "admin" || user.RankId == 10)
+                return (user.Rank, null, null);
+
+            // Lấy danh sách bài đã hoàn thành đúng
+            var correctExerciseIds = await _context.Markings
+                .Where(m => m.UserId == userId && m.IsAllCorrect)
+                .Select(m => m.ExerciseId)
+                .Distinct()
+                .ToListAsync();
+
+            // Đếm số bài đã hoàn thành theo độ khó
+            var completedByDifficulty = await _context.Exercises
+                .Where(e => correctExerciseIds.Contains(e.Id))
+                .GroupBy(e => e.DifficultyId)
+                .Select(g => new { DifficultyId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(g => g.DifficultyId, g => g.Count);
+
+            // Lấy tất cả rank, trừ Supreme, sắp xếp theo MinLimitPoint tăng dần
+            var ranks = await _context.Ranks
+                .Include(r => r.PrerequisitesNavigation)
+                .ThenInclude(p => p.Difficulty)
+                .Where(r => r.Id != 10)
+                .OrderBy(r => r.MinLimitPoint)
+                .ToListAsync();
+
+            // Tìm rank hiện tại và rank tiếp theo
+            Rank currentRank = user.Rank;
+            Rank nextRank = null;
+
+            if (currentRank != null)
+            {
+                nextRank = ranks.FirstOrDefault(r => r.MinLimitPoint > currentRank.MinLimitPoint);
+            }
+            else
+            {
+                nextRank = ranks.FirstOrDefault(); // Nếu chưa có rank, lấy rank đầu tiên (Đồng)
+            }
+
+            // Nếu không có rank tiếp theo (đã ở rank cao nhất, không tính Supreme)
+            if (nextRank == null)
+                return (currentRank, null, null);
+
+            // Tính điều kiện còn thiếu cho rank tiếp theo
+            var missingPrerequisites = new Dictionary<int, int>();
+            foreach (var pr in nextRank.PrerequisitesNavigation)
+            {
+                int completedCount = completedByDifficulty.TryGetValue(pr.DifficultyId, out var count) ? count : 0;
+                int missingCount = pr.AtLeast - completedCount;
+                if (missingCount > 0)
+                {
+                    missingPrerequisites[pr.DifficultyId] = missingCount;
+                }
+            }
+
+            // Đặc biệt cho rank Champion (Id = 9)
+            if (nextRank.Id == 8) // Nếu rank tiếp theo là Master
+            {
+                var maxPoint = await _context.Users
+                    .Where(u => u.RankId == 8 || u.RankId == 9)
+                    .MaxAsync(u => (int?)u.Point) ?? 0;
+
+                if (user.Point > maxPoint)
+                {
+                    nextRank = ranks.FirstOrDefault(r => r.Id == 9); // Champion
+                    missingPrerequisites.Clear(); // Champion không yêu cầu thêm prerequisites
+                }
+            }
+
+            return (currentRank, nextRank, missingPrerequisites);
+        }
+
     }
 }

@@ -22,15 +22,17 @@ namespace HMCodingWeb.Controllers
         private readonly OnlineCodingWebContext _context;
         private readonly EmailSendService _emailSendService;
         private readonly OnlineUsersService _onlineUsersService;
+        private readonly RankingService _rankingService;
         private const long MaxAvatarSize = 2 * 1024 * 1024; // 2MB
         private readonly IConfiguration _configuration;
 
-        public UserController(OnlineCodingWebContext context, EmailSendService emailSendService, UserListService userListService, OnlineUsersService onlineUsersService, IConfiguration configuration)
+        public UserController(OnlineCodingWebContext context, EmailSendService emailSendService, UserListService userListService, OnlineUsersService onlineUsersService, IConfiguration configuration, RankingService rankingService)
         {
             _context = context;
             _emailSendService = emailSendService;
             _onlineUsersService = onlineUsersService;
             _configuration = configuration;
+            _rankingService = rankingService;
         }
 
 
@@ -46,6 +48,7 @@ namespace HMCodingWeb.Controllers
                 return NotFound();
             }
             var user = await _context.Users
+                .Include(u => u.ThemeCode)
                 .Include(u => u.ProgramLanguage)
                 .Include(u => u.Rank)
                 .FirstOrDefaultAsync(u => u.Id == id);
@@ -54,8 +57,13 @@ namespace HMCodingWeb.Controllers
             {
                 return NotFound();
             }
-            
 
+            var (currentRank, nextRank, missingPrerequisites) = await _rankingService.GetNextRankPrerequisites(id ?? 0);
+
+            ViewBag.CurrentRank = currentRank;
+            ViewBag.NextRank = nextRank;
+            ViewBag.MissingPrerequisites = missingPrerequisites;
+            ViewBag.Difficulties = await _context.DifficultyLevels.ToListAsync();
             ViewBag.OwnUserId = userId;
             return View(user);
         }
@@ -443,6 +451,7 @@ namespace HMCodingWeb.Controllers
             Random random = new Random();
             model.Otp = random.Next(100000, 999999).ToString();
             model.OtplatestSend = DateTime.Now;
+            model.AvartarImage = null; // Xóa đi ảnh để tránh lưu trữ không cần thiết
             HttpContext.Session.SetString("VerifyAccount", JsonConvert.SerializeObject(model));
 
             bool emailSent = await _emailSendService.SendOtpToEmail(model.Email ?? "", model.Otp);

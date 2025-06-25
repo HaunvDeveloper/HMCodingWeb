@@ -8,6 +8,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="hmcoding, hm coding, HMCoding, HM Coding, web ôn luyện thi lập trình, lập trình">
+    <meta name="description" content="HM Coding - Nền tảng học lập trình trực tuyến">
+    <meta name="author" content="Hậu Nguyễn và Thảo Lê">
+
+    <meta name="copyright" content="Hậu Nguyễn và Thảo Lê">
+
+
+
+    <meta name="msapplication-TileColor" content="#065693">
+    <meta name="msapplication-TileImage" content="~/assets/icons/logo.png">
+    
 
     <link rel="stylesheet" href="~/lib/bootstrap/theme/bootstrap.css">
     <link rel="stylesheet" href="~/css/bootstrap.extend.css">
@@ -22,18 +33,28 @@
 
     @RenderSection("Links", required: false)
 
-    <title>HM Coding</title>
+    @if (ViewData["Title"] != null)
+    {
+        <title>@ViewData["Title"] | HM Coding</title>
+    }
+    else
+    {
+        <title>HM Coding</title>
+    }
+
 </head>
 
 <body>
     <header>
-        <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+        <nav class="navbar navbar-expand-lg">
             <div class="container-fluid">
-                <a class="navbar-brand" href="/">HM Coding</a>
-                <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+                <a class="navbar-brand" href="/">
+                    <h3 class="text-center text-info m-0">HMCoding</h3>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse" id="navbarColor01" style="">
+                <div class="navbar-collapse collapse" id="navbarColor01">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
                             <a class="nav-link @(currentController == "Home" && currentAction == "Index" ? "active" : "")" asp-action="Index" asp-controller="Home">
@@ -52,25 +73,18 @@
                         <li class="nav-item">
                             <a class="nav-link @(currentController == "Rank" && currentAction=="RankingList" ? "active" : "")" asp-action="RankingList" asp-controller="Rank">Xếp hạng</a>
                         </li>
-
                     </ul>
                     @if (User.Identity?.IsAuthenticated ?? false)
                     {
-                        @* <div class="nav-item">
-                            <i class="fa-solid fa-bell mt-3 mb-3" style="color: #065693;font-size:23px"></i>
-                        </div> *@
-                        <div class="nav-item dropdown mt-1" style="z-index:1001;">
+                        <div class="nav-item dropdown p-3">
                             <a class="nav-link dropdown-toggle text-success @(currentController == "User" ? "active" : "")" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-
                                 <img id="userAvatar"
                                      src="~/assets/images/avartardefault.jpg"
-                                     class="rounded-circle me-2"
-                                     style="width: 30px; height: 30px; object-fit: cover;"
+                                     class="rounded-circle"
                                      alt="User Avatar" />
-
                                 @User.FindFirst(ClaimTypes.Name)?.Value
                             </a>
-                            <div class="dropdown-menu dropdown-menu-right">
+                            <div class="dropdown-menu dropdown-menu-end">
                                 <a class="dropdown-item" asp-route-id="" asp-action="Details" asp-controller="User">Thông tin tài khoản</a>
                                 @if (User.IsInRole("admin") || User.IsInRole("teacher"))
                                 {
@@ -83,11 +97,11 @@
                     }
                     else
                     {
-                        <div class="nav-item mt-2">
-                            <a class="nav-link text-info" asp-action="Login" asp-controller="User">Đăng nhập</a>
+                        <div class="nav-item auth-links">
+                            <a class="nav-link" asp-action="Login" asp-controller="User">Đăng nhập</a>
                         </div>
-                        <div class="nav-item mt-2">
-                            <a class="nav-link text-info" asp-action="Signup" asp-controller="User">Đăng ký</a>
+                        <div class="nav-item auth-links">
+                            <a class="nav-link" asp-action="Signup" asp-controller="User">Đăng ký</a>
                         </div>
                     }
                 </div>

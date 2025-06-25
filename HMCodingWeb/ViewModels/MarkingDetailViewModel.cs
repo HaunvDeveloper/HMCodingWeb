@@ -4,7 +4,7 @@ namespace HMCodingWeb.ViewModels
 {
     public class MarkingDetailViewModel
     {
-        public MarkingDetailViewModel(MarkingDetail markingDetail)
+        public MarkingDetailViewModel(MarkingDetail markingDetail, int totalTestcase)
         {
             Id = markingDetail.Id;
             MarkingId = markingDetail.MarkingId;
@@ -16,6 +16,7 @@ namespace HMCodingWeb.ViewModels
             IsTimeLimitExceed = markingDetail.IsTimeLimitExceed;
             IsError = markingDetail.IsError;
             ErrorContent = markingDetail.ErrorContent;
+            TotalTestcase = totalTestcase;
         }
 
 
@@ -26,6 +27,8 @@ namespace HMCodingWeb.ViewModels
         public long? TestCaseId { get; set; }
 
         public int? TestCaseIndex { get; set; }
+
+        public int TotalTestcase { get; set; }
 
         public string? CorrectOutput { get; set; }
 

@@ -8,5 +8,8 @@
 
 a {
     text-decoration: none !important;
-    color: inherit;
 }
+
+    table a:hover {
+        text-decoration: underline !important;
+    }

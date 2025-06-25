@@ -4,111 +4,141 @@
     ViewData["Title"] = "User Detail";
 }
 
-
 @section Links {
-    <style>
-        .card {
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
-        strong {
-            font-weight: bold;
-        }
-
-        a {
-            text-decoration: none;
-        }
-
-
-        .rank {
-            cursor: pointer;
-        }
-    </style>
+    <link rel="stylesheet" href="~/css/user-details.css" />
+    <link rel="stylesheet" href="~/css/medals.css" />
 }
-<div class="container mt-3 mb-5">
+
+<div id="user-detail-container" class="container">
     <div class="row">
         <!-- User Information -->
-        <div class="col-12 col-lg-4 mt-2">
-            <div class="card">
+        <div class="col-12 col-lg-4 mt-3">
+            <div class="user-card card">
                 <div class="card-header">
-                    <h3 class="text-center mt-3">@Model.Fullname</h3>
+                    <h3>THÔNG TIN</h3>
                 </div>
-                <div class="card-body text-center">
+                <div class="card-body">
                     @if (Model.AvartarImage != null)
                     {
                         <img src="data:image/jpeg;base64,@Convert.ToBase64String(Model.AvartarImage)"
-                             class="img-fluid rounded-circle mb-3"
-                             style="width: 150px; height: 150px; object-fit: cover;"
+                             class="img-fluid rounded-circle"
                              alt="User Avatar" />
                     }
                     else
                     {
                         <img src="~/assets/images/avartardefault.jpg"
-                             class="img-fluid rounded-circle mb-3"
-                             style="width: 150px; height: 150px; object-fit: cover;"
+                             class="img-fluid rounded-circle"
                              alt="Default Avatar" />
                     }
-                    <div class="ml-2 text-lg-start p-4">
-                        <div class="text-center mb-3">
-                            <h4>MỨC HẠNG</h4>
-                            <div class="rank @Model.Rank?.RankCode">@(Model.Rank?.RankName ?? "Unranked")</div>
-                        </div>
-                        <p><strong>Username:</strong> @Model.Username</p>
-                        <p><strong>Email:</strong> @Model.Email</p>
-                        @if (!string.IsNullOrEmpty(Model.PhoneNumber))
-                        {
-                            <p><strong>SĐT:</strong> @Model.PhoneNumber</p>
-                        }
-                        @if (Model.Birthday.HasValue)
-                        {
-                            <p><strong>Ngày sinh:</strong> @Model.Birthday.Value.ToString("dd/MM/yyyy")</p>
-                        }
-                        
-                        
-                        <p><strong>Ngôn ngữ:</strong> @Model.ProgramLanguage.ProgramLanguageName</p>
-                        <p><strong>Điểm hạng:</strong> @Model.Point</p>
+                    <h3>@Model.Fullname</h3>
 
-                        
-                    </div>
+                    <div class="info-item mt-2"><strong><i class="fas fa-user me-2"></i>Username:</strong> @Model.Username</div>
+                    <div class="info-item"><strong><i class="fas fa-envelope me-2"></i>Email:</strong> @Model.Email</div>
+                    @if (!string.IsNullOrEmpty(Model.PhoneNumber))
+                    {
+                        <div class="info-item"><strong><i class="fas fa-phone me-2"></i>SĐT:</strong> @Model.PhoneNumber</div>
+                    }
+                    @if (Model.Birthday.HasValue)
+                    {
+                        <div class="info-item"><strong><i class="fas fa-birthday-cake me-2"></i>Ngày sinh:</strong> @Model.Birthday.Value.ToString("dd/MM/yyyy")</div>
+                    }
+                    <div class="info-item"><strong><i class="fas fa-code me-2"></i>Ngôn ngữ:</strong> @Model.ProgramLanguage?.ProgramLanguageName</div>
+                    <div class="info-item"><strong><i class="fas fa-code me-2"></i>Theme:</strong> @Model.ThemeCode?.ThemeCode</div>
+
                     @if ((long)ViewBag.OwnUserId == Model.Id)
                     {
-                        <a asp-action="EditProfile" asp-controller="User"
-                           class="btn btn-primary">Edit Profile</a>
+                        <a asp-action="EditProfile" asp-controller="User" class="btn btn-primary mt-3">
+                            <i class="fas fa-edit me-2"></i>Edit Profile
+                        </a>
                     }
-
                 </div>
             </div>
+
+        </div>
+        <div class="col-12 col-lg-8 mt-3">
+            <!-- Rank Info Card -->
+            <div class="rank-card card">
+                <div class="card-header">
+                    <h3>MỨC HẠNG</h3>
+                </div>
+                <div class="card-body">
+                    <div class="medal-card @Model.Rank?.RankCode" onclick="window.location.href='/rank'">
+                        <div class="medal-icon"><i class="fas fa-medal"></i></div>
+                        <h3>@(ViewBag.CurrentRank?.RankName ?? "Unranked")</h3>
+                        <strong class="rank-description m-0 p-0">Điểm @Model.Point</strong>
+                    </div>
+                    @if (ViewBag.NextRank != null)
+                    {
+
+                        var nextRank = ViewBag.NextRank as Rank;
+                        long pointsNeeded = (nextRank?.MinLimitPoint ?? 0) - Model.Point;
+                        int progressPercentage = Math.Min(100, (int)((double)Model.Point / ViewBag.NextRank.MinLimitPoint * 100));
+                        var difficulties = ViewBag.Difficulties as List<DifficultyLevel>;
+
+                        <div class="next-rank-info">
+                            <p>Rank tiếp theo: <strong><a class="text-info" asp-action="Index" asp-controller="Rank">@ViewBag.NextRank.RankName</a></strong></p>
+                            
+                            @if (pointsNeeded > 0)
+                            {
+                                <p>Cần thêm <strong>@pointsNeeded</strong> điểm để lên rank tiếp theo.</p>
+                            }
+                            @if (ViewBag.MissingPrerequisites != null && ViewBag.MissingPrerequisites.Count > 0)
+                            {
+                                <ul class="prerequisites-list">
+                                    @foreach (var pr in ViewBag.MissingPrerequisites)
+                                    {
+                                        var difficulty = difficulties?.FirstOrDefault(d => d.Id == pr.Key)?.DifficultyName ?? "Độ khó " + pr.Key;
+                                        <p>Cần thêm <strong>@pr.Value</strong> bài tập mức <strong>@difficulty</strong></p>
+                                    }
+                                </ul>
+                            }
+                            <div class="progress" bis_skin_checked="1">
+                                <div class="progress-bar progress-bar-striped bg-info" role="progressbar" style="width: @progressPercentage%;" aria-valuenow="@progressPercentage" aria-valuemin="0" aria-valuemax="100" bis_skin_checked="1"></div>
+                            </div>
+
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="next-rank-info">
+                            <p>Đã đạt <strong>rank cao nhất</strong>!</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
         </div>
 
         <!-- Exercises List -->
-        <div class="col-lg-8 col-12 mt-2">
-            <div class="card">
+
+    </div>
+    <div class="row mt-3">
+        <div class="col-12 mt-3">
+            <div class="exercises-card card">
                 <div class="card-header">
-                    <h3 class="mt-3">Bài tập đã hoàn thành <strong class="px-2 completed-ex-num"></strong></h3>
+                    <h3>Bài tập đã hoàn thành <strong class="completed-ex-num"></strong></h3>
                 </div>
                 <div class="card-body table-responsive">
-                    <table id="table-data" class="table table-bordered table-sm table-active">
+                    <table id="table-data" class="table table-bordered table-sm table-hover">
                         <thead>
-                            <tr class="table-dark">
-                                <td class=" text-light">Mã bài</td>
-                                <td class=" text-light">Tên bài</td>
-                                <td class=" text-light">Độ khó</td>
-                                <td class=" text-light">Lần đầu chấm</td>
-                                <td class=" text-light">Lần đầu đúng</td>
+                            <tr>
+                                <th><i class="fas fa-id-badge me-2"></i>Mã bài</th>
+                                <th><i class="fas fa-file-alt me-2"></i>Tên bài</th>
+                                <th><i class="fas fa-tachometer-alt me-2"></i>Độ khó</th>
+                                <th><i class="fas fa-clock me-2"></i>Lần đầu chấm</th>
+                                <th><i class="fas fa-check-circle me-2"></i>Lần đầu đúng</th>
                             </tr>
                         </thead>
                         <tbody>
                         </tbody>
                     </table>
-
                 </div>
-
             </div>
         </div>
     </div>
 </div>
-
 
 @section Scripts {
     <script>
@@ -120,7 +150,7 @@
                 "url": '@Url.Action("_GetCompletedExByUser", "Exercise")',
                 "data": function (d) {
                     d.keyword = $('input[type="search"]').val();
-                    d.userId = `@Model.Id` || null; // Pass userId if available`
+                    d.userId = `@Model.Id` || null;
                 },
                 "type": "POST",
                 "dataSrc": function (json) {
@@ -132,65 +162,65 @@
             "lengthMenu": [5, 10, 25, 50, 100],
             "order": [[4, "desc"]],
             "columns": [
-                    {
-                        "data": "exerciseCode",
-                        "render": function (data, type, row) {
-                            return `<a href="/exercise/code/${row.id}">${data}</a>`;
-                        }
-                    },
-                    {
-                        "data": "exerciseName",
-                        "render": function (data, type, row) {
-                            return `<a href="/exercise/code/${row.id}">${data}</a>`;
-                        }
-                    },
-                    { "data": "difficulty" },
-                    { "data": "firstMarkingTime" },
-                    { "data": "firstCorrectMarkingTime"}
+                {
+                    "data": "exerciseCode",
+                    "render": function (data, type, row) {
+                        return `<a href="/exercise/code/${row.id}">${data}</a>`;
+                    }
+                },
+                {
+                    "data": "exerciseName",
+                    "render": function (data, type, row) {
+                        return `<a href="/exercise/code/${row.id}">${data}</a>`;
+                    }
+                },
+                { "data": "difficulty" },
+                { "data": "firstMarkingTime" },
+                { "data": "firstCorrectMarkingTime" }
             ],
             "language": {
-                    "emptyTable": "Không có dữ liệu",
-                    "info": "Hiển thị _START_ đến _END_ trong tổng số _TOTAL_ mục",
-                    "infoEmpty": "Hiển thị 0 đến 0 trong tổng số 0 mục",
-                    "infoFiltered": "(được lọc từ tổng số _MAX_ mục)",
-                    "lengthMenu": "Hiển thị _MENU_ mục",
-                    "search": "Tìm kiếm:",
-                    "zeroRecords": "Không tìm thấy kết quả"
-                },
+                "emptyTable": "Không có dữ liệu",
+                "info": "Hiển thị _START_ đến _END_ trong tổng số _TOTAL_ mục",
+                "infoEmpty": "Hiển thị 0 đến 0 trong tổng số 0 mục",
+                "infoFiltered": "(được lọc từ tổng số _MAX_ mục)",
+                "lengthMenu": "Hiển thị _MENU_ mục",
+                "search": "Tìm kiếm:",
+                "zeroRecords": "Không tìm thấy kết quả"
+            }
         });
-        $(document).on('click', '.rank', function() {
-                window.location.href = `/rank`;
-         });
 
+        $(document).on('click', '.rank', function() {
+            window.location.href = `/rank`;
+        });
 
         @if ((long)ViewBag.OwnUserId == Model.Id)
         {
-             <text>
-                    $(document).ready(function () {
-                        $.ajax({
-                                url: '/User/GetAvatar',
-                                type: 'GET',
-                                success: function (response) {
-                                    if (response.status) {
-                                        if(response.avatar){
-                                            sessionStorage.setItem("UserAvatar", response.avatar);
-                                        } else {
-                                            sessionStorage.removeItem("UserAvatar");
+            <text>
+                                $(document).ready(function () {
+                                    $.ajax({
+                                        url: '/User/GetAvatar',
+                                        type: 'GET',
+                                        success: function (response) {
+                                            if (response.status) {
+                                                if (response.avatar) {
+                                                    sessionStorage.setItem("UserAvatar", response.avatar);
+                                                    $("#userAvatar").attr("src", "data:image/jpeg;base64," + avatar);
+                                                } else {
+                                                    sessionStorage.removeItem("UserAvatar");
+                                                    $("#userAvatar").attr("src", "/assets/images/avartardefault.jpg");
+                                                }
+                                            } else {
+                                                sessionStorage.removeItem("UserAvatar");
+                                                $("#userAvatar").attr("src", "/assets/images/avartardefault.jpg");
+                                            }
+                                        },
+                                        error: function () {
+                                            console.log("Failed to load avatar.");
                                             $("#userAvatar").attr("src", "/assets/images/avartardefault.jpg");
                                         }
-                                    }else{
-                                        sessionStorage.removeItem("UserAvatar");
-                                        $("#userAvatar").attr("src", "/assets/images/avartardefault.jpg");
-                                    }
-                                },
-                                error: function () {
-                                    console.log("Failed to load avatar.");
-                                    $("#userAvatar").attr("src", "/assets/images/avartardefault.jpg");
-                                }
-                            });
-                    });
-             </text>
+                                    });
+                                });
+            </text>
         }
-        
     </script>
 }
