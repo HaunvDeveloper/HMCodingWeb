@@ -23,12 +23,14 @@ namespace HMCodingWeb.Controllers
         private readonly EmailSendService _emailSendService;
         private readonly OnlineUsersService _onlineUsersService;
         private const long MaxAvatarSize = 2 * 1024 * 1024; // 2MB
+        private readonly IConfiguration _configuration;
 
-        public UserController(OnlineCodingWebContext context, EmailSendService emailSendService, UserListService userListService, OnlineUsersService onlineUsersService)
+        public UserController(OnlineCodingWebContext context, EmailSendService emailSendService, UserListService userListService, OnlineUsersService onlineUsersService, IConfiguration configuration)
         {
             _context = context;
             _emailSendService = emailSendService;
             _onlineUsersService = onlineUsersService;
+            _configuration = configuration;
         }
 
 
@@ -241,6 +243,7 @@ namespace HMCodingWeb.Controllers
         public IActionResult Signup()
         {
             TempData.Clear();
+            ViewBag.SiteKey = _configuration["ReCaptcha:SiteKey"];
             return View();
         }
 
@@ -250,6 +253,16 @@ namespace HMCodingWeb.Controllers
         public async Task<IActionResult> Signup(User model)
         {
             TempData.Clear();
+
+            var captchaResponse = Request.Form["g-recaptcha-response"];
+            var isCaptchaValid = await IsCaptchaValid(captchaResponse);
+            ViewBag.SiteKey = _configuration["ReCaptcha:SiteKey"];
+            if (!isCaptchaValid)
+            {
+                ViewBag.Alert = "Xác thực reCAPTCHA thất bại. Vui lòng thử lại.";
+                return View(model);
+            }
+
             if (model != null)
             {
                 string pattern = "^[a-zA-Z0-9]+$";
@@ -289,6 +302,21 @@ namespace HMCodingWeb.Controllers
             }
             return View(model);
         }
+
+        private async Task<bool> IsCaptchaValid(string captchaResponse)
+        {
+            var secretKey = _configuration["ReCaptcha:SecretKey"];
+            var client = new HttpClient();
+            var result = await client.PostAsync(
+                $"https://www.google.com/recaptcha/api/siteverify?secret={secretKey}&response={captchaResponse}",
+                null
+            );
+
+            var json = await result.Content.ReadAsStringAsync();
+            dynamic data = JsonConvert.DeserializeObject(json);
+            return data?.success == "true" || data?.success == true;
+        }
+
 
 
         [AllowAnonymous]
@@ -377,6 +405,7 @@ namespace HMCodingWeb.Controllers
         [AllowAnonymous]
         public IActionResult ForgetPassword()
         {
+            ViewBag.SiteKey = _configuration["ReCaptcha:SiteKey"];
             return View();
         }
 
@@ -384,6 +413,14 @@ namespace HMCodingWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> ForgetPassword(string userIndent)
         {
+            var captchaResponse = Request.Form["g-recaptcha-response"];
+            var isCaptchaValid = await IsCaptchaValid(captchaResponse);
+            ViewBag.SiteKey = _configuration["ReCaptcha:SiteKey"];
+            if (!isCaptchaValid)
+            {
+                ViewBag.Alert = "Xác thực reCAPTCHA thất bại. Vui lòng thử lại.";
+                return View();
+            }
             var model = new User();
             if (userIndent.Contains('@'))
             {

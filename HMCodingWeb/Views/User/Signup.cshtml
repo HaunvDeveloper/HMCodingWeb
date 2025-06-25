@@ -4,90 +4,111 @@
     ViewData["Title"] = "Đăng ký";
 }
 
-    <div class="container" id="loginContainer">
-        <form asp-action="Signup" asp-controller="User" method="post" class="form_login container mt-3">
-            <div class="text-center">
-                <div><img width="20" src="~/assets/icons/logo.png" alt=""></div>
+<div class="container" id="loginContainer">
+    <form asp-action="Signup" asp-controller="User" method="post" class="form_login container mt-3">
+        <div class="text-center">
+            <div><img width="20" src="~/assets/icons/logo.png" alt=""></div>
             <b class="title_login">HM Coding</b>
-            </div>
-            <div class="row justify-content-center">
-                <div class="col-12 col-md-6">
-                    <input asp-for="AuthId" value="4" type="hidden"/>
-                    <input asp-for="ProgramLanguageId" value="1" type="hidden"/>
-                    <input asp-for="ThemeCodeId" value="1" type="hidden"/>
-                    <input asp-for="IsBlock" value="false" type="hidden"/>
-                    <div class="mt-4">  
-                        <label class="text-danger" asp-for="Fullname">Fullname</label>
-                        <input asp-for="Fullname" class="form-control" required placeholder="Fullname" />
-                        <span asp-validation-for="Fullname" class="text-danger"></span>
-                    </div>
-   
-                    <div class="mt-4">
-                        <label class="text-danger" asp-for="Username"></label>
-                        <input asp-for="Username" class="form-control" required placeholder="Username" />
-                        
-                        <span asp-validation-for="Username" class="text-danger"></span>
-                    </div>
-                    
-
-                    <div class="mt-4">
-                        <label class="text-danger" asp-for="Password"></label>
-                        <input asp-for="Password" class="form-control" type="password" required placeholder="Password" />
-                        <span asp-validation-for="Password" class="text-danger"></span>
-                    </div>
-                   
-
-                    <div class="mt-4">
-                        <label class="text-danger" asp-for="RetypePassword"></label>
-                        <input asp-for="RetypePassword" class="form-control" type="password" required placeholder="Retype Password" />
-                        <span asp-validation-for="RetypePassword" class="text-danger"></span>
-                    </div>
-                    
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-6">
+                <input asp-for="AuthId" value="4" type="hidden" />
+                <input asp-for="ProgramLanguageId" value="1" type="hidden" />
+                <input asp-for="ThemeCodeId" value="1" type="hidden" />
+                <input asp-for="IsBlock" value="false" type="hidden" />
+                <div class="mt-4">
+                    <label class="text-danger" asp-for="Fullname">Fullname</label>
+                    <input asp-for="Fullname" class="form-control" required placeholder="Fullname" />
+                    <span asp-validation-for="Fullname" class="text-danger"></span>
                 </div>
-                <div class="col-12 col-md-6">
-                    <div class="mt-4">
-                        <label class="text-danger" asp-for="Email"></label>
-                        <input asp-for="Email" class="form-control" required type="email" placeholder="Email" />
 
-                        <span asp-validation-for="Email" class="text-danger"></span>
-                    </div>
-                    <div class="mt-4">
-                        <label class="text-primary" asp-for="Birthday"></label>
-                        <input asp-for="Birthday" class="form-control" type="date" placeholder="dd-mm-yyyy" />
-                        <span asp-validation-for="Birthday" class="text-danger"></span>
-                    </div>
-                   
-                    <div class="mt-4">
-                        <label class="text-primary" asp-for="PhoneNumber"></label>
-                        <input asp-for="PhoneNumber" class="form-control" type="tel" placeholder="PhoneNumber" />
-                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-                    </div>
-                    <div class="mt-5 flex w-100 justify-content-around flex-wrap align-items-center">
-                        <a class="text-success" asp-action="Login" asp-controller="User">Quay về Đăng nhập</a>
-                        <button class="btn btn-primary px-5">Đăng ký</button>
-                    </div>
-                    <div class="w-100 d-flex justify-content-center mt-3">
-                        <span class="text-danger text-center">@ViewBag.Alert</span>
-                    </div>
-                    
+                <div class="mt-4">
+                    <label class="text-danger" asp-for="Username"></label>
+                    <input asp-for="Username" class="form-control" required placeholder="Username" />
+
+                    <span asp-validation-for="Username" class="text-danger"></span>
                 </div>
-                
+
+
+                <div class="mt-4">
+                    <label class="text-danger" asp-for="Password"></label>
+                    <input asp-for="Password" class="form-control" type="password" required placeholder="Password" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+
+                <div class="mt-4">
+                    <label class="text-danger" asp-for="RetypePassword"></label>
+                    <input asp-for="RetypePassword" class="form-control" type="password" required placeholder="Retype Password" />
+                    <span id="valid-retype-password" asp-validation-for="RetypePassword" class="text-danger"></span>
+                </div>
+
             </div>
-        </form>
-    </div>
+            <div class="col-12 col-md-6">
+                <div class="mt-4">
+                    <label class="text-danger" asp-for="Email"></label>
+                    <input asp-for="Email" class="form-control" required type="email" placeholder="Email" />
+
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div class="mt-4">
+                    <label class="text-primary" asp-for="Birthday"></label>
+                    <input asp-for="Birthday" class="form-control" type="date" placeholder="dd-mm-yyyy" />
+                    <span asp-validation-for="Birthday" class="text-danger"></span>
+                </div>
+
+                <div class="mt-4">
+                    <label class="text-primary" asp-for="PhoneNumber"></label>
+                    <input asp-for="PhoneNumber" class="form-control" type="tel" placeholder="PhoneNumber" />
+                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                </div>
+
+                <!-- Add reCAPTCHA -->
+                <div class="mt-4">
+                    <div class="g-recaptcha" data-sitekey="@ViewBag.SiteKey"></div>
+                    <span class="text-danger" id="captchaError" style="display:none;">Vui lòng xác nhận CAPTCHA.</span>
+                </div>
+                <div class="mt-3 flex w-100 justify-content-around flex-wrap align-items-center">
+                    <a class="text-success" asp-action="Login" asp-controller="User">Quay về Đăng nhập</a>
+                    <button class="btn btn-primary px-5">Đăng ký</button>
+                </div>
+                <div class="w-100 d-flex justify-content-center mt-1">
+                    <span class="alert text-danger text-center">@ViewBag.Alert</span>
+                </div>
+
+            </div>
+
+        </div>
+    </form>
+</div>
 
 
-@section Scripts{
+@section Scripts {
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script>
-        $('#form_login').submit(function (event) {
+        $('.form_login').submit(function (event) {
             const password = $('#Password').val();
             const retypePassword = $('#RetypePassword').val();
             if (password != retypePassword) {
                 event.preventDefault();
 
+                $('.alert').text('Mật khẩu không khớp. Vui lòng nhập lại.');
+
+            }
+            else{
+                $('.alert').text('');
+            }
+
+            const captchaResponse = grecaptcha.getResponse();
+            // Validate CAPTCHA
+            if (captchaResponse.length === 0) {
+                event.preventDefault();
+                $('#captchaError').show();
+            } else {
+                $('#captchaError').hide();
             }
         });
     </script>
 }
-    
-    
+
+
