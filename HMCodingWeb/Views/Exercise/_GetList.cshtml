@@ -56,7 +56,7 @@
                                         <span class="material-symbols-outlined">more_vert</span>
                                     </button>
                                     <div class="dropdown-menu-custom" style="display: none; position: absolute; right:0px; z-index: 1000; background: white; border: 1px solid #ccc; border-radius: 4px; min-width: 120px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
-                                        <a class="dropdown-item-custom" href="@Url.Action("Edit", "Exercise", new { id = item.Id })" style="display: block; padding: 8px 12px; text-decoration: none; color: black;">
+                                        <a class="dropdown-item-custom" href="@Url.Action("Edit", "Exercise", new { id = item.Id })" style="display: block; padding: 8px 12px; text-decoration: none !important; color: black;">
                                             ✏️ Edit
                                         </a>
                                         <button onclick="deleteRow(@item.Id)" class="dropdown-item-custom" style="display: block; padding: 8px 12px; width: 100%; border: none; background: none; color: red; text-align: left;">

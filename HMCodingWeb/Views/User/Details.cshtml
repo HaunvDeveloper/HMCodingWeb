@@ -1,14 +1,14 @@
 ﻿@model User
 
 @{
-    ViewData["Title"] = "User Detail";
+    ViewData["Title"] = Model.Fullname;
 }
 
 @section Links {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
-    <link rel="stylesheet" href="~/css/user-details.css?v=@(DateTime.Now.Ticks)" />
-    <link rel="stylesheet" href="~/css/medals.css?v=@(DateTime.Now.Ticks)" />
+    <link rel="stylesheet" href="~/css/user-details.css?v=2" />
+    @* <link rel="stylesheet" href="~/css/medals.css?v=2" /> *@
 }
 
 <div id="user-detail-container" class="container">
@@ -65,7 +65,9 @@
                 </div>
                 <div class="card-body">
                     <div class="medal-card @Model.Rank?.RankCode" onclick="window.location.href='/rank'">
-                        <div class="medal-icon"><i class="fas fa-medal"></i></div>
+                        <div class="medal-icon">
+                            <img class="@Model.Rank?.RankCode" id="rank-icon-img" src="~/assets/rankicon/@(Model.Rank?.RankCode).png"/>
+                        </div>
                         <h3>@(ViewBag.CurrentRank?.RankName ?? "Unranked")</h3>
                         <strong class="rank-description m-0 p-0">Điểm @Model.Point</strong>
                     </div>
@@ -203,14 +205,14 @@
                                         success: function (response) {
                                             if (response.status) {
                                                 if (response.avatar) {
-                                                    sessionStorage.setItem("UserAvatar", response.avatar);
-                                                    $("#userAvatar").attr("src", "data:image/jpeg;base64," + avatar);
+                                                    localStorage.setItem("UserAvatar", response.avatar);
+                                                    $("#userAvatar").attr("src", "data:image/jpeg;base64," + response.avatar);
                                                 } else {
-                                                    sessionStorage.removeItem("UserAvatar");
+                                                    localStorage.removeItem("UserAvatar");
                                                     $("#userAvatar").attr("src", "/assets/images/avartardefault.jpg");
                                                 }
                                             } else {
-                                                sessionStorage.removeItem("UserAvatar");
+                                                localStorage.removeItem("UserAvatar");
                                                 $("#userAvatar").attr("src", "/assets/images/avartardefault.jpg");
                                             }
                                         },

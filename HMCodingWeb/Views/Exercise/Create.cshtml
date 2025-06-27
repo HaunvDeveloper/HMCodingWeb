@@ -306,6 +306,8 @@
     <script src="https://cdn.ckeditor.com/4.22.1/full/ckeditor.js"></script>
 
     <script>
+
+
         CKEDITOR.plugins.add('insertCustomHtml', {
             icons: 'insertCustomHtml',
             init: function(editor) {
@@ -313,7 +315,7 @@
                     label: 'Chèn bảng mẫu',
                     command: 'insertHtmlCommand',
                     toolbar: 'insert',
-                    icon: 'https://cdn-icons-png.flaticon.com/512/60/60794.png' // hoặc icon tuỳ chọn
+                    icon: '/assets/icons/insert-table.svg' // hoặc icon tuỳ chọn
                 });
 
                 editor.addCommand('insertHtmlCommand', {
@@ -359,7 +361,6 @@
                 { name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize'] },
                 { name: 'colors', items: ['TextColor', 'BGColor'] },
                 { name: 'tools', items: ['Maximize', 'ShowBlocks'] },
-                { name: 'others', items: ['Ruler'] }
             ]
         });
 

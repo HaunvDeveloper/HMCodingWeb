@@ -18,13 +18,13 @@
 
     <meta name="msapplication-TileColor" content="#065693">
     <meta name="msapplication-TileImage" content="~/assets/icons/logo.png">
-    
+
 
     <link rel="stylesheet" href="~/lib/bootstrap/theme/bootstrap.css">
     <link rel="stylesheet" href="~/css/bootstrap.extend.css">
     <link rel="stylesheet" href="~/lib/sweetalert2/themes/minimal/minimal.min.css">
     <link rel="stylesheet" href="~/css/button-extend.css" />
-    <link rel="stylesheet" href="~/css/site.css?v=@(DateTime.Now.Ticks)" />
+    <link rel="stylesheet" href="~/css/site.css?v=2" />
     <link rel="stylesheet" href="~/css/rank.css" />
     <link href="~/lib/DataTables/datatables.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito">
@@ -35,11 +35,11 @@
 
     @if (ViewData["Title"] != null)
     {
-        <title>@ViewData["Title"] | HM Coding</title>
+        <title>@ViewData["Title"] | HMCoding</title>
     }
     else
     {
-        <title>HM Coding</title>
+        <title>HMCoding</title>
     }
 
 </head>
@@ -223,7 +223,7 @@
         <text>
             <script>
                 $(document).ready(function () {
-                    var avatar = sessionStorage.getItem("UserAvatar");
+                    var avatar = localStorage.getItem("UserAvatar");
                     if(avatar) {
                         $("#userAvatar").attr("src", "data:image/jpeg;base64," + avatar);
                     } else {
@@ -233,13 +233,14 @@
                                     success: function (response) {
                                         if (response.status) {
                                             if(response.avatar){
-                                                sessionStorage.setItem("UserAvatar", response.avatar);
+                                                localStorage.setItem("UserAvatar", response.avatar);
+                                                $("#userAvatar").attr("src", "data:image/jpeg;base64," + response.avatar);
                                             } else {
-                                                sessionStorage.removeItem("UserAvatar");
+                                                localStorage.removeItem("UserAvatar");
                                                 $("#userAvatar").attr("src", "/assets/images/avartardefault.jpg");
                                             }
                                         }else{
-                                            sessionStorage.removeItem("UserAvatar");
+                                            localStorage.removeItem("UserAvatar");
                                             $("#userAvatar").attr("src", "/assets/images/avartardefault.jpg");
                                         }
                                     },

@@ -182,6 +182,9 @@
 
 
 /* Rank Info Card */
+
+
+
 .rank-card {
     background-color: var(--bs-primary);
     color: #e0e0e0;
@@ -191,6 +194,13 @@
     transition: transform 0.3s ease;
     height: 100%;
 }
+
+    .rank-card #rank-icon-img {
+        width: 340px;
+        height: 340px;
+        object-fit: cover;
+        filter: drop-shadow(0 0 20px white);
+    }
 
     .rank-card:hover {
         transform: translateY(-5px);
