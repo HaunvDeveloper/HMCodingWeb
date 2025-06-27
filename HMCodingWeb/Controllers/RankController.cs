@@ -16,9 +16,10 @@ namespace HMCodingWeb.Controllers
             _context = context;
             _userListService = userListService;
         }
-        public IActionResult Index()
+        public IActionResult Index(long id = 1)
         {
             var ranks = _context.Ranks.ToList();
+            ViewBag.CurrentRankId = id; 
             return View(ranks);
         }
 
@@ -86,6 +87,7 @@ namespace HMCodingWeb.Controllers
                     fullname = u.Fullname ?? "N/A",
                     programLanguage = u.ProgramLanguage != null ? u.ProgramLanguage.ProgramLanguageName : "N/A",
                     point = u.Point,
+                    rankId = u.RankId,
                     rankCode = u.Rank != null ? u.Rank.RankCode : "Unranked",
                     rankName = u.Rank != null ? u.Rank.RankName : "Unranked"
                 })

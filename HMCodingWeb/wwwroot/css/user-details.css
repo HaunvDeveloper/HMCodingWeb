@@ -195,12 +195,7 @@
     height: 100%;
 }
 
-    .rank-card #rank-icon-img {
-        width: 340px;
-        height: 340px;
-        object-fit: cover;
-        filter: drop-shadow(0 0 20px white);
-    }
+    
 
     .rank-card:hover {
         transform: translateY(-5px);
@@ -259,7 +254,3 @@
         padding: 0.4rem 1.2rem;
     }
 }
-
-
-
-

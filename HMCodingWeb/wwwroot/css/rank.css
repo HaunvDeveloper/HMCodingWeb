@@ -1,122 +1,168 @@
-﻿.rank-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-width: 300px;
-    margin: 0 auto;
-    
+﻿
+.rank-icon-img {
+    width: 300px;
+    height: 300px;
+    object-fit: cover;
 }
 
-.rank {
-    padding: 10px 15px;
-    border-radius: 8px;
-    text-align: center;
-    font-weight: bold;
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    transition: transform 0.3s;
-    font-family: 'Segoe UI', sans-serif;
-    cursor: pointer;
+    .rank-icon-img.copper {
+        transition: transform 0.6s ease;
+        filter: drop-shadow(0 0 20px #673700);
+    }
+
+        .rank-icon-img.copper:hover {
+            transform: scale(1.05);
+            filter: drop-shadow(0 0 20px #b87333);
+        }
+
+
+    .rank-icon-img.silver {
+        transition: transform 0.6s ease;
+        filter: drop-shadow(0 0 20px #c0c0c0);
+    }
+
+        .rank-icon-img.silver:hover {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 20px #c0c0c0);
+        }
+
+    .rank-icon-img.gold {
+        transition: transform 0.6s ease;
+        filter: drop-shadow(0 0 20px #ffd700);
+    }
+
+        .rank-icon-img.gold:hover {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 20px #ffd700);
+        }
+
+    .rank-icon-img.platinum {
+        transition: transform 0.6s ease;
+        filter: drop-shadow(0 0 20px #e5e4e2);
+    }
+
+        .rank-icon-img.platinum:hover {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 20px #f0f8ff);
+        }
+
+    .rank-icon-img.diamond {
+        transition: transform 0.6s ease;
+        filter: drop-shadow(0 0 20px #b9f2ff);
+    }
+
+        .rank-icon-img.diamond:hover {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 20px #b9f2ff);
+        }
+
+    .rank-icon-img.elite {
+        transition: transform 0.6s ease;
+        filter: drop-shadow(0 0 20px #9370db);
+    }
+
+        .rank-icon-img.elite:hover {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 20px #ba55d3);
+        }
+
+    .rank-icon-img.master {
+        transition: transform 0.6s ease;
+        filter: drop-shadow(0 0 20px #8a2be2);
+    }
+
+        .rank-icon-img.master:hover {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 20px #9932cc);
+        }
+
+    .rank-icon-img.challenger {
+        transition: transform 0.6s ease;
+        filter: drop-shadow(0 0 20px #00ced1);
+    }
+
+        .rank-icon-img.challenger:hover {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 20px #40e0d0);
+        }
+
+    .rank-icon-img.champion {
+        transition: transform 0.6s ease;
+        filter: drop-shadow(0 0 20px #ff8c00);
+    }
+
+        .rank-icon-img.champion:hover {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 20px #ffa500);
+        }
+
+    .rank-icon-img.supreme {
+        transition: transform 0.6s ease;
+        filter: drop-shadow(0 0 25px #ff1493);
+        width: 330px;
+        height: 330px;
+    }
+
+        .rank-icon-img.supreme:hover {
+            transform: scale(1.12);
+            filter: drop-shadow(0 0 25px #ff69b4);
+        }
+
+
+
+.rank-text {
+    font-weight: 900;
+    font-size: 1.5rem;
+    font-family: "Roboto Mono", monospace;
 }
 
-    .rank:hover {
-        transform: scale(1.05);
+
+    .rank-text.copper {
+        color: #b87333;
+        text-shadow: 0 0 4px #673700;
     }
 
-    /* Rank Styles */
-.rank.copper {
-    background: linear-gradient(135deg, #b87333, #8c5522);
-    border: 2px solid #8c5522;
-    box-shadow: 0 0 10px rgba(140, 85, 34, 0.6);
-}
-
-    .rank.silver {
-        background: linear-gradient(135deg, #d9d9d9, #a1a1a1);
-        color: #333;
-        border: 2px solid #a1a1a1;
-        box-shadow: 0 0 12px rgba(161, 161, 161, 0.7);
-        color: #333;
+    .rank-text.silver {
+        color: #c0c0c0;
+        text-shadow: 0 0 4px #a9a9a9;
     }
 
-
-
-    .rank.gold {
-        background: linear-gradient(135deg, #ffd700, #b8860b);
-        color: #333;
-        border: 2px solid #b8860b;
-        box-shadow: 0 0 15px rgba(184, 134, 11, 0.8);
+    .rank-text.gold {
+        color: #ffd700;
+        text-shadow: 0 0 5px #b8860b;
     }
 
-    .rank.platinum {
-        background: linear-gradient(135deg, #e5e4e2, #b0b0b0);
-        color: #333;
-        border: 2px solid #b0b0b0;
-        box-shadow: 0 0 18px rgba(176, 176, 176, 0.9);
-        color: #333;
+    .rank-text.platinum {
+        color: #e5e4e2;
+        text-shadow: 0 0 5px #afeeee;
     }
 
-
-    .rank.diamond {
-        background: linear-gradient(135deg, #b9f2ff, #40c4ff);
-        border: 2px solid #0288d1;
-        box-shadow: 0 0 20px rgba(2, 136, 209, 1);
-        animation: pulse 2s infinite;
-        color: #333;
+    .rank-text.diamond {
+        color: #b9f2ff;
+        text-shadow: 0 0 6px #87cefa;
     }
 
-
-
-.rank.elite {
-    background: linear-gradient(135deg, #7b1fa2, #4a148c);
-    border: 2px solid #4a148c;
-    box-shadow: 0 0 22px rgba(74, 20, 140, 1);
-    animation: pulse 1.8s infinite;
-}
-
-.rank.master {
-    background: linear-gradient(135deg, #d32f2f, #7f0000);
-    border: 2px solid #b8860b;
-    box-shadow: 0 0 25px rgba(127, 0, 0, 1);
-    animation: pulse 1.6s infinite;
-}
-
-    .rank.challenger {
-        background: linear-gradient(135deg, #00e676, #00c853);
-        border: 2px solid #00e676;
-        box-shadow: 0 0 28px rgba(0, 230, 118, 1);
-        animation: pulse 1.4s infinite;
+    .rank-text.elite {
+        color: #9370db;
+        text-shadow: 0 0 6px #ba55d3;
     }
 
-.rank.champion {
-    background: linear-gradient(135deg, #ffeb3b, #fbc02d);
-    color: #333;
-    border: 3px solid #fbc02d;
-    box-shadow: 0 0 30px rgba(251, 192, 45, 1);
-    animation: pulse 1.2s infinite;
-}
-
-
-    .rank.supreme {
-        background: linear-gradient(135deg, #212121, #6200ea);
-        border: 3px solid #6200ea;
-        box-shadow: 0 0 35px rgba(98, 0, 234, 1), 0 0 50px rgba(255, 255, 255, 0.5);
-        animation: pulse 1s infinite;
-        color: #fff;
+    .rank-text.master {
+        color: #8a2be2;
+        text-shadow: 0 0 6px #9932cc;
     }
 
-
-
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 10px #ffffa8;
+    .rank-text.challenger {
+        color: #00ced1;
+        text-shadow: 0 0 6px #40e0d0;
     }
 
-    50% {
-        box-shadow: 0 0 25px #ffffa8;
+    .rank-text.champion {
+        color: #ff8c00;
+        text-shadow: 0 0 6px #ffa500;
     }
 
-    100% {
-        box-shadow: 0 0 10px #ffffa8;
+    .rank-text.supreme {
+        color: #ff1493;
+        text-shadow: 0 0 7px #ff69b4;
     }
-}

@@ -6,9 +6,10 @@
 
 @section Links {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="~/css/user-details.css?v=2" />
-    @* <link rel="stylesheet" href="~/css/medals.css?v=2" /> *@
+    <link rel="stylesheet" href="~/css/user-details.css?v=3" />
+    <link rel="stylesheet" href="~/css/rank.css?v=3" />
 }
 
 <div id="user-detail-container" class="container">
@@ -45,7 +46,7 @@
                         <div class="info-item"><strong><i class="fas fa-birthday-cake me-2"></i>Ngày sinh:</strong> @Model.Birthday.Value.ToString("dd/MM/yyyy")</div>
                     }
                     <div class="info-item"><strong><i class="fas fa-code me-2"></i>Ngôn ngữ:</strong> @Model.ProgramLanguage?.ProgramLanguageName</div>
-                    <div class="info-item"><strong><i class="fas fa-code me-2"></i>Theme:</strong> @Model.ThemeCode?.ThemeCode</div>
+                    <div class="info-item"><strong><i class="fa-solid fa-palette me-2"></i>Theme:</strong> @Model.ThemeCode?.ThemeCode</div>
 
                     @if ((long)ViewBag.OwnUserId == Model.Id)
                     {
@@ -66,9 +67,9 @@
                 <div class="card-body">
                     <div class="medal-card @Model.Rank?.RankCode" onclick="window.location.href='/rank'">
                         <div class="medal-icon">
-                            <img class="@Model.Rank?.RankCode" id="rank-icon-img" src="~/assets/rankicon/@(Model.Rank?.RankCode).png"/>
+                            <img class="@Model.Rank?.RankCode rank-icon-img"  src="~/assets/rankicon/@(Model.Rank?.RankCode ?? "unranked").png" />
                         </div>
-                        <h3>@(ViewBag.CurrentRank?.RankName ?? "Unranked")</h3>
+                        <h3 class="mt-2 rank-text @Model.Rank?.RankCode">@(ViewBag.CurrentRank?.RankName ?? "Unranked")</h3>
                         <strong class="rank-description m-0 p-0">Điểm @Model.Point</strong>
                     </div>
                     @if (ViewBag.NextRank != null)
