@@ -2,14 +2,28 @@
 
 @{
     ViewData["Title"] = Model.Fullname;
+    var authName = new Dictionary<string, string>
+    {
+        { "admin", "Quản trị viên" },
+        { "teacher", "Giáo viên" },
+        { "hsgstudent", "Học sinh giỏi" },
+        { "user", "Người dùng" }
+    };
+    var className = new Dictionary<string, string>
+    {
+        { "admin", "badge bg-danger" },
+        { "teacher", "badge bg-success" },
+        { "hsgstudent", "badge bg-info" },
+        { "user", "badge bg-secondary" }
+    };
 }
 
 @section Links {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="~/css/user-details.css?v=3" />
-    <link rel="stylesheet" href="~/css/rank.css?v=3" />
+    <link rel="stylesheet" href="~/css/user-details.css?v=5" />
+    <link rel="stylesheet" href="~/css/rank.css?v=5" />
 }
 
 <div id="user-detail-container" class="container">
@@ -33,7 +47,11 @@
                              class="img-fluid rounded-circle"
                              alt="Default Avatar" />
                     }
-                    <h3>@Model.Fullname</h3>
+                    <h3 class="text-success">@Model.Fullname</h3>
+                    
+                    <!--Authentication info-->
+
+                    <div class="@className[Model.Auth.AuthCode]">@authName[Model.Auth.AuthCode]</div>
 
                     <div class="info-item mt-2"><strong><i class="fas fa-user me-2"></i>Username:</strong> @Model.Username</div>
                     <div class="info-item"><strong><i class="fas fa-envelope me-2"></i>Email:</strong> @Model.Email</div>
@@ -50,7 +68,7 @@
 
                     @if ((long)ViewBag.OwnUserId == Model.Id)
                     {
-                        <a asp-action="EditProfile" asp-controller="User" class="btn btn-primary mt-3">
+                        <a asp-action="EditProfile" asp-controller="UserInfo" class="btn btn-primary mt-3">
                             <i class="fas fa-edit me-2"></i>Edit Profile
                         </a>
                     }
@@ -65,7 +83,7 @@
                     <h3>MỨC HẠNG</h3>
                 </div>
                 <div class="card-body">
-                    <div class="medal-card @Model.Rank?.RankCode" onclick="window.location.href='/rank'">
+                    <div class="medal-card @Model.Rank?.RankCode" onclick="window.location.href='/rank?id=@(Model.RankId)'">
                         <div class="medal-icon">
                             <img class="@Model.Rank?.RankCode rank-icon-img"  src="~/assets/rankicon/@(Model.Rank?.RankCode ?? "unranked").png" />
                         </div>
@@ -81,7 +99,7 @@
                         var difficulties = ViewBag.Difficulties as List<DifficultyLevel>;
 
                         <div class="next-rank-info">
-                            <p>Rank tiếp theo: <strong><a class="text-info" asp-action="Index" asp-controller="Rank">@ViewBag.NextRank.RankName</a></strong></p>
+                            <p>Rank tiếp theo: <strong><a class="text-info" asp-action="Index" asp-controller="Rank" asp-route-id="@nextRank?.Id">@ViewBag.NextRank.RankName</a></strong></p>
                             
                             @if (pointsNeeded > 0)
                             {
@@ -98,7 +116,7 @@
                                 </ul>
                             }
                             <div class="progress" bis_skin_checked="1">
-                                <div class="progress-bar progress-bar-striped bg-info" role="progressbar" style="width: @progressPercentage%;" aria-valuenow="@progressPercentage" aria-valuemin="0" aria-valuemax="100" bis_skin_checked="1"></div>
+                                <div class="progress-bar progress-bar-animated progress-bar-striped bg-info" role="progressbar" style="width: @progressPercentage%;" aria-valuenow="@progressPercentage" aria-valuemin="0" aria-valuemax="100" bis_skin_checked="1"></div>
                             </div>
 
                         </div>
@@ -114,9 +132,10 @@
 
         </div>
 
-        <!-- Exercises List -->
+       
 
     </div>
+     <!-- Exercises List -->
     <div class="row mt-3">
         <div class="col-12 mt-3">
             <div class="exercises-card card">
@@ -201,7 +220,7 @@
             <text>
                                 $(document).ready(function () {
                                     $.ajax({
-                                        url: '/User/GetAvatar',
+                                        url: '/UserInfo/GetAvatar',
                                         type: 'GET',
                                         success: function (response) {
                                             if (response.status) {

@@ -142,6 +142,7 @@ namespace HMCodingWeb.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete(long id)
         {
             var user = await _context.Users.FindAsync(id);

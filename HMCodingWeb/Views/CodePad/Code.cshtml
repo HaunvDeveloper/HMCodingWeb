@@ -169,7 +169,7 @@
                         {
                             foreach (var i in programLanguageList)
                             {
-                                @if (userInfo != null && ((Model == null && i.Id == userInfo.Id) || (Model != null && i.Id ==
+                                @if (userInfo != null && ((Model == null && i.Id == userInfo.ProgramLanguageId) || (Model != null && i.Id ==
                                Model.ProgramLanguageId)))
                                 {
                                     <option selected data-value="@i.Id" value="@i.ProgramLanguageCode">@i.ProgramLanguageName</option>

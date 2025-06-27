@@ -9,7 +9,7 @@ using OfficeOpenXml.ConditionalFormatting.Contracts;
 namespace HMCodingWeb.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "admin,teacher")]
+    [Authorize(Roles = "admin")]
     public class RankController : Controller
     {
         private readonly OnlineCodingWebContext _context;

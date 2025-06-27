@@ -60,7 +60,7 @@
                                 </div> <!--end::Row-->
                             </li> <!--end::Menu Body--> <!--begin::Menu Footer--> 
                             <li class="user-footer"> 
-                                <a href="@Url.Action("Details", "User", new{area=""})" class="btn btn-default btn-flat">Thông tin</a>
+                                <a href="@Url.Action("Details", "UserInfo", new{area=""})" class="btn btn-default btn-flat">Thông tin</a>
                                 <a href="/logout" class="btn btn-default btn-flat float-end">Đăng xuất</a> 
                             </li> <!--end::Menu Footer-->
                         </ul>
@@ -138,16 +138,16 @@
         <text>
         <script>
             $(document).ready(function () {
-                var avatar = sessionStorage.getItem("UserAvatar");
+                var avatar = localStorage.getItem("UserAvatar");
                 if(avatar) {
                     $(".userAvatar").attr("src", "data:image/jpeg;base64," + avatar);
                 } else {
                     $.ajax({
-                        url: '/User/GetAvatar',
+                        url: '/UserInfo/GetAvatar',
                         type: 'GET',
                         success: function (response) {
                             if (response.status && response.avatar) {
-                                sessionStorage.setItem("UserAvatar", response.avatar);
+                                localStorage.setItem("UserAvatar", response.avatar);
                                 $(".userAvatar").attr("src", "data:image/jpeg;base64," + response.avatar);
                             }else{
                                 $(".userAvatar").attr("src", "/assets/images/avartardefault.jpg");

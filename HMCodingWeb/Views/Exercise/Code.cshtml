@@ -7,13 +7,13 @@
     var programLanguageList = ViewBag.ProgramLanguageList as List<ProgramLanguage>;
     var exerciseId = Model?.Id ?? 0;
     var userCreated = ViewBag.CreatedUser as User;
-    if(userCreated == null)
+    if (userCreated == null)
     {
         userCreated = new User
-        {
-            Id = Model?.UserCreatedId ?? 0,
-            Username = "Unknown"
-        };
+                {
+                    Id = Model?.UserCreatedId ?? 0,
+                    Username = "Unknown"
+                };
     }
 }
 
@@ -21,7 +21,7 @@
 @section Links {
     <link rel="stylesheet" href="~/css/exercise-code.css?v=2">
     <link rel="stylesheet" href="~/css/button-extend.css?v=2">
-    
+
 }
 @if (Model == null)
 {
@@ -67,7 +67,8 @@
                 <div class="header-content-child">
                     <span><b>Đăng bởi:</b></span>
                     <p class="header-content-value">
-                        <a asp-action="Details" asp-controller="User" asp-route-id="@Model.UserCreatedId"> @(userCreated.Username) </a></p>
+                        <a asp-action="Details" asp-controller="UserInfo" asp-route-id="@Model.UserCreatedId"> @(userCreated.Username) </a>
+                    </p>
                 </div>
                 <div class="header-content-child">
                     <span><b>Độ khó:</b></span>
@@ -84,11 +85,11 @@
             </div>
             @* <iframe id="content-iframe" style="width: 90%; border: none;" onload="resizeIframe(this)"></iframe> *@
             <div class="p-2 " id="inner-content">@Html.Raw(Model != null ? Model.ExerciseContent : "")</div>
-            
+
         </div>
-        
+
     </div>
-    
+
 </section>
 
 <section class="container">
@@ -106,7 +107,7 @@
                 <button id="copy-code" class="btn btn-outline-secondary" role="button">Sao chép</button>
             </div>
 
-            
+
             <!-- CODE EDITOR -->
             <div id="code-div">
                 <div id="editor"></div>
@@ -186,8 +187,8 @@
                     </div>
                 </div>
             </div>
-        
-            
+
+
         </div>
 
         <!-- RIGHT SIDE -->
@@ -196,14 +197,14 @@
                 <h3 class="text-light">Chấm điểm</h3>
                 <div class="line"></div>
                 <div style="display:none;" class="progress" bis_skin_checked="1">
-                    <div class="progress-bar progress-bar-striped bg-info" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" bis_skin_checked="1"></div>
+                    <div class="progress-bar progress-bar-animated progress-bar-striped bg-info" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" bis_skin_checked="1"></div>
                 </div>
                 <button id="btn-marking" class="btn btn-danger w-75 text-nowrap" role="button">
                     CHẤM ĐIỂM
                 </button>
                 <div id="test-case-results" style="max-height:400px;overflow-y:auto;padding-right:5px;">
                 </div>
-                
+
             </div>
 
 
@@ -281,7 +282,7 @@
                 </button>
             </div>
 
-            
+
 
         </div>
     </div>
@@ -369,11 +370,11 @@
                     <div class="comment-item mb-3">
                         <div class="comment-header">
                             <b>
-                                <a href="/user/details/${comment.userId}">${comment.username}</a>
-                                ${comment.answerToUserId != null ? ` đã trả lời <a class="text-danger" href="/user/details/${comment.answerToUserId}">${comment.answerToUser}</a>` : ''}
+                                <a href="/userinfo/details/${comment.userId}">${comment.username}</a>
+                                ${comment.answerToUserId != null ? ` đã trả lời <a class="text-danger" href="/userinfo/details/${comment.answerToUserId}">${comment.answerToUser}</a>` : ''}
                             </b>
                             <span class="text-muted"> - ${new Date(comment.createdDate).toLocaleString('vi-VN')}</span>
-                            
+
                         </div>
                         <hr/>
                         <div class="comment-content">${comment.content}</div>
@@ -392,7 +393,7 @@
                 `;
 
                 container.append(commentHtml);
-                
+
             });
         }
 
@@ -515,8 +516,8 @@
             }
         });
     </script>
-    
-    
+
+
     <script>
 
         // CODE SECTION
@@ -785,7 +786,7 @@
                   top: testCaseDiv.scrollHeight,
                   behavior: "smooth" // thêm hiệu ứng mượt
                 });
-                
+
 
                 // Update progress bar
                 const progressBar = $('.progress-bar');
@@ -808,7 +809,7 @@
                     showToast("error", "Đã có lỗi xảy ra", 1500);
                 }
 
-            
+
             });
 
             // Utility function to escape HTML
@@ -924,7 +925,12 @@
                 $("#view-content-section").slideUp(300, function () {
                     $("#input-tab").addClass("d-none");
                     $("#code-section").removeClass("d-none").slideDown(300);
+                    document.querySelector('#editor').scrollIntoView({
+                                    behavior: 'smooth', // 'auto' hoặc 'smooth'
+                                    block: 'center'     // 'start', 'center', 'end', 'nearest'
+                                });
                 });
+                
             } else {
                 addParamToCurrentUrl("tab", "view");
                 $("#view-title").addClass("active");
@@ -932,7 +938,12 @@
                 $("#code-section").slideUp(300, function () {
                     $("#input-tab").addClass("d-none");
                     $("#view-content-section").removeClass("d-none").slideDown(300);
+                    document.querySelector('#content-container').scrollIntoView({
+                                    behavior: 'smooth', // 'auto' hoặc 'smooth'
+                                    block: 'center'     // 'start', 'center', 'end', 'nearest'
+                                });
                 });
+                
             }
         }
 

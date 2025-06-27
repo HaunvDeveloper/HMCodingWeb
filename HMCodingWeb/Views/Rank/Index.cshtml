@@ -6,21 +6,18 @@
 }
 
 @section Links {
-    <link rel="stylesheet" href="~/css/rank.css?v=3" />
-    <link rel="stylesheet" href="~/css/rank-list.css?v=3" />
+    <link rel="stylesheet" href="~/css/rank.css?v=5" />
+    <link rel="stylesheet" href="~/css/rank-list.css?v=5" />
     
 }
 
 <div class="rank-container">
-    <div class="rank-header">
-        <h1><i class="fas fa-crown me-2"></i>Danh Sách Hạng</h1>
-    </div>
-    <div id="rankCarousel" class="carousel slide">
-        <div class="carousel-inner">
+    <div id="rankCarousel" class="container carousel slide">
+        <div class="carousel-inner px-lg-5 px-2 py-4">
             @for (int i = 0; i < Model.Count; i++)
             {
                 var rank = Model[i];
-                <div class="carousel-item @(rank.Id == currentRankId ? "active" : "")">
+                <div class="carousel-item @(rank.Id == currentRankId ? "active" : "") p-2 h-100">
                     <div class="rank-card rank-@rank.RankCode.ToLower()">
                         <img src="~/assets/rankicon/@(rank.RankCode.ToLower()).png" class="rank-icon-img @rank.RankCode" alt="@rank.RankName Icon" />
                         <div class="rank-name rank-text @rank.RankCode">@rank.RankName</div>

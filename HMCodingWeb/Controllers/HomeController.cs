@@ -54,7 +54,7 @@ namespace HMCodingWeb.Controllers
                     a.CreatedByUserId,
                     CreatedByUserName = a.CreatedByUser.Username,
                     CreatedAt = a.CreatedAt.ToString("dd-MM-yyyy HH:mm"),
-                    CanEdit = User.IsInRole("admin") || User.IsInRole("teacher"),
+                    CanEdit = User.IsInRole("admin"),
                     IsPin = a.Priority > 0 // Assuming priority 1 means pinned
                 })
                 .ToList();
@@ -63,6 +63,7 @@ namespace HMCodingWeb.Controllers
         }
 
 
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public IActionResult CreateAnnouncement(Announcement model)
         {
@@ -85,6 +86,7 @@ namespace HMCodingWeb.Controllers
             });
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public IActionResult EditAnnouncement(int id, string title, string content)
         {
@@ -106,6 +108,7 @@ namespace HMCodingWeb.Controllers
             return Json(new { status = true });
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public IActionResult DeleteAnnouncement(int id)
         {
@@ -122,6 +125,7 @@ namespace HMCodingWeb.Controllers
             return Json(new { status = true });
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public IActionResult PinAnnouncement(int id)
         {

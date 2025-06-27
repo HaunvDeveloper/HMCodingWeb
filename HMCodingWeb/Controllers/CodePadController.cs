@@ -95,7 +95,6 @@ namespace HMCodingWeb.Controllers
         [Route("codepad/code/{id?}")]
         public async Task<IActionResult> Code(int? id)
         {
-
             long userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             var codepad = new Codepad();
             if (id.HasValue)
@@ -103,10 +102,6 @@ namespace HMCodingWeb.Controllers
                 codepad = await _context.Codepads
                     .Include(x => x.User)
                     .FirstOrDefaultAsync(x => x.Id == id);
-                if (codepad == null)
-                {
-                    return View();
-                }
                 if (!User.IsInRole("admin") && !User.IsInRole("teacher") && codepad?.UserId != userId && codepad?.AccessId == 1)
                 {
                     return View("NotAccess");

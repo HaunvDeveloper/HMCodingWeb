@@ -65,21 +65,21 @@
                     {
                         "data": "avatar",
                         "render": function (data, type, row) {
-                            return data ? `<a href="/User/Details/${row.id}"><img src="data:image/jpeg;base64,${data}" class="avatar-img" alt="Avatar" /></a>`
-                                        : `<a href="/User/Details/${row.id}"><img src="/assets/images/avartardefault.jpg" class="avatar-img" alt="Default Avatar" /></a>`;
+                            return data ? `<a href="/userinfo/details/${row.id}"><img src="data:image/jpeg;base64,${data}" class="avatar-img" alt="Avatar" /></a>`
+                                        : `<a href="/userinfo/details/${row.id}"><img src="/assets/images/avartardefault.jpg" class="avatar-img" alt="Default Avatar" /></a>`;
                         },
                         "orderable": false // Avatar column is not sortable
                     },
                     { 
                         "data": "username",
                         "render": function (data, type, row) {
-                            return `<a href="/User/Details/${row.id}" class="view-detail">${data}</a>`;
+                            return `<a href="/userinfo/details/${row.id}" class="view-detail">${data}</a>`;
                         }
                     },
                     { 
                         "data": "fullname",
                         "render": function (data, type, row) {
-                            return `<a href="/User/Details/${row.id}" class="view-detail">${data}</a>`;
+                            return `<a href="/userinfo/details/${row.id}" class="view-detail">${data}</a>`;
                         }
                     },
                     { "data": "programLanguage" },

@@ -1,6 +1,5 @@
 ﻿body {
     background: linear-gradient(180deg, #1e2a44 0%, #2c3e50 100%);
-    font-family: 'Roboto', sans-serif;
 }
 
 .rank-container {
@@ -29,10 +28,11 @@
 .carousel-inner {
     border-radius: 15px;
     overflow: hidden;
+    padding: 1rem;
 }
 
 .rank-card {
-    background-color: (--bs-info);
+    overflow: unset;
     border-radius: 15px;
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
     text-align: center;
@@ -42,7 +42,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-}
+}   
 
     .rank-card:hover {
         transform: translateY(-5px);
@@ -107,5 +107,17 @@
 
     .rank-description {
         font-size: 0.9rem;
+    }
+
+    .rank-icon-img {
+        width: 230px !important;
+        height: 230px !important;
+    }
+}
+
+@media (max-width: 500px){
+    .rank-icon-img {
+        width: 160px !important;
+        height: 160px !important;
     }
 }
