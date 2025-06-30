@@ -636,7 +636,8 @@
                 $.ajax({
                     url: '/Exercise/Create',
                     method: 'post',
-                    data: { model: model},
+                    data: JSON.stringify(model), // Serialize JSON
+                    contentType: 'application/json; charset=utf-8',
                     success: function (response) {
                         Swal.close();
                         if (response.status) {

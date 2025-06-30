@@ -9,7 +9,7 @@ public partial class User
 
     public string Username { get; set; } = null!;
 
-    public string Password { get; set; } = null!;
+    public string? Password { get; set; }
 
     public string? RetypePassword { get; set; }
 
@@ -53,7 +53,7 @@ public partial class User
 
     public virtual ICollection<Marking> Markings { get; set; } = new List<Marking>();
 
-    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+    public virtual ICollection<NotificationSeenStatus> NotificationSeenStatuses { get; set; } = new List<NotificationSeenStatus>();
 
     public virtual ProgramLanguage ProgramLanguage { get; set; } = null!;
 

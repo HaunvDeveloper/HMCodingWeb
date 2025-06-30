@@ -88,7 +88,7 @@ namespace HMCodingWeb.Controllers
                     programLanguage = u.ProgramLanguage != null ? u.ProgramLanguage.ProgramLanguageName : "N/A",
                     point = u.Point,
                     rankId = u.RankId,
-                    rankCode = u.Rank != null ? u.Rank.RankCode : "Unranked",
+                    rankCode = u.Rank != null ? u.Rank.RankCode : "unranked",
                     rankName = u.Rank != null ? u.Rank.RankName : "Unranked"
                 })
                 .AsNoTracking()

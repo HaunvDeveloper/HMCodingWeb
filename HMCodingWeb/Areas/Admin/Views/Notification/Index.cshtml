@@ -1,0 +1,142 @@
+﻿@{
+    ViewData["Title"] = "Danh sách Thông báo";
+}
+
+@section Links {
+    <link rel="stylesheet" href="~/css/course.css">
+    <style>
+        .avatar-img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .action-buttons a, .action-buttons button {
+            margin: 0 5px;
+        }
+
+        .is-block {
+            color: red;
+            font-weight: bold;
+        }
+
+        .is-active {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+}
+
+<div class="container">
+    <div class="table-container m-4 table-responsive">
+        <h4 class="text-center mb-4 mt-2 text-danger" style="font-size:30px;font-weight:bold;">DANH SÁCH THÔNG BÁO</h4>
+        <div class="d-flex justify-content-start mb-3 align-items-center flex-wrap gap-2">
+
+            <a asp-action="Create" asp-controller="Notification" asp-area="Admin" class="btn btn-add-course">+ Thêm thông báo</a>
+        </div>
+
+        <!-- Table to display employee data using DataTable -->
+        <table id="table-data" class="table table-striped table-sm">
+            <thead class="table-primary">
+                <tr class="table-primary">
+                    <th>ID</th>
+                    <th>Tiêu đề</th>
+                    <th>Thời gian tạo</th>
+                    <th>Tạo bởi</th>
+                    <th>Loại</th>
+                    <th>Gửi toàn bộ</th>
+                    <th>Quan trọng</th>
+                    <th>Gửi email</th>
+                    <th>Đã xem</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be loaded dynamically by DataTable -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var table = $('#table-data').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "searching": true,
+            "ajax": {
+                "url": '@Url.Action("_GetList", "Notification", new { area = "Admin" })',
+                "data": function (d) {
+                    d.keyword = $('input[type="search"]').val();
+                },
+                "type": "POST"
+            },
+            "pageLength": 10,
+            "lengthMenu": [10, 25, 50, 100],
+            "orderable": false,
+            "columns": [
+                { "data": "id","orderable": false },
+                { "data": "title","orderable": false },
+                { "data": "createdAt","orderable": false },
+                { "data": "createdByUsername","orderable": false },
+                { "data": "type","orderable": false },
+                { "data": "isGlobal","orderable": false },
+                { "data": "isImportant","orderable": false },
+                { "data": "isSendEmail","orderable": false },
+                { "data": "seenCount","orderable": false },
+                {
+                    "data": "id",
+                    "render": function (data) {
+                        return `
+                            <div class="action-buttons text-nowrap">
+                                <a href="/admin/notification/edit/${data}" class="btn btn-sm btn-primary">Edit</a>
+                                <button onclick="deleteRow(${data})" class="btn btn-sm btn-danger">Delete</button>
+                            </div>`;
+                    },
+                    "orderable": false
+                }
+            ],
+
+        });
+
+        async function deleteRow(id) {
+            if (id) {
+                let confirmed = await confirmAction();
+                if (confirmed) {
+                    $.ajax({
+                        url: '@Url.Action("Delete", "Notification", new { area = "Admin" })',
+                        method: 'POST',
+                        data: { id },
+                        success: function (response) {
+                            if (response.status) {
+                                showToast("success", "Xóa thành công", 3000);
+                                table.ajax.reload(null, false);
+                            } else {
+                                showAlert("error", "Có lỗi", response.error);
+                            }
+                        },
+                        error: function (error) {
+                            showAlert("error", "Có lỗi", error.statusText);
+                        }
+                    });
+                }
+            }
+        }
+
+        async function confirmAction() {
+            return new Promise((resolve) => {
+                Swal.fire({
+                    title: 'Xác nhận xóa',
+                    text: 'Bạn có chắc muốn xóa người dùng này?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Xóa',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    resolve(result.isConfirmed);
+                });
+            });
+        }
+    </script>
+}

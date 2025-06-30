@@ -350,7 +350,8 @@ namespace HMCodingWeb.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Exercise model)
+        [RequestSizeLimit(2L * 1024 * 1024 * 1024)]
+        public async Task<IActionResult> Create([FromBody] Exercise model)
         {
             try
             {
@@ -421,7 +422,7 @@ namespace HMCodingWeb.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(Exercise model)
+        public async Task<IActionResult> Edit([FromBody]Exercise model)
         {
             try
             {

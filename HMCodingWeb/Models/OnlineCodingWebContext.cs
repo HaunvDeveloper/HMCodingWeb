@@ -43,6 +43,8 @@ public partial class OnlineCodingWebContext : DbContext
 
     public virtual DbSet<Notification> Notifications { get; set; }
 
+    public virtual DbSet<NotificationSeenStatus> NotificationSeenStatuses { get; set; }
+
     public virtual DbSet<Prerequisite> Prerequisites { get; set; }
 
     public virtual DbSet<ProgramLanguage> ProgramLanguages { get; set; }
@@ -201,8 +203,7 @@ public partial class OnlineCodingWebContext : DbContext
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
             entity.Property(e => e.ExerciseCode)
                 .HasMaxLength(50)
-                .IsUnicode(false)
-                .IsFixedLength();
+                .IsUnicode(false);
             entity.Property(e => e.ExerciseName).HasMaxLength(125);
             entity.Property(e => e.InputFile).HasMaxLength(50);
             entity.Property(e => e.KindMarking).HasMaxLength(20);
@@ -306,21 +307,34 @@ public partial class OnlineCodingWebContext : DbContext
         {
             entity.ToTable("Notification");
 
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnName("id");
+            entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.CreatedByUsername).HasMaxLength(100);
             entity.Property(e => e.Title).HasMaxLength(255);
             entity.Property(e => e.Type)
                 .HasMaxLength(50)
                 .HasDefaultValue("system");
+        });
 
-            entity.HasOne(d => d.ToUser).WithMany(p => p.Notifications)
-                .HasForeignKey(d => d.ToUserId)
-                .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("FK_Notification_User");
+        modelBuilder.Entity<NotificationSeenStatus>(entity =>
+        {
+            entity.HasKey(e => new { e.UserId, e.NotificationId });
+
+            entity.ToTable("NotificationSeenStatus");
+
+            entity.Property(e => e.SeenAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.Notification).WithMany(p => p.NotificationSeenStatuses)
+                .HasForeignKey(d => d.NotificationId)
+                .HasConstraintName("FK_NotificationSeenStatus_Notification");
+
+            entity.HasOne(d => d.User).WithMany(p => p.NotificationSeenStatuses)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_NotificationSeenStatus_User");
         });
 
         modelBuilder.Entity<Prerequisite>(entity =>
@@ -397,7 +411,7 @@ public partial class OnlineCodingWebContext : DbContext
                 .HasColumnName("OTPLatestSend");
             entity.Property(e => e.Password)
                 .HasMaxLength(50)
-                .IsUnicode(false);
+                .UseCollation("Latin1_General_CS_AS");
             entity.Property(e => e.PhoneNumber)
                 .HasMaxLength(12)
                 .IsUnicode(false);

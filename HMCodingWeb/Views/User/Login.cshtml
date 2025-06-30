@@ -88,7 +88,7 @@
                      Swal.close();
                     if (response.status) {
                         showAlert('success', "Đăng&nbsp;nhập thành&nbsp;công");
-                        
+                        localStorage.removeItem('UserAvatar');
                         var redirectUrl = response.redirectUrl && response.redirectUrl !== "null" ? response.redirectUrl : '/';
                         setTimeout(function () {
                             window.location.href = redirectUrl;

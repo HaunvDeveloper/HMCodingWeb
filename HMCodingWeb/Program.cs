@@ -22,6 +22,7 @@ using System.Security.Policy;
 using HMCodingWeb.Hubs;
 using OfficeOpenXml;
 using HMCodingWeb.Middlewares;
+using Microsoft.AspNetCore.Http.Features;
 
 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
@@ -66,6 +67,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
 builder.Services.AddSignalR();
 
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 2L * 1024 * 1024 * 1024; // 2 GB
+});
 
 
 

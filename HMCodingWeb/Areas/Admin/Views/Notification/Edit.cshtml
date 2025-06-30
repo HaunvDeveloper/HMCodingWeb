@@ -1,0 +1,304 @@
+﻿@model HMCodingWeb.Models.Notification
+
+@{
+    ViewData["Title"] = "Chỉnh sửa Thông báo";
+    var listUser = ViewBag.Users as List<User>;
+    var selectedUsers = ViewBag.SelectedUsers as List<long>;
+}
+
+@section Links {
+    <link rel="stylesheet" href="~/css/checkbox.css">
+    <link rel="stylesheet" href="~/css/course.css">
+    <style>
+
+        .checkbox-wrapper-31 {
+            display: inline-block;
+        }
+
+        .user-selection {
+            display: flex;
+            align-items: stretch;
+            gap: 1rem;
+        }
+
+        .user-list, .selected-users {
+            flex: 1;
+            border-radius: 5px;
+            padding: 1rem;
+            height: 500px;
+            overflow-y: auto;
+            border: 1px solid black;
+        }
+
+            .user-list select, .selected-users select {
+                width: 100%;
+                height: 90%;
+                background-color: transparent;
+                border: none;
+            }
+
+                .user-list select option, .selected-users select option {
+                    padding: 0.5rem;
+                }
+
+        .transfer-buttons {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+            .transfer-buttons button {
+                background-color: #3498db;
+                border: none;
+                padding: 0.5rem 1rem;
+                border-radius: 5px;
+                transition: background-color 0.3s ease;
+            }
+
+                .transfer-buttons button:hover {
+                    background-color: #2980b9;
+                }
+
+        .message textarea {
+            width: 100%;
+            min-height: 200px;
+            background-color: #34495e;
+            color: #e0e0e0;
+            border: 1px solid #3498db;
+            border-radius: 5px;
+        }
+
+
+        @@media (max-width: 768px) {
+            .user-selection {
+                flex-direction: column;
+            }
+
+            .transfer-buttons {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+
+            .user-list, .selected-users {
+                max-height: 200px;
+            }
+        }
+    </style>
+}
+
+<div class="container">
+    <div class="table-container m-4">
+        <h4 class="text-center mb-4 mt-2 text-danger">CHỈNH SỬA THÔNG BÁO</h4>
+        <hr />
+        <form id="editForm" asp-action="Edit" asp-controller="Notification" asp-area="Admin">
+            <input type="hidden" asp-for="Id" />
+            <div class="row">
+                <!-- Form Column -->
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Title" class="form-label">Tiêu đề</label>
+                        <input asp-for="Title" class="form-control" required />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="Type" class="form-label">Loại</label>
+                        <select asp-for="Type" class="form-select" asp-items="@(ViewBag.Types)" required>
+                            <option value="">Chọn loại</option>
+                        </select>
+                        <span asp-validation-for="Type" class="text-danger"></span>
+                    </div>
+                    
+                </div>
+                <div class="col-md-6">
+                    
+                    <div class="mb-3">
+                        <div class="checkbox-wrapper-31 me-2 mt-2">
+                            <input type="checkbox" asp-for="IsGlobal" id="IsGlobal" />
+                            <svg viewBox="0 0 35.6 35.6">
+                                <circle class="background" cx="17.8" cy="17.8" r="17.8"></circle>
+                                <circle class="stroke" cx="17.8" cy="17.8" r="14.37"></circle>
+                                <polyline class="check" points="11.78 18.12 15.55 22.23 25.17 12.87"></polyline>
+                            </svg>
+                        </div>
+                        <label for="IsGlobal">Gửi toàn bộ</label>
+                    </div>
+                    <div class="mb-3">
+                        <div class="checkbox-wrapper-31 mt-2 me-2">
+                            <input type="checkbox" asp-for="IsImportant" />
+                            <svg viewBox="0 0 35.6 35.6">
+                                <circle class="background" cx="17.8" cy="17.8" r="17.8"></circle>
+                                <circle class="stroke" cx="17.8" cy="17.8" r="14.37"></circle>
+                                <polyline class="check" points="11.78 18.12 15.55 22.23 25.17 12.87"></polyline>
+                            </svg>
+                        </div>
+                        <label for="IsImportant">Quan trọng</label>
+                    </div>
+                    <div class="mb-3">
+                        <div class="checkbox-wrapper-31 me-2 mt-2">
+                            <input type="checkbox" asp-for="IsSendEmail" />
+                            <svg viewBox="0 0 35.6 35.6">
+                                <circle class="background" cx="17.8" cy="17.8" r="17.8"></circle>
+                                <circle class="stroke" cx="17.8" cy="17.8" r="14.37"></circle>
+                                <polyline class="check" points="11.78 18.12 15.55 22.23 25.17 12.87"></polyline>
+                            </svg>
+                        </div>
+                        <label for="IsSendEmail">Gửi email</label>
+                    </div>
+                </div>
+
+            </div>
+            <div class="row ">
+                <!-- User Selection Column -->
+                <div class="col-12">
+                    <div class="user-selection mt-3">
+                        <div class="user-list">
+                            <label class="form-label">Danh sách người dùng</label>
+                            <select multiple id="userList" class="form-select">
+                                @foreach (var user in listUser)
+                                {
+                                    if (!selectedUsers.Contains(user.Id))
+                                    {
+                                        <option value="@user.Id">@user.Username</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="transfer-buttons">
+                            <button type="button" id="addUsers" class="btn btn-primary"><i class="bi bi-caret-right-fill"></i></button>
+                            <button type="button" id="removeUsers" class="btn btn-primary"><i class="bi bi-caret-left-fill"></i></button>
+                        </div>
+                        <div class="selected-users">
+                            <label class="form-label">Người nhận thông báo</label>
+                            <select multiple id="selectedUsers" name="selectedUsers" class="form-select">
+                                @foreach (var user in listUser)
+                                {
+                                    if (selectedUsers.Contains(user.Id))
+                                    {
+                                        <option value="@user.Id">@user.Username</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="message mt-3">
+                <label class="form-label">Nội dung</label>
+                <textarea id="editor">@Model.Message</textarea>
+            </div>
+            <div id="validationSummary" class="text-danger"></div>
+            <div class="mt-4 text-lg-end">
+                <button id="btn-submit" type="submit" class="btn btn-primary">Cập nhật thông báo</button>
+                <a asp-action="Index" asp-controller="Notification" asp-area="Admin" class="btn btn-secondary ms-2">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdn.ckeditor.com/4.22.1/full/ckeditor.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Initialize CKEditor
+            CKEDITOR.replace('editor', {
+                extraPlugins: 'justify,table,link',
+                toolbar: [
+                    { name: 'document', items: ['Source', '-', 'NewPage', 'Preview', 'Print', '-', 'Templates'] },
+                    { name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'] },
+                    { name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'SpellChecker', 'Scayt'] },
+                    { name: 'forms', items: ['Form', 'Checkbox', 'Radio', 'TextField', 'Textarea', 'Select', 'Button', 'ImageButton', 'HiddenField'] },
+                    '/',
+                    { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat'] },
+                    { name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl', 'Language'] },
+                    { name: 'links', items: ['Link', 'Unlink', 'Anchor'] },
+                    { name: 'insert', items: ['Image', 'Flash', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak', 'Iframe'] },
+                    '/',
+                    { name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize'] },
+                    { name: 'colors', items: ['TextColor', 'BGColor'] },
+                    { name: 'tools', items: ['Maximize', 'ShowBlocks'] },
+                ]
+            });
+
+            // Remove CKEditor notifications
+            function removeCKENotification() {
+                try {
+                    $('.cke_notifications_area').remove();
+                    if ($('.cke_notifications_area')) {
+                        setTimeout(removeCKENotification, 100);
+                    }
+                } catch (e) {
+                    setTimeout(removeCKENotification, 100);
+                }
+            }
+            removeCKENotification();
+
+            // Toggle user selection based on IsGlobal
+            $('#IsGlobal').change(function () {
+                if ($(this).is(':checked')) {
+                    $('.user-selection').hide();
+                } else {
+                    $('.user-selection').show();
+                }
+            });
+
+            // Initialize user selection visibility
+            if ($('#IsGlobal').is(':checked')) {
+                $('.user-selection').hide();
+            }
+
+            // Add users to selected list
+            $('#addUsers').click(function () {
+                $('#userList option:selected').each(function () {
+                    $(this).appendTo('#selectedUsers');
+                });
+            });
+
+            // Remove users from selected list
+            $('#removeUsers').click(function () {
+                $('#selectedUsers option:selected').each(function () {
+                    $(this).appendTo('#userList');
+                });
+            });
+
+            // Form submission
+            $("#editForm").submit(function (e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+                formData.append("Message", CKEDITOR.instances.editor.getData());
+
+                // Add selected users to FormData
+                var selectedUsers = $('#selectedUsers').val() || [];
+                selectedUsers.forEach(function (userId, index) {
+                    formData.append(`selectedUsers[${index}]`, userId);
+                });
+
+                $('#btn-submit').attr('disabled', 'disabled');
+
+                $.ajax({
+                    url: '/admin/notification/edit',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        if (response.status) {
+                            showAlert('success', "Cập nhật thông báo thành công!");
+                            setTimeout(function () {
+                                window.location.href = '/admin/notification/index';
+                            }, 1500);
+                        } else {
+                            $("#validationSummary").text(response.message);
+                        }
+                        $('#btn-submit').removeAttr('disabled');
+                    },
+                    error: function () {
+                        $("#validationSummary").text("Đã xảy ra lỗi. Vui lòng thử lại.");
+                        $('#btn-submit').removeAttr('disabled');
+                    }
+                });
+            });
+        });
+    </script>
+}

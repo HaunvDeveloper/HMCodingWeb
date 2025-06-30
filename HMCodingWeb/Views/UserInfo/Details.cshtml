@@ -7,14 +7,16 @@
         { "admin", "Quản trị viên" },
         { "teacher", "Giáo viên" },
         { "hsgstudent", "Học sinh giỏi" },
-        { "user", "Người dùng" }
+        { "student", "Người dùng" },
+        { "", "Người dùng" } // Default case for empty or unknown auth code}
     };
     var className = new Dictionary<string, string>
     {
         { "admin", "badge bg-danger" },
         { "teacher", "badge bg-success" },
         { "hsgstudent", "badge bg-info" },
-        { "user", "badge bg-secondary" }
+        { "student", "badge bg-secondary" },
+        { "", "badge bg-secondary" } // Default case for empty or unknown auth code
     };
 }
 

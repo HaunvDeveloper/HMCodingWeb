@@ -91,11 +91,10 @@
             const retypePassword = $('#RetypePassword').val();
             if (password != retypePassword) {
                 event.preventDefault();
-
                 $('.alert').text('Mật khẩu không khớp. Vui lòng nhập lại.');
-
             }
             else{
+                localStorage.removeItem('UserAvatar');
                 $('.alert').text('');
             }
 

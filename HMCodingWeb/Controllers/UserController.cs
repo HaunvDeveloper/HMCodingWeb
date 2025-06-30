@@ -22,17 +22,14 @@ namespace HMCodingWeb.Controllers
         private readonly OnlineCodingWebContext _context;
         private readonly EmailSendService _emailSendService;
         private readonly OnlineUsersService _onlineUsersService;
-        private readonly RankingService _rankingService;
-        private const long MaxAvatarSize = 2 * 1024 * 1024; // 2MB
         private readonly IConfiguration _configuration;
 
-        public UserController(OnlineCodingWebContext context, EmailSendService emailSendService, UserListService userListService, OnlineUsersService onlineUsersService, IConfiguration configuration, RankingService rankingService)
+        public UserController(OnlineCodingWebContext context, EmailSendService emailSendService, UserListService userListService, OnlineUsersService onlineUsersService, IConfiguration configuration)
         {
             _context = context;
             _emailSendService = emailSendService;
             _onlineUsersService = onlineUsersService;
             _configuration = configuration;
-            _rankingService = rankingService;
         }
 
         private string MaskEmail(string email)
@@ -67,6 +64,24 @@ namespace HMCodingWeb.Controllers
 
             if (user == null || user.Auth == null)
             {
+                // Lưu số lần đăng nhập sai
+                var failedAttempts = HttpContext.Session.GetInt32($"FailedLoginAttempts{model.Username}") ?? 0;
+                HttpContext.Session.SetInt32($"FailedLoginAttempts{model.Username}", failedAttempts + 1);
+                // Nếu số lần đăng nhập sai vượt quá 5, khóa tài khoản
+                if (HttpContext.Session.GetInt32($"FailedLoginAttempts{model.Username}") >= 5)
+                {
+                    var accountBlock = _context.Users.FirstOrDefault(x => x.Username == model.Username);
+                    if (accountBlock != null)
+                    {
+                        accountBlock.IsBlock = true;
+                        accountBlock.Otp = null; // Xóa OTP nếu có
+                        accountBlock.OtplatestSend = null; // Xóa thời gian gửi OTP nếu có
+                        _context.Users.Update(accountBlock);
+                        await _context.SaveChangesAsync();
+                        return Json(new { status = false, message = "Tài khoản đã bị khóa! Liên hệ quản trị viên để hỗ trợ!" });
+                    }
+                }
+
                 return Json(new { status = false, message = "Tài khoản hoặc mật khẩu không chính xác!" });
             }
             else if (user.IsBlock == true)
@@ -75,6 +90,8 @@ namespace HMCodingWeb.Controllers
             }
             else
             {
+                // Xóa số lần đăng nhập sai khi đăng nhập thành công
+                HttpContext.Session.Remove($"FailedLoginAttempts{model.Username}");
 
                 var claims = new List<Claim>
                 {
@@ -98,6 +115,7 @@ namespace HMCodingWeb.Controllers
                 await HttpContext.SignInAsync(principal, authProperties);
                 _onlineUsersService.AddUser(user.Id.ToString(), user.Username, user.Fullname ?? "", user.Auth.AuthCode, null);
 
+                //TempData["UserLogin"] = true;
                 return Json(new { status = true, message = "Đăng nhập thành công!", redirectUrl = string.IsNullOrEmpty(ReturnUrl) ? Url.Action("Index", "Home") : ReturnUrl });
             }
         }

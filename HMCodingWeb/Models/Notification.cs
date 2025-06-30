@@ -13,13 +13,17 @@ public partial class Notification
 
     public DateTime CreatedAt { get; set; }
 
-    public long? ToUserId { get; set; }
-
     public long? CreatedByUserId { get; set; }
+
+    public string? CreatedByUsername { get; set; }
 
     public string Type { get; set; } = null!;
 
     public bool IsGlobal { get; set; }
 
-    public virtual User? ToUser { get; set; }
+    public bool IsImportant { get; set; }
+
+    public bool IsSendEmail { get; set; }
+
+    public virtual ICollection<NotificationSeenStatus> NotificationSeenStatuses { get; set; } = new List<NotificationSeenStatus>();
 }

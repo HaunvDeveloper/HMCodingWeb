@@ -18,8 +18,8 @@
     <link rel="stylesheet" href="~/css/bootstrap.extend.css">
     <link rel="stylesheet" href="~/lib/sweetalert2/themes/minimal/minimal.min.css">
     <link rel="stylesheet" href="~/css/button-extend.css" />
-    <link rel="stylesheet" href="~/css/site.css?v=2" />
-    <link rel="stylesheet" href="~/css/rank.css" />
+    <link rel="stylesheet" href="~/css/site.css?v=1.0.0" />
+    <link rel="stylesheet" href="~/css/rank.css?v=1.0.0" />
     <link href="~/lib/DataTables/datatables.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito">
     <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.2.2/datatables.min.css" rel="stylesheet" integrity="sha384-WMi+Ec+QE8hxW/3qKvuefShIddYjwMalSgy0MR4FZnl285C4HGYfISceaagw0Am3" crossorigin="anonymous">
@@ -51,27 +51,37 @@
                 <div class="navbar-collapse collapse" id="navbarColor01">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link @(currentController == "Home" && currentAction == "Index" ? "active" : "")" asp-action="Index" asp-controller="Home">
+                            <a class="nav-link @(ViewData["currentController"]?.ToString() == "Home" && ViewData["currentAction"]?.ToString() == "Index" ? "active" : "")" asp-action="Index" asp-controller="Home">
                                 Trang chủ
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link @(currentController == "CodePad" ? "active" : "")" asp-action="Index" asp-controller="Codepad">Codepad</a>
+                            <a class="nav-link @(ViewData["currentController"]?.ToString() == "CodePad" ? "active" : "")" asp-action="Index" asp-controller="Codepad">Codepad</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link @(currentController == "Exercise" ? "active" : "")" asp-action="Index" asp-controller="Exercise">Bài tập</a>
+                            <a class="nav-link @(ViewData["currentController"]?.ToString() == "Exercise" ? "active" : "")" asp-action="Index" asp-controller="Exercise">Bài tập</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link @(currentController == "Marking" ? "active" : "")" asp-action="Index" asp-controller="Marking">Bảng chấm bài</a>
+                            <a class="nav-link @(ViewData["currentController"]?.ToString() == "Marking" ? "active" : "")" asp-action="Index" asp-controller="Marking">Bảng chấm bài</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link @(currentController == "Rank" && currentAction=="RankingList" ? "active" : "")" asp-action="RankingList" asp-controller="Rank">Xếp hạng</a>
+                            <a class="nav-link @(ViewData["currentController"]?.ToString() == "Rank" && ViewData["currentAction"]?.ToString() == "RankingList" ? "active" : "")" asp-action="RankingList" asp-controller="Rank">Xếp hạng</a>
                         </li>
                     </ul>
                     @if (User.Identity?.IsAuthenticated ?? false)
                     {
+                        <div class="nav-item dropdown p-3 notification-dropdown">
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="notificationDropdown">
+                                <i class="fa-solid fa-bell notification-bell"></i>
+                                <span class="notification-badge" id="unseenCount" style="display: none;">0</span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end notification-menu">
+                                <h1 class="dropdown-header text-center text-success">Thông báo</h1>
+                                <div id="notificationList"></div>
+                            </div>
+                        </div>
                         <div class="nav-item dropdown p-3">
-                            <a class="nav-link dropdown-toggle text-success @(currentController == "UserInfo" ? "active" : "")" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle text-success @(ViewData["currentController"]?.ToString() == "UserInfo" ? "active" : "")" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                                 <img id="userAvatar"
                                      src="~/assets/images/avartardefault.jpg"
                                      class="rounded-circle"
@@ -128,7 +138,24 @@
         </div>
     </div>
 
-
+    <!-- Notification Modal -->
+    <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notificationModalLabel"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="notificationMessage"></p>
+                    <p class="notification-meta" id="notificationMeta"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
@@ -186,7 +213,9 @@
                 onlineUsersList.textContent = "Không có";
             }
         });
+        
 
+        
         // Bắt đầu kết nối
         connection.start().then(function () {
             // Gọi phương thức GetOnlineUsers khi kết nối thành công
@@ -210,6 +239,13 @@
 
     </script>
 
+    @if (User.Identity?.IsAuthenticated ?? false)
+    {
+        <script src="~/js/notification.js"></script>
+        <script>
+            
+        </script>
+    }
 
 
     @if (User.Identity?.IsAuthenticated ?? false)
@@ -258,6 +294,7 @@
                 showToast("success", "Đăng nhập thành công", 3000);
                 $("#tempShowToast").remove();
             }, 100);
+
         </script>
     }
     @{
