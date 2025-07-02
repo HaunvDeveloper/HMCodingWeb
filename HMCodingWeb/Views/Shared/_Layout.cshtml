@@ -19,10 +19,11 @@
     <link rel="stylesheet" href="~/lib/sweetalert2/themes/minimal/minimal.min.css">
     <link rel="stylesheet" href="~/css/button-extend.css" />
     <link rel="stylesheet" href="~/css/site.css?v=1.0.0" />
-    <link rel="stylesheet" href="~/css/rank.css?v=1.0.0" />
+    <link rel="stylesheet" href="~/css/rank.css?v=1.0.1" />
     <link href="~/lib/DataTables/datatables.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito">
     <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.2.2/datatables.min.css" rel="stylesheet" integrity="sha384-WMi+Ec+QE8hxW/3qKvuefShIddYjwMalSgy0MR4FZnl285C4HGYfISceaagw0Am3" crossorigin="anonymous">
+    <link href="~/lib/fontawesome/css/all.min.css" rel="stylesheet">
     <link rel="icon" href="~/assets/icons/logo.png" />
 
     @RenderSection("Links", required: false)
@@ -51,22 +52,25 @@
                 <div class="navbar-collapse collapse" id="navbarColor01">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link @(ViewData["currentController"]?.ToString() == "Home" && ViewData["currentAction"]?.ToString() == "Index" ? "active" : "")" asp-action="Index" asp-controller="Home">
+                            <a class="nav-link @(currentController == "Home" && ViewData["currentAction"]?.ToString() == "Index" ? "active" : "")" asp-action="Index" asp-controller="Home">
                                 Trang chủ
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link @(ViewData["currentController"]?.ToString() == "CodePad" ? "active" : "")" asp-action="Index" asp-controller="Codepad">Codepad</a>
+                            <a class="nav-link @(currentController == "CodePad" ? "active" : "")" asp-action="Index" asp-controller="Codepad">Codepad</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link @(ViewData["currentController"]?.ToString() == "Exercise" ? "active" : "")" asp-action="Index" asp-controller="Exercise">Bài tập</a>
+                            <a class="nav-link @(currentController == "Exercise" ? "active" : "")" asp-action="Index" asp-controller="Exercise">Bài tập</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link @(ViewData["currentController"]?.ToString() == "Marking" ? "active" : "")" asp-action="Index" asp-controller="Marking">Bảng chấm bài</a>
+                            <a class="nav-link @(currentController == "Marking" ? "active" : "")" asp-action="Index" asp-controller="Marking">Bảng chấm bài</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link @(ViewData["currentController"]?.ToString() == "Rank" && ViewData["currentAction"]?.ToString() == "RankingList" ? "active" : "")" asp-action="RankingList" asp-controller="Rank">Xếp hạng</a>
+                            <a class="nav-link @(currentController == "Rank" && currentAction == "RankingList" ? "active" : "")" asp-action="RankingList" asp-controller="Rank">Xếp hạng</a>
                         </li>
+                        @* <li class="nav-item">
+                            <a class="nav-link @(currentController == "Meeting" ? "active" : "")" asp-action="Index" asp-controller="Meeting">MEETING</a>
+                        </li> *@
                     </ul>
                     @if (User.Identity?.IsAuthenticated ?? false)
                     {
@@ -81,7 +85,7 @@
                             </div>
                         </div>
                         <div class="nav-item dropdown p-3">
-                            <a class="nav-link dropdown-toggle text-success @(ViewData["currentController"]?.ToString() == "UserInfo" ? "active" : "")" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle text-success @(currentController == "UserInfo" ? "active" : "")" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                                 <img id="userAvatar"
                                      src="~/assets/images/avartardefault.jpg"
                                      class="rounded-circle"

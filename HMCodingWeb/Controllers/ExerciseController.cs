@@ -513,7 +513,7 @@ namespace HMCodingWeb.Controllers
         }
 
 
-        public IActionResult Code(long? id)
+        public IActionResult Code(long? id, bool viewCode = false)
         {
             if (id == null)
             {
@@ -542,6 +542,16 @@ namespace HMCodingWeb.Controllers
             if (exercise.AccessId == 1 && userId != exercise.UserCreatedId && user.AuthId != 1 && user.AuthId != 2)
             {
                 return View("NotAccess");
+            }
+
+            if(viewCode)
+            {
+                var sourceCode = _context.Markings
+                    .AsNoTracking()
+                    .Where(m => m.ExerciseId == id && m.UserId == userId && m.IsAllCorrect == true)
+                    .OrderByDescending(m => m.MarkingDate)
+                    .FirstOrDefault()?.SourceCode;
+                ViewBag.SourceCode = sourceCode ?? string.Empty;
             }
 
             ViewBag.ListTheme = _context.Themes.ToList();

@@ -1,0 +1,88 @@
+﻿@{
+    ViewData["Title"] = "Danh sách cuộc họp";
+}
+
+@section Links {
+
+}
+
+<div id="codepad" class="m-5 flex-center flex-column">
+    <h1 class="title text-center">
+        <b>DANH&nbsp;SÁCH CUỘC&nbsp;HỌP</b>
+    </h1>
+
+    <div class="container mt-3 mb-3 table-responsive list">
+        <div class="container flex-center flex-wrap justify-content-between mb-3">
+            <a class="btn btn-primary" asp-action="Create" asp-controller="Meeting">Tạo Cuộc họp</a>
+        </div>
+
+        <table id="table-data" class="table table-sm table-hover table-border table-striped ml-5 mr-3">
+            <thead>
+                <tr class="table-dark">
+                    <th>Tiêu đề</th>
+                    <th>Mô tả</th>
+                    <th>Riêng tư</th>
+                    <th>Ngày tạo</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        var table = $('#table-data').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "searching": true,
+            "ajax": {
+                "url": '@Url.Action("_GetList", "Meeting")',
+                "data": function (d) {
+                    d.keyword = $('input[type="search"]').val();
+                },
+                "type": "POST",
+                "dataSrc": function (json) {
+                    return json.data;
+                }
+            },
+            "pageLength": 10,
+            "lengthMenu": [10, 25, 50, 100],
+            "order": [[0, "desc"]], // Default sort by markingDate descending
+            "columns": [
+                { "data": "title" },
+                { "data": "description" },
+                {
+                    "data": "isPrivate",
+                    "render": function (data, type, row) {
+                        return data ? 'Có' : 'Không';
+                    }
+                },
+                {"data": "createdAt"},
+                {
+                    "data": "id",
+                    "orderable": false,
+                    "searchable": false,
+                    "render": function (data, type, row) {
+                        return '<a href="/meeting/join/' + data + '" class="btn btn-sm btn-primary">Tham gia</a>';
+                    }
+                }
+            ],
+
+            "language": {
+                "emptyTable": "Không có dữ liệu",
+                "info": "Hiển thị _START_ đến _END_ trong tổng số _TOTAL_ mục",
+                "infoEmpty": "Hiển thị 0 đến 0 trong tổng số 0 mục",
+                "infoFiltered": "(được lọc từ tổng số _MAX_ mục)",
+                "lengthMenu": "Hiển thị _MENU_ mục",
+                "search": "Tìm kiếm:",
+                "zeroRecords": "Không tìm thấy kết quả"
+            },
+        });
+
+    </script>
+
+}

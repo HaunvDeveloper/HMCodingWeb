@@ -5,8 +5,14 @@
     ViewData["Title"] = "Edit Profile";
 }
 
-@section Links{
+@section Links {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet" />
+
     <style>
+        .cropper-container {
+            max-width: 100%;
+        }
+
         .form-group label {
             font-weight: bold;
         }
@@ -19,6 +25,9 @@
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+
+
+
     </style>
 }
 <div class="container mt-5 mb-4">
@@ -26,9 +35,9 @@
     <hr />
     <form id="editProfileForm" enctype="multipart/form-data">
 
-    <div class="row">
-        <!-- Form Column -->
-        <div class="col-md-6">
+        <div class="row">
+            <!-- Form Column -->
+            <div class="col-md-6">
                 <input type="hidden" asp-for="Id" />
 
                 <div class="form-group mb-3">
@@ -55,7 +64,7 @@
                     <span asp-validation-for="Birthday" class="text-danger"></span>
                 </div>
 
-                
+
 
                 <div class="form-group mb-3">
                     <label asp-for="ThemeCodeId" class="form-label">Theme Code</label>
@@ -69,83 +78,144 @@
                             asp-items="@(new SelectList(ViewBag.ProgramLanguages, "Id", "ProgramLanguageName"))"></select>
                     <span asp-validation-for="ProgramLanguageId" class="text-danger"></span>
                 </div>
-                
 
-                
-        </div>
 
-        <!-- Preview Column -->
-        <div class="col-md-6">
-            <div class="card mb-3 mt-4">
-                <div class="card-header">
-                    <h4>Avatar Preview</h4>
-                </div>
-                <div class="card-body text-center">
-                    <img id="avatarPreview"
-                         src="@(Model.AvartarImage != null ? "data:image/jpeg;base64," + Convert.ToBase64String(Model.AvartarImage) : "/images/default-avatar.png")"
-                         class="img-fluid rounded-circle"
-                         style="width: 200px; height: 200px; object-fit: cover;"
-                         alt="Avatar Preview" />
-                </div>
+
             </div>
-            <div class="form-group mb-3">
-                <label class="form-label">Avatar</label>
-                <input type="file" name="avatarFile" id="avatarFile" class="form-control" accept="image/*" />
-                <small class="form-text text-muted">Max size: 2MB</small>
-                @* @if (Model.AvartarImage != null)
+
+            <!-- Preview Column -->
+            <div class="col-md-6">
+                <div class="card mb-3 mt-4">
+                    <div class="card-header">
+                        <h4>Avatar Preview</h4>
+                    </div>
+                    <div class="card-body text-center">
+                        <div style=" margin: auto; overflow: hidden;   width: 250px; height: 250px; ">
+                            <img id="avatarPreview"
+                                 src="@(Model.AvartarImage != null ? "data:image/jpeg;base64," + Convert.ToBase64String(Model.AvartarImage) : "/images/default-avatar.png")"
+                                 style="width: 250px; height: 250px;
+                                    object-fit: cover;
+                                    border: 3px solid #3498db;
+                                    border-radius: 50%;
+                                    margin-bottom: 1.5rem;"
+                                 alt="Avatar Preview" />
+                        </div>
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-secondary btn-sm" id="zoomIn"><i class="fa-solid fa-magnifying-glass-plus me-2"></i>Zoom In</button>
+                            <button type="button" class="btn btn-secondary btn-sm" id="zoomOut"><i class="fa-solid fa-magnifying-glass-minus me-2"></i>Zoom Out</button>
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="form-group mb-3">
+                    <label class="form-label">Avatar</label>
+                    <input type="file" name="avatarFile" id="avatarFile" class="form-control" accept="image/*" />
+                    <small class="form-text text-muted">Max size: 2MB</small>
+                    @* @if (Model.AvartarImage != null)
                 {
                     <img src="data:image/jpeg;base64,@Convert.ToBase64String(Model.AvartarImage)"
                          class="img-fluid mt-2" style="max-width: 100px;" alt="Current Avatar" />
                 } *@
-            </div>
-            <div class="form-group mt-4 text-lg-end">
-                <a asp-action="ChangePasswordProfile" asp-controller="User"
-                   class="btn btn-danger ms-2">Đổi mật khẩu</a>
-            </div>
-            <div class="form-group mt-4 text-lg-end">
-                <button id="btn-submit" type="submit" class="btn btn-primary">Save Changes</button>
-                <a asp-action="Details" asp-controller="UserInfo" asp-route-id="@Model.Id"
-                   class="btn btn-secondary ms-2">Cancel</a>
+                </div>
+                <div class="form-group mt-4 text-lg-end">
+                    <a asp-action="ChangePasswordProfile" asp-controller="User"
+                       class="btn btn-danger ms-2">Đổi mật khẩu</a>
+                </div>
+                <div class="form-group mt-4 text-lg-end">
+                    <button id="btn-submit" type="submit" class="btn btn-primary">Save Changes</button>
+                    <a asp-action="Details" asp-controller="UserInfo" asp-route-id="@Model.Id"
+                       class="btn btn-secondary ms-2">Cancel</a>
+                </div>
             </div>
         </div>
-    </div>
     </form>
 
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-    <script>
-        $(document).ready(function () {
-            // Preview avatar when a new file is selected
-            $("#avatarFile").change(function () {
-                var file = this.files[0];
-                if (file) {
-                    if (file.size > 2 * 1024 * 1024) {
-                        $("#validationSummary").text("Avatar file size must be less than 2MB.");
-                        return;
-                    }
-                    var reader = new FileReader();
-                    reader.onload = function (e) {
-                        $("#avatarPreview").attr("src", e.target.result);
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<partial name="_ValidationScriptsPartial" />
+<script>
+    $(document).ready(function () {
 
-            $("#editProfileForm").submit(function (e) {
-                e.preventDefault();
-                var formData = new FormData(this);
+        var cropper;
 
-                $('#btn-submit').attr('disabled', 'disabled'); // Disable the button to prevent multiple submissions
+        // Nút zoom
+        $("#zoomIn").click(function () {
+            if (cropper) cropper.zoom(0.1);
+        });
+        $("#zoomOut").click(function () {
+            if (cropper) cropper.zoom(-0.1);
+        });
 
-                // Client-side file size validation
-                var avatarFile = $('input[name="avatarFile"]')[0].files[0];
-                if (avatarFile && avatarFile.size > 2 * 1024 * 1024) {
-                    $("#validationSummary").text("Avatar file size must be less than 2MB.");
+        // Khi chọn ảnh mới
+        $("#avatarFile").change(function () {
+            var file = this.files[0];
+            if (file) {
+                if (file.size > 2 * 1024 * 1024) {
+                    showAlert('warning', "Hình ảnh avatar phải có kích thước ít hơn 2MB.");
                     return;
                 }
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $("#avatarPreview").attr("src", e.target.result);
 
+                    // Hủy cropper cũ
+                    if (cropper) {
+                        cropper.destroy();
+                    }
+
+                    // Khởi tạo cropper mới
+                    cropper = new Cropper(document.getElementById('avatarPreview'), {
+                        viewMode: 1,
+                        aspectRatio: 1,
+                        dragMode: 'move',
+                        background: false,
+                        autoCrop: true, // Không hiện khung crop
+                        zoomable: true,
+                        responsive: true,
+                        guides: false,
+                        highlight: false,
+                        movable: true,
+                        cropBoxMovable: false,
+                        cropBoxResizable: false
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Submit form
+        $("#editProfileForm").submit(function (e) {
+            e.preventDefault();
+
+            $('#btn-submit').attr('disabled', 'disabled'); // Chặn submit nhiều lần
+
+            // Nếu có cropper => lấy blob ảnh
+            if (cropper) {
+                var canvas = cropper.getCroppedCanvas({
+                    width: 400,
+                    height: 400
+                });
+
+                canvas.toBlob(function (blob) {
+                    var formData = new FormData();
+                    // Thêm các field form
+                    $("#editProfileForm").serializeArray().forEach(function (input) {
+                        formData.append(input.name, input.value);
+                    });
+                    formData.append('avatarFile', blob, 'avatar.png');
+
+                    sendAjax(formData);
+                });
+            } else {
+                // Không crop => lấy file gốc nếu có
+                var formData = new FormData(this);
+                sendAjax(formData);
+            }
+
+            function sendAjax(formData) {
                 $.ajax({
                     url: '@Url.Action("EditProfile", "UserInfo")',
                     type: 'POST',
@@ -154,22 +224,24 @@
                     contentType: false,
                     success: function (response) {
                         if (response.status) {
-                            showAlert("success","Profile updated successfully!");
+                            showAlert("success", "Profile updated successfully!");
                             setTimeout(function () {
                                 window.location.href = '@Url.Action("Details", "UserInfo")/' + response.userId;
                             }, 1500);
                         } else {
                             $("#validationSummary").text(response.message);
                         }
-                        $('#btn-submit').removeAttr('disabled'); // Re-enable the button
+                        $('#btn-submit').removeAttr('disabled');
                     },
                     error: function () {
                         $("#validationSummary").text("An error occurred. Please try again.");
-                        $('#btn-submit').removeAttr('disabled'); // Re-enable the button
+                        $('#btn-submit').removeAttr('disabled');
                     }
                 });
-            });
+            }
         });
-    </script>
+    });
+</script>
+
 
 }

@@ -76,11 +76,11 @@
                 </div>
                 <div class="header-content-child">
                     <span><b>Dạng nhập:</b></span>
-                    <p class="header-content-value">@(Model.InputFile != null ? Model.InputFile : "stdin")</p>
+                    <p class="header-content-value">@(!string.IsNullOrEmpty(Model.InputFile) ? Model.InputFile : "stdin")</p>
                 </div>
                 <div class="header-content-child">
                     <span><b>Dạng xuất:</b></span>
-                    <p class="header-content-value">@(Model.OutputFile != null ? Model.OutputFile : "stdout")</p>
+                    <p class="header-content-value">@(!string.IsNullOrEmpty(Model.OutputFile)? Model.OutputFile : "stdout")</p>
                 </div>
             </div>
             @* <iframe id="content-iframe" style="width: 90%; border: none;" onload="resizeIframe(this)"></iframe> *@
@@ -110,7 +110,7 @@
 
             <!-- CODE EDITOR -->
             <div id="code-div">
-                <div id="editor"></div>
+                <div id="editor">@ViewBag.SourceCode</div>
                 <div id="import-code">
                     <button id="import-file" class="btn btn-info" role="button">Chọn tệp</button>
                 </div>
@@ -908,7 +908,8 @@
                 localStorage.setItem('saveCodepadExercise@(Model?.Id)_@(userInfo?.Id)', editor.getValue());
             });
             var storedContent = localStorage.getItem('saveCodepadExercise@(Model?.Id)_@(userInfo?.Id)');
-            if (storedContent) {
+            var initSourceCode = getParamFromCurrentUrl('viewCode');
+            if (storedContent && initSourceCode !== "True") {
                 editor.setValue(storedContent, -1);
             }
         });

@@ -92,6 +92,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapHub<MarkingHub>("/markingHub");
 app.MapHub<OnlineUsersHub>("/onlineUsersHub");
+app.MapHub<MeetingHub>("/meetingHub");
 app.UseMiddleware<UpdateLastActiveMiddleware>();
 
 app.MapControllerRoute(

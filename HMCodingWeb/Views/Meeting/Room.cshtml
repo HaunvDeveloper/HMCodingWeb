@@ -1,0 +1,383 @@
+﻿@model HMCodingWeb.ViewModels.RoomViewModel
+
+@{
+    ViewData["Title"] = "Phòng họp - @Model.MeetingTitle";
+}
+
+@section Links {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .meeting-container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1rem;
+        }
+
+        .video-container {
+            position: relative;
+            overflow: hidden;
+            background-color: #5f6368;
+            height: 500px;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-off {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .toggle-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: #f1f3f4;
+            border: none;
+            margin: 0 0.5rem;
+        }
+
+            .toggle-btn.off {
+                background-color: #d93025;
+                color: white;
+            }
+
+        .controls {
+            width: 100%;    
+            display: flex;
+            justify-content: center;
+            gap:1rem;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 1rem;
+        }
+
+        .btn-leave {
+            background-color: #d93025;
+            color: white;
+            border-radius: 14px;
+        }
+
+        @@media (max-width: 768px) {
+            .video
+
+            {
+                height: 180px;
+            }
+
+            .toggle-btn {
+                width: 40px;
+                height: 40px;
+            }
+
+        }
+    </style>
+}
+
+<section class="container-lg mb-3">
+    <div class="meeting-container">
+        <div class="video-grid rounded-top-3" id="videoGrid">
+            <div class="video-container rounded-top-3">
+                <video id="localVideo" autoplay playsinline @(Model.DisableCamera ? "class=video-off" : "")>
+                    @if (Model.DisableCamera)
+                    {
+                        <i class="fas fa-video-slash"></i>
+                    }
+                </video>
+            </div>
+        </div>
+        <div class="controls rounded-bottom-3">
+            <button type="button" class="toggle-btn @(Model.MuteMic ? "off" : "")" id="micToggle" title="Tắt/Bật microphone">
+                <i class="fas @(Model.MuteMic ? "fa-microphone-slash" : "fa-microphone")"></i>
+            </button>
+            <button type="button" class="toggle-btn @(Model.DisableCamera ? "off" : "")" id="cameraToggle" title="Tắt/Bật camera">
+                <i class="fas @(Model.DisableCamera ? "fa-video-slash" : "fa-video")"></i>
+            </button>
+            <a href="@Url.Action("Index")" class="btn btn-leave"><i  class="fa-solid fa-right-from-bracket"></i></a>
+        </div>
+    </div>
+</section>
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.0/signalr.min.js"></script>
+    <script>
+        (function () {
+            if (window.signalRConnection) {
+                console.warn("SignalR connection already initialized. Skipping re-initialization.");
+                return;
+            }
+
+            const meetingId = '@Model.MeetingId';
+            const userId = '@Model.UserId';
+            const initialMuteMic = @Model.MuteMic.ToString().ToLower();
+            const initialDisableCamera = @Model.DisableCamera.ToString().ToLower();
+            const localVideo = document.getElementById('localVideo');
+            const videoGrid = document.getElementById('videoGrid');
+            const errorMessage = document.getElementById('errorMessage');
+            let localStream = null;
+            const peerConnections = {};
+
+            // SignalR connection
+            const signalRConnection = new signalR.HubConnectionBuilder()
+                .withUrl('/meetingHub')
+                .build();
+            window.signalRConnection = signalRConnection;
+
+            // Show error message
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+                setTimeout(() => { errorMessage.style.display = 'none'; }, 5000); // Hide after 5 seconds
+            }
+
+            // Initialize local stream
+            async function initStream() {
+                try {
+                    if (!initialDisableCamera || !initialMuteMic) {
+                        localStream = await navigator.mediaDevices.getUserMedia({
+                            video: !initialDisableCamera,
+                            audio: !initialMuteMic
+                        });
+                        localVideo.srcObject = localStream;
+                        if (initialDisableCamera) {
+                            localVideo.classList.add('video-off');
+                            localVideo.innerHTML = '<i class="fas fa-video-slash"></i>';
+                        } else {
+                            localVideo.classList.remove('video-off');
+                            localVideo.innerHTML = '';
+                        }
+                    } else {
+                        localStream = new MediaStream();
+                        localVideo.srcObject = localStream;
+                        localVideo.classList.add('video-off');
+                        localVideo.innerHTML = '<i class="fas fa-video-slash"></i>';
+                    }
+                } catch (err) {
+                    console.error('Error accessing media devices:', err);
+                    showError('Không thể truy cập camera hoặc microphone. Vui lòng kiểm tra quyền truy cập hoặc thiết bị.');
+                    localStream = new MediaStream();
+                    localVideo.srcObject = localStream;
+                    localVideo.classList.add('video-off');
+                    localVideo.innerHTML = '<i class="fas fa-video-slash"></i>';
+                }
+            }
+
+            // Toggle microphone
+            document.getElementById('micToggle').addEventListener('click', async () => {
+                try {
+                    if (!localStream || localStream.getAudioTracks().length === 0) {
+                        // Request audio if not already available
+                        const newStream = await navigator.mediaDevices.getUserMedia({
+                            audio: true,
+                            video: localStream?.getVideoTracks().length > 0
+                        });
+                        if (localStream) {
+                            // Add new audio tracks to existing stream
+                            newStream.getAudioTracks().forEach(track => localStream.addTrack(track));
+                        } else {
+                            localStream = newStream;
+                        }
+                        localVideo.srcObject = localStream;
+                        // Update peer connections
+                        Object.values(peerConnections).forEach(pc => {
+                            newStream.getAudioTracks().forEach(track => pc.addTrack(track, localStream));
+                        });
+                    }
+                    const audioTrack = localStream.getAudioTracks()[0];
+                    if (audioTrack) {
+                        audioTrack.enabled = !audioTrack.enabled;
+                        const micToggle = document.getElementById('micToggle');
+                        micToggle.classList.toggle('off');
+                        micToggle.innerHTML = `<i class="fas ${audioTrack.enabled ? 'fa-microphone' : 'fa-microphone-slash'}"></i>`;
+                    } else {
+                        showError('Không có microphone để bật/tắt.');
+                    }
+                } catch (err) {
+                    console.error('Error toggling microphone:', err);
+                    showError('Không thể bật/tắt microphone. Vui lòng kiểm tra quyền truy cập.');
+                }
+            });
+
+            // Toggle camera
+            document.getElementById('cameraToggle').addEventListener('click', async () => {
+                try {
+                    const videoTrack = localStream?.getVideoTracks()[0];
+                    if (videoTrack) {
+                        // Toggle existing video track
+                        videoTrack.enabled = !videoTrack.enabled;
+                        const cameraToggle = document.getElementById('cameraToggle');
+                        cameraToggle.classList.toggle('off');
+                        cameraToggle.innerHTML = `<i class="fas ${videoTrack.enabled ? 'fa-video' : 'fa-video-slash'}"></i>`;
+                        if (!videoTrack.enabled) {
+                            localVideo.classList.add('video-off');
+                            localVideo.innerHTML = '<i class="fas fa-video-slash"></i>';
+                        } else {
+                            localVideo.classList.remove('video-off');
+                            localVideo.innerHTML = '';
+                        }
+                    } else {
+                        // Request new video stream
+                        const newStream = await navigator.mediaDevices.getUserMedia({
+                            video: true,
+                            audio: localStream?.getAudioTracks().length > 0
+                        });
+                        if (localStream) {
+                            // Add new video tracks to existing stream
+                            newStream.getVideoTracks().forEach(track => localStream.addTrack(track));
+                            // Keep existing audio tracks
+                            localStream.getAudioTracks().forEach(track => newStream.addTrack(track));
+                            localStream = newStream;
+                        } else {
+                            localStream = newStream;
+                        }
+                        localVideo.srcObject = localStream;
+                        localVideo.classList.remove('video-off');
+                        localVideo.innerHTML = '';
+                        // Update peer connections
+                        Object.values(peerConnections).forEach(pc => {
+                            newStream.getVideoTracks().forEach(track => pc.addTrack(track, localStream));
+                        });
+                        const cameraToggle = document.getElementById('cameraToggle');
+                        cameraToggle.classList.remove('off');
+                        cameraToggle.innerHTML = '<i class="fas fa-video"></i>';
+                    }
+                } catch (err) {
+                    console.error('Error toggling camera:', err);
+                    showError('Không thể bật/tắt camera. Vui lòng kiểm tra quyền truy cập hoặc thiết bị.');
+                }
+            });
+
+            // Start SignalR connection
+            signalRConnection.start().then(() => {
+                signalRConnection.invoke('JoinRoom', meetingId, userId);
+            }).catch(err => {
+                console.error('SignalR Connection Error:', err);
+                showError('Không thể kết nối đến máy chủ. Vui lòng thử lại.');
+            });
+
+            // WebRTC configuration
+            const configuration = {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' }
+                ]
+            };
+
+            // Handle new user joining
+            signalRConnection.on('UserJoined', async (newUserId, connectionId) => {
+                if (newUserId !== userId) {
+                    const pc = new RTCPeerConnection(configuration);
+                    peerConnections[connectionId] = pc;
+
+                    // Add local stream to peer connection
+                    if (localStream) {
+                        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+                    }
+
+                    // Handle ICE candidates
+                    pc.onicecandidate = event => {
+                        if (event.candidate) {
+                            signalRConnection.invoke('SendIceCandidate', meetingId, connectionId, JSON.stringify(event.candidate));
+                        }
+                    };
+
+                    // Handle remote stream
+                    pc.ontrack = event => {
+                        const remoteVideo = document.createElement('video');
+                        remoteVideo.autoplay = true;
+                        remoteVideo.playsInline = true;
+                        remoteVideo.srcObject = event.streams[0];
+                        const videoContainer = document.createElement('div');
+                        videoContainer.className = 'video-container';
+                        videoContainer.appendChild(remoteVideo);
+                        videoGrid.appendChild(videoContainer);
+                    };
+
+                    // Create and send offer
+                    const offer = await pc.createOffer();
+                    await pc.setLocalDescription(offer);
+                    await signalRConnection.invoke('SendOffer', meetingId, connectionId, JSON.stringify(offer));
+                }
+            });
+
+            // Handle receiving offer
+            signalRConnection.on('ReceiveOffer', async (offer, senderConnectionId) => {
+                const pc = new RTCPeerConnection(configuration);
+                peerConnections[senderConnectionId] = pc;
+
+                // Add local stream to peer connection
+                if (localStream) {
+                    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+                }
+
+                // Handle ICE candidates
+                pc.onicecandidate = event => {
+                    if (event.candidate) {
+                        signalRConnection.invoke('SendIceCandidate', meetingId, senderConnectionId, JSON.stringify(event.candidate));
+                    }
+                };
+
+                // Handle remote stream
+                pc.ontrack = event => {
+                    const remoteVideo = document.createElement('video');
+                    remoteVideo.autoplay = true;
+                    remoteVideo.playsInline = true;
+                    remoteVideo.srcObject = event.streams[0];
+                    const videoContainer = document.createElement('div');
+                    videoContainer.className = 'video-container';
+                    videoContainer.appendChild(remoteVideo);
+                    videoGrid.appendChild(videoContainer);
+                };
+
+                // Set remote description and create answer
+                await pc.setRemoteDescription(JSON.parse(offer));
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
+                await signalRConnection.invoke('SendAnswer', meetingId, senderConnectionId, JSON.stringify(answer));
+            });
+
+            // Handle receiving answer
+            signalRConnection.on('ReceiveAnswer', async (answer, senderConnectionId) => {
+                const pc = peerConnections[senderConnectionId];
+                if (pc) {
+                    await pc.setRemoteDescription(JSON.parse(answer));
+                }
+            });
+
+            // Handle receiving ICE candidate
+            signalRConnection.on('ReceiveIceCandidate', async (candidate, senderConnectionId) => {
+                const pc = peerConnections[senderConnectionId];
+                if (pc) {
+                    await pc.addIceCandidate(JSON.parse(candidate));
+                }
+            });
+
+            // Initialize stream on load
+            initStream();
+
+            // Clean up on page unload
+            window.addEventListener('beforeunload', () => {
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                }
+                for (let connectionId in peerConnections) {
+                    peerConnections[connectionId].close();
+                }
+                signalRConnection.stop();
+            });
+        })();
+    </script>
+}

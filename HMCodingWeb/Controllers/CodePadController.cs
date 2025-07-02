@@ -9,6 +9,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using HMCodingWeb.Models;
 using HMCodingWeb.Services;
 using HMCodingWeb.ViewModels;
+using System.Collections.Generic;
 
 namespace HMCodingWeb.Controllers
 {
@@ -37,9 +38,9 @@ namespace HMCodingWeb.Controllers
         }
 
         [HttpGet]
-        public IActionResult _GetList(int p = 1, int s = 10, string key = "")
+        public async Task<IActionResult> _GetList(int p = 1, int s = 10, string key = "")
         {
-            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            long userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             IQueryable<Codepad> query = _context.Codepads
                 .Where(cp => cp.UserId == userId)
                 .Include(x => x.ProgramLanguage)
@@ -58,9 +59,9 @@ namespace HMCodingWeb.Controllers
                         cp.CreateDate.ToString().Contains(key)
                     );
             }
-            int totalItems = query.Count();
+            int totalItems = await query.CountAsync();
 
-            var codepadList = query
+            var codepadList = await query
                 .OrderByDescending(cp => cp.CreateDate)
                 .Skip((p - 1) * s)
                 .Take(s)
@@ -76,7 +77,7 @@ namespace HMCodingWeb.Controllers
                     ProgramLanguage = x.ProgramLanguage,
                     User = x.User,
                 })
-                .ToList();
+                .ToListAsync();
 
             ViewBag.ProgramLanguageList = _context.ProgramLanguages.ToList();
             ViewBag.AccessList = _context.AccessRoles.ToList();
@@ -91,6 +92,84 @@ namespace HMCodingWeb.Controllers
 
             return PartialView(codepadList);
         }
+
+        [HttpGet]
+        public IActionResult View(long id)
+        {
+            var user = _context.Users.Find(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            else if(user.Id == long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0"))
+            {
+                return RedirectToAction("Index");
+            }
+            return View(user);
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> _GetListByUser(long id, int draw, int start = 0, int length = 10, string keyword = "")
+        {
+            var currentUserId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var user = _context.Users.Find(id);
+            if (user == null)
+            {
+                return Json(new
+                {
+                    draw = draw,
+                    recordsTotal = 0,
+                    recordsFiltered = 0,
+                    data = new List<Codepad>()
+                });
+            }
+            
+            var query = _context.Codepads
+                .Where(cp => cp.UserId == user.Id && cp.AccessId == 3)
+                .Include(cp => cp.ProgramLanguage)
+                .AsQueryable();
+
+            if(!string.IsNullOrEmpty(keyword))
+            {
+                keyword = keyword.ToLower();
+                query = query.Where(cp =>
+                    cp.FileName.ToLower().Contains(keyword) ||
+                    cp.Id.ToString().Contains(keyword) ||
+                    cp.ProgramLanguage.ProgramLanguageName.ToLower().Contains(keyword) ||
+                    cp.CreateDate.ToString().Contains(keyword)
+                );
+            }
+
+            var totalRecords = await query.CountAsync();
+
+            var codepads = await query
+                .Skip(start)
+                .Take(length)
+                .OrderByDescending(cp => cp.CreateDate)
+                .Select(cp => new
+                {
+                    Id = cp.Id,
+                    FileName = cp.FileName,
+                    ProgramLanguage = cp.ProgramLanguage.ProgramLanguageName,
+                    CreateDate = cp.CreateDate.ToString("dd/MM/yyyy HH:mm"),
+                    UserId = cp.UserId,
+                    InputFile = string.IsNullOrEmpty(cp.InputFile) ? "stdin" : cp.InputFile,
+                    OutputFile = string.IsNullOrEmpty(cp.OutputFile) ? "stdout" : cp.OutputFile
+                })
+                .ToListAsync();
+
+            ViewBag.UserInfo = user;
+            return Json(new
+            {
+                draw = draw,
+                recordsTotal = totalRecords,
+                recordsFiltered = totalRecords,
+                data = codepads
+            });
+        }
+
+        
 
         [Route("codepad/code/{id?}")]
         public async Task<IActionResult> Code(int? id)

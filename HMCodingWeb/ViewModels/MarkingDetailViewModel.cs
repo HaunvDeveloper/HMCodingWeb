@@ -10,7 +10,6 @@ namespace HMCodingWeb.ViewModels
             MarkingId = markingDetail.MarkingId;
             TestCaseId = markingDetail.TestCaseId;
             TestCaseIndex = markingDetail.TestCaseIndex;
-            CorrectOutput = markingDetail.CorrectOutput;
             IsCorrect = markingDetail.IsCorrect;
             RunTime = markingDetail.RunTime;
             IsTimeLimitExceed = markingDetail.IsTimeLimitExceed;
@@ -29,8 +28,6 @@ namespace HMCodingWeb.ViewModels
         public int? TestCaseIndex { get; set; }
 
         public int TotalTestcase { get; set; }
-
-        public string? CorrectOutput { get; set; }
 
         public bool IsCorrect { get; set; }
 

@@ -8,8 +8,10 @@
 
 a {
     text-decoration: none !important;
+    color: darkblue;
 }
 
     table a:hover {
         text-decoration: underline !important;
+        
     }

@@ -1,0 +1,82 @@
+﻿
+@model HMCodingWeb.Models.User
+@{
+    ViewData["Title"] = "Codepad " + Model.Username;
+}
+
+@section Links {
+    
+}
+
+<div id="codepad" class="m-5 flex-center flex-column">
+    <h1 class="title text-center">
+        <b>CODEPAD @(Model.Fullname.ToUpper())</b>
+    </h1>
+
+    <div class="container mt-3 mb-3 table-responsive list">
+        <table id="table-data" class="table table-sm table-hover table-border table-striped ml-5 mr-3">
+            <thead>
+                <tr class="table-dark">
+                    <th>ID</th>
+                    <th>Tên</th>
+                    <th>Ngôn ngữ</th>
+                    <th>Thời gian tạo</th>
+                    <th>Input File</th>
+                    <th>Output File</th>
+                    <th>Chức năng</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        
+        var table = $('#table-data').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "searching": true,
+            "ajax": {
+                "url": '@Url.Action("_GetListByUser", "CodePad")',
+                "data": function (d) {
+                    d.keyword = $('input[type="search"]').val();
+                    d.id = `@Model.Id` || null; // Pass exerciseId if available
+                },
+                "type": "POST",
+                "dataSrc": function (json) {
+                    return json.data;
+                }
+            },
+            "pageLength": 10,
+            "lengthMenu": [10, 25, 50, 100],
+            "columns": [
+                { "data": "id", "orderable": false },
+                { "data": "fileName", "orderable": false },
+                { "data": "programLanguage", "orderable": false },
+                { "data": "createDate", "orderable": false },
+                { "data": "inputFile", "orderable": false },
+                { "data": "outputFile", "orderable": false },
+                {
+                    "data": "id",
+                    "render": function (data, type, row) {
+                        return `<a class="btn btn-primary btn-sm" href="/codepad/code/${data}">Xem</button>`;
+                    }, "orderable": false
+                }
+            ],
+            "language": {
+                "emptyTable": "Không có dữ liệu",
+                "info": "Hiển thị _START_ đến _END_ trong tổng số _TOTAL_ mục",
+                "infoEmpty": "Hiển thị 0 đến 0 trong tổng số 0 mục",
+                "infoFiltered": "(được lọc từ tổng số _MAX_ mục)",
+                "lengthMenu": "Hiển thị _MENU_ mục",
+                "search": "Tìm kiếm:",
+                "zeroRecords": "Không tìm thấy kết quả"
+            },
+        });
+
+        
+    </script>
+    
+}

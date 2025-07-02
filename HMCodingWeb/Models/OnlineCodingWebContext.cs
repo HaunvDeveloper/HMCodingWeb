@@ -23,6 +23,8 @@ public partial class OnlineCodingWebContext : DbContext
 
     public virtual DbSet<Chapter> Chapters { get; set; }
 
+    public virtual DbSet<ChatMeeting> ChatMeetings { get; set; }
+
     public virtual DbSet<Codepad> Codepads { get; set; }
 
     public virtual DbSet<CommentToExercise> CommentToExercises { get; set; }
@@ -40,6 +42,10 @@ public partial class OnlineCodingWebContext : DbContext
     public virtual DbSet<Marking> Markings { get; set; }
 
     public virtual DbSet<MarkingDetail> MarkingDetails { get; set; }
+
+    public virtual DbSet<Meeting> Meetings { get; set; }
+
+    public virtual DbSet<MeetingParticipant> MeetingParticipants { get; set; }
 
     public virtual DbSet<Notification> Notifications { get; set; }
 
@@ -111,6 +117,24 @@ public partial class OnlineCodingWebContext : DbContext
             entity.Property(e => e.ChapterCode).HasMaxLength(50);
             entity.Property(e => e.ChapterName).HasMaxLength(50);
             entity.Property(e => e.Description).HasMaxLength(256);
+        });
+
+        modelBuilder.Entity<ChatMeeting>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__ChatMeet__3214EC07F2BEA8C5");
+
+            entity.ToTable("ChatMeeting");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+
+            entity.HasOne(d => d.Meeting).WithMany(p => p.ChatMeetings)
+                .HasForeignKey(d => d.MeetingId)
+                .HasConstraintName("FK__ChatMeeti__Meeti__0D44F85C");
+
+            entity.HasOne(d => d.SenderUser).WithMany(p => p.ChatMeetings)
+                .HasForeignKey(d => d.SenderUserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__ChatMeeti__Sende__0E391C95");
         });
 
         modelBuilder.Entity<Codepad>(entity =>
@@ -301,6 +325,42 @@ public partial class OnlineCodingWebContext : DbContext
             entity.HasOne(d => d.Marking).WithMany(p => p.MarkingDetails)
                 .HasForeignKey(d => d.MarkingId)
                 .HasConstraintName("FK_MarkingDetail_Marking");
+        });
+
+        modelBuilder.Entity<Meeting>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Meeting__3214EC07FEA28227");
+
+            entity.ToTable("Meeting");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+            entity.Property(e => e.EndTime).HasColumnType("datetime");
+            entity.Property(e => e.StartTime).HasColumnType("datetime");
+            entity.Property(e => e.Title).HasMaxLength(200);
+
+            entity.HasOne(d => d.HostUser).WithMany(p => p.Meetings)
+                .HasForeignKey(d => d.HostUserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Meeting__HostUse__0697FACD");
+        });
+
+        modelBuilder.Entity<MeetingParticipant>(entity =>
+        {
+            entity.HasKey(e => new { e.MeetingId, e.UserId }).HasName("PK__MeetingP__38816588E471C013");
+
+            entity.ToTable("MeetingParticipant");
+
+            entity.Property(e => e.JoinedAt).HasColumnType("datetime");
+            entity.Property(e => e.Role).HasMaxLength(50);
+
+            entity.HasOne(d => d.Meeting).WithMany(p => p.MeetingParticipants)
+                .HasForeignKey(d => d.MeetingId)
+                .HasConstraintName("FK__MeetingPa__Meeti__09746778");
+
+            entity.HasOne(d => d.User).WithMany(p => p.MeetingParticipants)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK__MeetingPa__UserI__0A688BB1");
         });
 
         modelBuilder.Entity<Notification>(entity =>

@@ -32,7 +32,7 @@
                     <td class="stt">@(++stt)</td>
                     <td><a asp-action="Code" asp-controller="Exercise" asp-route-id="@item.Id">@item.ExerciseCode</a></td>
                     <td><a asp-action="Code" asp-controller="Exercise" asp-route-id="@item.Id">@item.ExerciseName</a></td>
-                    <td><a asp-action="Code" asp-controller="Exercise" asp-route-id="@item.Id">@item.DifficultyName</a></td>
+                    <td>@item.DifficultyName</td>
                     <td>@item.ExerciseTypeName</td>
                     <td class="d-sm-table-cell">
                         <a asp-action="Index" asp-controller="Marking" asp-route-exId="@item.Id">@item.NumberSuccessful</a>

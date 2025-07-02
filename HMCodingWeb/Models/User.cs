@@ -45,6 +45,8 @@ public partial class User
 
     public virtual Authority Auth { get; set; } = null!;
 
+    public virtual ICollection<ChatMeeting> ChatMeetings { get; set; } = new List<ChatMeeting>();
+
     public virtual ICollection<Codepad> Codepads { get; set; } = new List<Codepad>();
 
     public virtual ICollection<CommentToExercise> CommentToExercises { get; set; } = new List<CommentToExercise>();
@@ -52,6 +54,10 @@ public partial class User
     public virtual ICollection<CopyPasteHistory> CopyPasteHistories { get; set; } = new List<CopyPasteHistory>();
 
     public virtual ICollection<Marking> Markings { get; set; } = new List<Marking>();
+
+    public virtual ICollection<MeetingParticipant> MeetingParticipants { get; set; } = new List<MeetingParticipant>();
+
+    public virtual ICollection<Meeting> Meetings { get; set; } = new List<Meeting>();
 
     public virtual ICollection<NotificationSeenStatus> NotificationSeenStatuses { get; set; } = new List<NotificationSeenStatus>();
 

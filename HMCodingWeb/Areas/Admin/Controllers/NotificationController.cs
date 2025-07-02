@@ -62,7 +62,7 @@ namespace HMCodingWeb.Areas.Admin.Controllers
                 Type = model.Type,
                 IsGlobal = model.IsGlobal,
                 IsImportant = model.IsImportant,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 CreatedByUserId = userId,
                 CreatedByUsername = User.FindFirst(ClaimTypes.Name)?.Value,
                 IsSendEmail = model.IsSendEmail
