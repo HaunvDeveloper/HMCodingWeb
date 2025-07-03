@@ -216,8 +216,9 @@ namespace HMCodingWeb.Controllers
                 if (model.RunTime > 10)
                     model.RunTime = 10;
                 var result = await _runProcessService.RunProcessWithInput(model);
-                HttpContext.Session.SetString("IsRunning", "false");
+                _runProcessService.ClearTempFolder(model.UserId);
 
+                HttpContext.Session.SetString("IsRunning", "false");
                 return Json(new { IsError = result.IsError, Error = result.Error, Output = result.Output, RunTime = model.RunTime });
             }
             catch (Exception ex)

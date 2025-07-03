@@ -36,6 +36,7 @@
     <!-- <Compile Remove="Data\**\*" /> -->
   </ItemGroup>
 <ItemGroup>
+  <Folder Include="Temp\" />
   <Folder Include="wwwroot\assets\Data\" />
 </ItemGroup>
 </Project>

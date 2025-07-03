@@ -781,11 +781,16 @@
                     </div>
                 `;
                 $("#test-case-results").append(resultHtml);
-                var testCaseDiv = document.querySelector(`#test-case-results`);
-                testCaseDiv.scrollTo({
-                  top: testCaseDiv.scrollHeight,
-                  behavior: "smooth" // thêm hiệu ứng mượt
-                });
+
+                if(testCaseResult.testCaseIndex < testCaseResult.totalTestcase)
+                {
+                    var testCaseDiv = document.querySelector(`#test-case-results`);
+                    testCaseDiv.scrollTo({
+                      top: testCaseDiv.scrollHeight,
+                      behavior: "smooth" // thêm hiệu ứng mượt
+                    });
+                }
+                
 
 
                 // Update progress bar

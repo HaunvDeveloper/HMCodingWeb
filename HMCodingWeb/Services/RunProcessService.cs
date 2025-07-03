@@ -38,9 +38,38 @@ namespace HMCodingWeb.Services
             return "python";
         }
 
+        public bool ClearTempFolder(long userId)
+        {
+            try
+            {
+                var userDirectory = Path.Combine("Temp", userId.ToString());
+                if (Directory.Exists(userDirectory))
+                {
+                    // Xóa tất cả file
+                    var files = Directory.GetFiles(userDirectory);
+                    foreach (var file in files)
+                    {
+                        File.Delete(file);
+                    }
+
+                    // Xóa tất cả thư mục con
+                    var directories = Directory.GetDirectories(userDirectory);
+                    foreach (var dir in directories)
+                    {
+                        Directory.Delete(dir, true);
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error clearing temp folder: {ex.Message}");
+                return false;
+            }
+        }
 
 
-        public async Task<RunProcessViewModel> RunProcessWithInput(RunProcessViewModel model)
+        public async Task<RunProcessViewModel> RunProcessWithInput(RunProcessViewModel model, bool compile = true)
         {
             try
             {
@@ -56,41 +85,16 @@ namespace HMCodingWeb.Services
                     var sourceFilePath = Path.Combine(userDirectory, model.FileName);
                     await File.WriteAllTextAsync(sourceFilePath, model.SourceCode);
 
-
-                    //COMPILE CODE
-                    var compileProcess = new Process
+                    if (compile)
                     {
-                        StartInfo = new ProcessStartInfo
-                        {
-                            FileName = "sudo",
-                            Arguments = $"-u sandbox {GetCompilerPath("g++")} \"{model.FileName}\" -o \"{Path.ChangeExtension(model.FileName, "exe")}\" -std=c++14",
-                            RedirectStandardOutput = true,
-                            RedirectStandardError = true,
-                            UseShellExecute = false,
-                            CreateNoWindow = true,
-                            WorkingDirectory = userDirectory
-                        }
-                    };
-
-
-                    compileProcess.Start();
-                    var compileErrorsTask = compileProcess.StandardError.ReadToEndAsync();
-                    await compileProcess.WaitForExitAsync();
-
-                    var compileErrors = await compileErrorsTask;
-                    //IF COMPILE ERRROR
-                    if (!string.IsNullOrEmpty(compileErrors))
-                    {
-                        model.Error = compileErrors;
-                        model.IsError = true;
-                        return model;
+                        model = await CompileCppFile(model, userDirectory);
                     }
 
                     var runProcess = new Process
                     {
                         StartInfo = new ProcessStartInfo
                         {
-                            FileName = Path.Combine(userDirectory, Path.ChangeExtension(model.FileName, "exe")),
+                            FileName = Path.Combine(userDirectory, Path.ChangeExtension(model.FileName ?? "", "exe")),
                             RedirectStandardInput = true,
                             RedirectStandardOutput = true,
                             RedirectStandardError = true,
@@ -140,7 +144,7 @@ namespace HMCodingWeb.Services
                             runProcess.WaitForExit();
                         });
                     }
-                        
+
 
                     //wating run time exit
                     if (await Task.WhenAny(processTask, Task.Delay(model.TimeLimit * 1000 ?? 1000)) == processTask)
@@ -201,17 +205,7 @@ namespace HMCodingWeb.Services
                         model.Error = "Time limit exceed";
                         model.IsError = true;
                     }
-                    if (File.Exists(sourceFilePath))
-                    {
-                        // Xóa tệp
-                        File.Delete(sourceFilePath);
-                    }
-                    if (File.Exists(Path.ChangeExtension(sourceFilePath, "exe")))
-                    {
-                        // Xóa tệp
-                        File.Delete(Path.ChangeExtension(sourceFilePath, "exe"));
-                    }
-
+                    
                 }
                 else if (model.ProgramLanguageId == 2)
                 {
@@ -256,7 +250,8 @@ namespace HMCodingWeb.Services
                         {
                             runProcess.WaitForExit();
                         });
-                    }else if (!string.IsNullOrEmpty(model.Input))
+                    }
+                    else if (!string.IsNullOrEmpty(model.Input))
                     {
                         processTask = Task.Run(async () =>
                         {
@@ -275,7 +270,7 @@ namespace HMCodingWeb.Services
                         });
                     }
 
-                    
+
 
                     if (await Task.WhenAny(processTask, Task.Delay(model.TimeLimit * 1000 ?? 1000)) == processTask)
                     {
@@ -332,11 +327,7 @@ namespace HMCodingWeb.Services
                         model.Error = "Time limit exceed";
                         model.IsError = true;
                     }
-                    if (File.Exists(sourceFilePath))
-                    {
-                        // Xóa tệp
-                        File.Delete(sourceFilePath);
-                    }
+                    
                 }
                 else if (model.ProgramLanguageId == 3)
                 {
@@ -361,11 +352,12 @@ namespace HMCodingWeb.Services
                     };
 
 
+                    var compileErrorsTask = compileProcess.StandardError.ReadToEndAsync();
                     compileProcess.Start();
                     await compileProcess.WaitForExitAsync();
 
                     // IF COMPILE ERROR
-                    var compileErrors = await compileProcess.StandardError.ReadToEndAsync();
+                    var compileErrors = await compileErrorsTask;
                     if (!string.IsNullOrEmpty(compileErrors))
                     {
                         model.Error = compileErrors;
@@ -480,11 +472,7 @@ namespace HMCodingWeb.Services
                         model.Error = "Time limit exceed";
                         model.IsError = true;
                     }
-                    if (File.Exists(sourceFilePath))
-                    {
-                        // Xóa tệp
-                        File.Delete(sourceFilePath);
-                    }
+                    
                 }
                 else if (model.ProgramLanguageId == 4)
                 {
@@ -607,10 +595,7 @@ namespace HMCodingWeb.Services
                         File.Delete(sourceFilePath);
                     }
                 }
-                if (System.IO.File.Exists(userDirectory))
-                {
-                    System.IO.File.Delete(userDirectory);
-                }
+                
             }
             catch (Exception ex)
             {
@@ -621,5 +606,43 @@ namespace HMCodingWeb.Services
 
             return model;
         }
+
+        public async Task<RunProcessViewModel> CompileCppFile(RunProcessViewModel model, string userDirectory)
+        {
+            //COMPILE CODE
+            var compileProcess = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = $"{GetCompilerPath("g++")}",
+                    Arguments = $"\"{model.FileName}\" -o \"{Path.ChangeExtension(model.FileName, "exe")}\" -std=c++14",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WorkingDirectory = userDirectory
+                }
+            };
+
+
+            compileProcess.Start();
+            var compileErrorsTask = compileProcess.StandardError.ReadToEndAsync();
+            await compileProcess.WaitForExitAsync();
+
+            var compileErrors = await compileErrorsTask;
+            //IF COMPILE ERRROR
+            if (!string.IsNullOrEmpty(compileErrors))
+            {
+                model.Error = compileErrors;
+                model.IsError = true;
+                return model;
+            }
+            // If compilation is successful, return the model with no errors
+            model.IsError = false; // Không có lỗi
+            model.Error = null; // Không có lỗi
+            return model;
+        }
+
+
     }
 }

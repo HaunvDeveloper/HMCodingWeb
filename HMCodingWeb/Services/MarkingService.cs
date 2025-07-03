@@ -172,8 +172,8 @@ namespace HMCodingWeb.Services
                     TimeLimit = (int)model.TimeLimit,
                     Input = testCase.Input,
                     UserId = userId,
-                    FileName = $"test_{testCase.Id}_{userId}"
-                });
+                    FileName = $"test_{exercise.Id}_{userId}"
+                }, i == 0);
 
 
 
@@ -206,7 +206,6 @@ namespace HMCodingWeb.Services
                 else if (markingDetail.IsTimeLimitExceed)
                 {
                     model.ResultContent += $"Test case {testCase.Position} failed due to time limit exceeded.\n";
-                    model.IsError = true;
                 }
                 else if (markingDetail.IsError)
                 {
@@ -228,7 +227,7 @@ namespace HMCodingWeb.Services
             {
                 model.Status = "Passed";
             }
-            else if(model.IsError)
+            else if (model.IsError)
             {
                 model.Status = "Error";
                 model.ResultContent += "There was an error during the marking process.\n";
@@ -236,15 +235,26 @@ namespace HMCodingWeb.Services
             else
             {
                 model.Status = "Wrong";
+                if(model.MarkingDetails.Any(x => x.IsTimeLimitExceed))
+                {
+                    model.Status = "TLE";
+                    model.ResultContent += "Some test cases exceeded the time limit.\n";
+                }
             }
 
             model.ResultContent += $"Final score: {model.Score}\n";
+
+            // Delete all folder Temp
+            _runProcessService.ClearTempFolder(userId);
+
 
             return model;
         }
 
         private bool MatchingResult(string TypeMarking, string? a, string? b)
         {
+            a = a?.Replace("\r\n", "\n").Replace("\r", "\n"); // Normalize line endings
+            b = b?.Replace("\r\n", "\n").Replace("\r", "\n"); // Normalize line endings
             if (TypeMarking == "Chính xác")
             {
                 return a == b;
@@ -252,7 +262,7 @@ namespace HMCodingWeb.Services
             else if (TypeMarking == "Tương đối")
             {
                 if(string.IsNullOrEmpty(a) && string.IsNullOrEmpty(b)) return true;
-                return a.Trim().Equals(b?.Trim(), StringComparison.OrdinalIgnoreCase); // Remove all whitespace and compare 
+                return a?.Trim().Equals(b?.Trim(), StringComparison.OrdinalIgnoreCase) ?? false; // Remove all whitespace and compare 
             }
             throw new ArgumentException("Invalid TypeMarking value");
         }
