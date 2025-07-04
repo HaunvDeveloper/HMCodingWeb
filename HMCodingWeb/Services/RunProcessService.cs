@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom.Compiler;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -73,6 +74,11 @@ namespace HMCodingWeb.Services
         {
             try
             {
+                // Check Temp Folder
+                if (!Directory.Exists("Temp"))
+                {
+                    Directory.CreateDirectory("Temp");
+                }
                 var userDirectory = Path.Combine("Temp", model.UserId.ToString());
                 if (!Directory.Exists(userDirectory))
                 {
@@ -88,6 +94,10 @@ namespace HMCodingWeb.Services
                     if (compile)
                     {
                         model = await CompileCppFile(model, userDirectory);
+                        if (model.IsError == true)
+                        {
+                            return model;
+                        }
                     }
 
                     var runProcess = new Process

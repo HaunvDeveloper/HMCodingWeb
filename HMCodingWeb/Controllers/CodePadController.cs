@@ -200,7 +200,8 @@ namespace HMCodingWeb.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> RunProcessCodepad(RunProcessViewModel model)
+        [RequestSizeLimit(1L * 1024 * 1024 * 1024)]
+        public async Task<IActionResult> RunProcessCodepad([FromBody]RunProcessViewModel model)
         {
             try
             {
@@ -215,7 +216,9 @@ namespace HMCodingWeb.Controllers
                     model.RunTime = 1;
                 if (model.RunTime > 10)
                     model.RunTime = 10;
-                var result = await _runProcessService.RunProcessWithInput(model);
+
+
+                var result = await _runProcessService.RunProcessWithInput(model, true);
                 _runProcessService.ClearTempFolder(model.UserId);
 
                 HttpContext.Session.SetString("IsRunning", "false");

@@ -9,6 +9,11 @@
         --primary-color: rgb(26,26,26);
     }
 
+th,button,select,img,.badge {
+    user-select: none;
+}
+
+
 main#main{
     min-height: 400px;
 }
@@ -47,6 +52,7 @@ main#main{
     border-color: #000 #0000;
     animation: l1 1s infinite;
     display: none;
+    user-select: none;
 }
 .loaderBar {
     width: 45px;
@@ -55,6 +61,7 @@ main#main{
     background: var(--c) 0% 50%, var(--c) 50% 50%, var(--c) 100% 50%;
     background-size: 20% 100%;
     animation: l2 1s infinite linear;
+    user-select: none;
 }
 
 @keyframes l2 {
@@ -86,17 +93,18 @@ main#main{
 
 
 .animation-hidden {
-    
     max-height: 0;
     opacity: 0;
     transition: max-height 0.4s ease, opacity 0.4s ease;
-    overflow:hidden;
+    overflow: hidden;
+    user-select: none;
 }
 
 .animation-visible {
     max-height: 1000px;
     opacity: 1;
     transition: max-height 0.7s ease, opacity 0.7s ease;
+    user-select: none;
 }
 
 

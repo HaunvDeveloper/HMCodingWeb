@@ -21,6 +21,8 @@
     justify-content: center;
 }
 
+
+
 #code-div {
     width: 100%;
     height: auto;
@@ -66,7 +68,7 @@
 #right-side {
     min-width: 260px;
     height: fit-content;
-   
+    user-select: none;
     top: 55px;
     position: -webkit-sticky;
     position: sticky;
@@ -75,8 +77,9 @@
     align-items: center;
     gap: 1rem;
     color: white;
-    
 }
+
+
     #right-side #setting {
         display: flex;
         flex-direction: column;
@@ -195,6 +198,7 @@ tr td {
     max-width: 80%;
     width: 56rem;
     height: fit-content;
+    
 }
 
 .io-child-div {
@@ -365,6 +369,7 @@ tr td {
     position: sticky;
     top: 0;
     z-index: 1000;
+    user-select: none;
 }
 #select-tab>span{
     color: white;

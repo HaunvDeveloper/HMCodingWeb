@@ -19,7 +19,7 @@
 
 
 @section Links {
-    <link rel="stylesheet" href="~/css/exercise-code.css?v=2">
+    <link rel="stylesheet" href="~/css/exercise-code.css?v=1.0.0">
     <link rel="stylesheet" href="~/css/button-extend.css?v=2">
 
 }
@@ -638,7 +638,8 @@
             $.ajax({
                 type: 'POST',
                 url: '@Url.Action("RunProcessCodepad", "CodePad")',
-                data: runProcess,
+                data: JSON.stringify(runProcess), // Serialize JSON
+                contentType: 'application/json; charset=utf-8',
                 success: function (response) {
                     if (response.isError) {
                         let tabTriggerEl = document.querySelector('a[href="#erroralert"]');
