@@ -1,11 +1,42 @@
 @{
+    ViewData["Title"] = "Tạo Bài Tập";
     var accessRoles = ViewBag.AccessRole as List<AccessRole>;
     var difficulties = ViewBag.Difficulty as List<DifficultyLevel>;
     var exerciseTypes = ViewBag.ExerciseType as List<ExerciseType>;
     var chapters = ViewBag.Chapter as List<Chapter>;
     var kindMarking = ViewBag.KindMarking as List<string>;
     var typeMarking = ViewBag.TypeMarking as List<string>;
+    var programLanguageList = ViewBag.ProgramLanguageList as List<ProgramLanguage>;
 }
+
+
+@section Links {
+    <link rel="stylesheet" href="~/css/exercise-create.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/checkbox-extend.css">
+    <link rel="stylesheet" href="~/css/button-extend.css">
+    <style>
+        #previewPane {
+            border: 1px solid #ddd;
+            padding: 10px;
+            min-height: 300px;
+            background-color: #fff;
+            border-radius: 10px;
+        }
+
+        .nav-tabs .nav-link {
+            display: flex;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+            .nav-tabs .nav-link.active {
+                color: #495057;
+                background-color: #fff;
+                border-color: 2px solid #dee2e6 #dee2e6 #fff;
+            }
+    </style>
+}
+
 
 <form id="main" class="mb-3 mt-1 container" accept="" method="post">
     <div id="title" class="mt-4">
@@ -145,7 +176,7 @@
             <span class="mt-2" style="font-size: 20px;"><strong>Là bài kiểm tra:</strong></span>
             <div class="checkbox-wrapper-19 mt-4">
                 <input type="checkbox" id="IsExam" />
-                <label for="IsExam" class="check-box">
+                <label for="IsExam" class="check-box"></label>
             </div>
         </div>
 
@@ -179,6 +210,19 @@
     </div>
 
     <div id="textcase-content">
+        @if(User.IsInRole("admin") || User.IsInRole("teacher"))
+                {
+        <div class="text-lg-start mb-3" style="width: 80%;">
+            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#generateRandomModal">
+                Tạo Dữ Liệu Random
+            </button>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#sampleCodeModal">
+                Chèn Code Tạo Output
+            </button>
+
+        </div>
+                }
+        
         <table id="testcase-table" class="table table-hover table-border">
             <thead>
                 <tr>
@@ -240,180 +284,60 @@
     </tr>
 </table>
 
-<!-- Add Chapter Modal -->
-<div class="modal fade" id="addChapterModal" tabindex="-1" aria-labelledby="addChapterModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+<!-- ADD CHAPTER MODAL-->
+<partial name="_AddChapterModal" />
+<!-- CREATE TESTCASE MODAL -->
+<partial name="_GenerateTestCaseModal" />
+<!-- IMPORT SAMPLE CODE MODAL -->
+<!-- Modal for Adding Sample Code -->
+<div class="modal fade" id="sampleCodeModal" tabindex="-1" aria-labelledby="sampleCodeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="addChapterModalLabel">Tạo Chương mới</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title" id="sampleCodeModalLabel">Chèn Code Mẫu Sinh Output</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
             </div>
             <div class="modal-body">
-                <form id="addChapterForm" class="needs-validation" novalidate>
-                    <div class="mb-3">
-                        <label for="chapterCode" class="form-label">Mã chương</label>
-                        <input type="text" class="form-control" id="chapterCode" placeholder="Enter chapter code" required />
-                        <div class="invalid-feedback">Please enter a ChapterCode code.</div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="chapterName" class="form-label">Tên chương</label>
-                        <input type="text" class="form-control" id="chapterName" placeholder="Enter chapter name" required />
-                        <div class="invalid-feedback">Please enter a chapter name.</div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="chapterDescription" class="form-label">Description (Optional)</label>
-                        <textarea class="form-control" id="chapterDescription" placeholder="Enter chapter description" rows="3"></textarea>
-                    </div>
-                </form>
+                <div class="mb-3">
+                    <label for="languageSelect" class="form-label">Ngôn ngữ lập trình</label>
+
+                    <select id="languageSelect" class="form-control">
+                        @if (programLanguageList != null)
+                        {
+                            foreach (var i in programLanguageList)
+                            {
+                                <option data-value="@i.Id" value="@i.ProgramLanguageCode">@i.ProgramLanguageName</option>
+                            }
+                        }
+
+                    </select>
+                </div>
+
+                <div id="sampleCodeEditor" style="height:400px; border:1px solid #ced4da;"></div>
+                <div class="mb-3">
+                    <label for="codeFileUpload" class="form-label">Tải tệp nguồn (.cpp, .py, .pas, .js)</label>
+                    <input type="file" class="form-control" id="codeFileUpload" accept=".cpp,.py,.pas,.js">
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="saveChapterBtn">Save Chapter</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" id="insertSampleCodeBtn">Tạo Output từ Input</button>
             </div>
         </div>
     </div>
 </div>
 
-@section Links {
-    <link rel="stylesheet" href="~/css/exercise-create.css">
-    <link rel="stylesheet" href="~/css/checkbox-extend.css">
-    <link rel="stylesheet" href="~/css/button-extend.css">
-    <style>
-        #previewPane {
-            border: 1px solid #ddd;
-            padding: 10px;
-            min-height: 300px;
-            background-color: #fff;
-            border-radius: 10px;
-        }
 
-        .nav-tabs .nav-link {
-            display: flex;
-            color: #007bff;
-            font-weight: bold;
-        }
 
-            .nav-tabs .nav-link.active {
-                color: #495057;
-                background-color: #fff;
-                border-color: 2px solid #dee2e6 #dee2e6 #fff;
-            }
-    </style>
-}
 
 
 @section Scripts {
     <script src="https://cdn.ckeditor.com/4.22.1/full/ckeditor.js"></script>
+    <script src="~/lib/ace-builds/src-min-noconflict/ace.js"></script>
+    <script src="~/lib/ace-builds/src-min-noconflict/ext-language_tools.js"></script>
+    <script src="~/js/generate-testcase.js" asp-append-version="true"></script>
+    <script src="~/js/add-ckeditor.js" asp-append-version="true"></script>
 
-    <script>
-
-
-        CKEDITOR.plugins.add('insertCustomHtml', {
-            icons: 'insertCustomHtml',
-            init: function(editor) {
-                editor.ui.addButton('InsertCustomHtml', {
-                    label: 'Chèn bảng mẫu',
-                    command: 'insertHtmlCommand',
-                    toolbar: 'insert',
-                    icon: '/assets/icons/insert-table.svg' // hoặc icon tuỳ chọn
-                });
-
-                editor.addCommand('insertHtmlCommand', {
-                    exec: function(editor) {
-                        const htmlContent = `
-                            <table align="center" border="1" cellpadding="1" cellspacing="1" style="width:500px">
-                                <tbody>
-                                    <tr>
-                                        <td style="text-align:center"><strong>INPUT&nbsp;&nbsp;</strong></td>
-                                        <td style="text-align:center"><strong>OUTPUT</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        `;
-                        editor.insertHtml(htmlContent);
-                    }
-                });
-            }
-        });
-
-        CKEDITOR.replace('ex-content', {
-            extraPlugins: 'justify,table,link,insertCustomHtml',
-            height: 600,
-            toolbar: [
-                { name: 'document', items: ['Source', '-', 'NewPage', 'Preview', 'Print', '-', 'Templates'] },
-                { name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'] },
-                { name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'SpellChecker', 'Scayt'] },
-                { name: 'forms', items: ['Form', 'Checkbox', 'Radio', 'TextField', 'Textarea', 'Select', 'Button', 'ImageButton', 'HiddenField'] },
-                '/',
-                { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat'] },
-                { name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl', 'Language'] },
-                { name: 'links', items: ['Link', 'Unlink', 'Anchor'] },
-                { name: 'insert', items: ['Image', 'Flash', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak', 'Iframe', 'InsertCustomHtml'] },
-                '/',
-                { name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize'] },
-                { name: 'colors', items: ['TextColor', 'BGColor'] },
-                { name: 'tools', items: ['Maximize', 'ShowBlocks'] },
-            ]
-        });
-
-        CKEDITOR.instances['ex-content'].on('change', function () {
-            updatePreview();
-            saveDataToLocalStorage();
-        });
-        function saveDataToLocalStorage() {
-            var editorData = CKEDITOR.instances['ex-content'].getData();
-            localStorage.setItem('editor_data', editorData);
-        }
-        function updatePreview() {
-            var content = CKEDITOR.instances['ex-content'].getData();
-            const host = document.querySelector('#preview');
-            host.innerHTML = ''; // Clear any non-shadow content (if any)
-
-            // Get or create shadow root
-            let shadowRoot = host.shadowRoot || host.attachShadow({ mode: 'open' });
-
-            // Update shadow content
-            const innerContent = `
-             <style>
-                        strong,b{
-                            font-weight: 900;
-                        }
-                    </style>
-                <div id="dependency">
-                    ${content || '<p>Chưa có nội dung.</p>'}
-                </div>`;
-            shadowRoot.innerHTML = innerContent;
-        }
-        $(document).ready(function () {
-            var storedData = localStorage.getItem('editor_data');
-            if (storedData) {
-                CKEDITOR.instances['ex-content'].setData(storedData);
-                updatePreview();
-            }
-            
-        });
-        function removeCKENotification(){
-            try{
-                $('.cke_notifications_area').remove();
-
-                if($('.cke_notifications_area')){
-                    setTimeout(removeCKENotification, 200);
-                }
-            }
-            catch(e){
-                setTimeout(removeCKENotification, 200);
-            }
-        }
-        removeCKENotification();
-    </script>
 
     @* Add or Remove Row Testcase *@
     <script>

@@ -20,8 +20,9 @@ namespace HMCodingWeb.Controllers
         private readonly MarkingService _markingService;
         private readonly UserPointService _userPointService;
         private readonly RankingService _rankingService;
+        private readonly GenerateSampleOutputService _generateSampleOutputService;
 
-        public ExerciseController(ILogger<ExerciseController> logger, OnlineCodingWebContext context, RunProcessService runProcessService, MarkingService markingService, UserPointService userPointService, RankingService rankingService)
+        public ExerciseController(ILogger<ExerciseController> logger, OnlineCodingWebContext context, RunProcessService runProcessService, MarkingService markingService, UserPointService userPointService, RankingService rankingService, GenerateSampleOutputService generateSampleOutputService)
         {
             _logger = logger;
             _context = context;
@@ -29,6 +30,7 @@ namespace HMCodingWeb.Controllers
             _markingService = markingService;
             _userPointService = userPointService;
             _rankingService = rankingService;
+            _generateSampleOutputService = generateSampleOutputService;
         }
         [AllowAnonymous]
         public IActionResult Index()
@@ -344,8 +346,7 @@ namespace HMCodingWeb.Controllers
             ViewBag.Chapter = _context.Chapters.ToList();
             ViewBag.KindMarking = new List<string> { "io", "acm" };
             ViewBag.TypeMarking = new List<string> { "Tương đối", "Chính xác" };
-
-
+            ViewBag.ProgramLanguageList = _context.ProgramLanguages.ToList();
             return View();
         }
 
@@ -418,6 +419,7 @@ namespace HMCodingWeb.Controllers
             ViewBag.Chapter = _context.Chapters.ToList();
             ViewBag.KindMarking = new List<string> { "io", "acm" };
             ViewBag.TypeMarking = new List<string> { "Tương đối", "Chính xác" };
+            ViewBag.ProgramLanguageList = _context.ProgramLanguages.ToList();
             return View(exercise);
         }
 
@@ -562,6 +564,36 @@ namespace HMCodingWeb.Controllers
             ViewBag.CreatedUser = _context.Users.SingleOrDefault(user => user.Id == exercise.UserCreatedId);
             return View(exercise);
         }
+
+
+        [HttpPost]
+        public async Task<IActionResult> GenerateOutput([FromBody] GenerateOutputViewModel model)
+        {
+            if (model == null || model.SampleOutputs.Count == 0)
+            {
+                return Json(new { status = false, message = "Không có dữ liệu để tạo đầu ra!" });
+            }
+            try
+            {
+                long userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+                model.UserId = userId;
+                var result = await _generateSampleOutputService.GenerateSampleOutputAsync(model);
+                return Json(new { status = true, data = result });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { status = false, message = "Lỗi khi tạo đầu ra: " + ex.Message });
+            }
+        }
+
+
+
+
+
+
+
+
+
 
         [HttpGet]
         public async Task<IActionResult> GetComments(long exerciseId)

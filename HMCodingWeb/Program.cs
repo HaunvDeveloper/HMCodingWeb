@@ -40,6 +40,7 @@ builder.Services.AddScoped<MarkingService>();
 builder.Services.AddScoped<UserPointService>();
 builder.Services.AddScoped<UserListService>();
 builder.Services.AddScoped<RankingService>();
+builder.Services.AddScoped<GenerateSampleOutputService>();
 builder.Services.AddSingleton<OnlineUsersService>();
 builder.Services.AddHostedService<UserCleanupService>();
 

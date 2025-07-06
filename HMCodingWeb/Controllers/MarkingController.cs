@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using System.Drawing.Printing;
 using System.Security.Claims;
 
 namespace HMCodingWeb.Controllers
@@ -173,6 +174,107 @@ namespace HMCodingWeb.Controllers
         }
 
 
+
+        [HttpGet]
+        public IActionResult ViewDetailMarking(long id)
+        {
+            var marking = _context.Markings
+                .Include(m => m.Exercise)
+                .Include(m => m.User)
+                .FirstOrDefault(m => m.Id == id);
+            return View(marking);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> _GetViewDetailMarking(long id)
+        {
+            long userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            string userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? string.Empty;
+            var marking = await _context.Markings
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (marking == null)
+            {
+                return Json(new { status = false, error = "Marking not found" });
+            }
+
+            var isUserDone = _context.Markings
+                .Any(x => x.IsAllCorrect == true && x.ExerciseId == marking.ExerciseId && x.UserId == userId);
+            var canViewAll = userRole == "admin" || userRole == "teacher" || isUserDone;
+
+            var markingDetails = await _context.MarkingDetails
+                .Where(md => md.MarkingId == id)
+                .Select(md => new
+                {
+                    Id = md.Id,
+                    TestCaseId = md.TestCaseId,
+                    TestCaseIndex = md.TestCaseIndex,
+                    Input = (!canViewAll && !md.IsCorrect)
+                        ? "Không được xem"
+                        : ((md.Input ?? "").Length > 50
+                            ? (md.Input ?? "").Substring(0, 50) + "..."
+                            : (md.Input ?? "")),
+                                    Output = (!canViewAll && !md.IsCorrect)
+                        ? "Không được xem"
+                        : ((md.Output ?? "").Length > 50
+                            ? (md.Output ?? "").Substring(0, 50) + "..."
+                            : (md.Output ?? "")),
+                                    CorrectOutput = (!canViewAll && !md.IsCorrect)
+                        ? "Không được xem"
+                        : ((md.CorrectOutput ?? "").Length > 50
+                            ? (md.CorrectOutput ?? "").Substring(0, 50) + "..."
+                            : (md.CorrectOutput ?? "")),
+                    IsCorrect = md.IsCorrect,
+                    RunTime = md.RunTime.ToString("0.#######") + " s",
+                    IsTimeLimitExceed = md.IsTimeLimitExceed,
+                    ErrorContent = md.ErrorContent,
+                    IsError = md.IsError,
+                })
+                .ToListAsync();
+
+
+            return Json(new {status=true, data=markingDetails});
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetFullTestCase(long markingDetailId)
+        {
+            
+            var markingDetail = await _context.MarkingDetails
+                .Include(md => md.Marking)
+                .Where(md => md.Id == markingDetailId)
+                .Select(md => new
+                {
+                    md.Input,
+                    md.Output,
+                    md.CorrectOutput,
+                    md.IsCorrect,
+                    md.RunTime,
+                    md.IsTimeLimitExceed,
+                    md.ErrorContent,
+                    md.IsError,
+                    ExerciseId = md.Marking.ExerciseId,
+                })
+                .FirstOrDefaultAsync();
+            if (markingDetail == null)
+            {
+                return Json(new { status = false, error = "Không tìm thấy chi tiết bài nộp" });
+            }
+
+
+            long userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            string userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? string.Empty;
+            var isUserDone = _context.Markings
+                .Any(x => x.IsAllCorrect == true && x.ExerciseId == markingDetail.ExerciseId && x.UserId == userId);
+            var canViewAll = userRole == "admin" || userRole == "teacher" || isUserDone;
+            if(!canViewAll && !markingDetail.IsCorrect)
+            {
+                return Json(new { status = false, error = "Bạn không có quyền xem chi tiết bài nộp này" });
+            }
+
+            return Json(new { status = true, data = markingDetail });
+        }
+
         [HttpPost]
         public async Task<IActionResult> Marking(long ExerciseId, int ProgramLanguageId, string SourceCode)
         {
@@ -208,7 +310,7 @@ namespace HMCodingWeb.Controllers
                     isGainRank = obj.isGain;
                     newRank = obj.rankName;
                 }
-                return Json(new { status = true, data = new { marking.IsAllCorrect, marking.ResultContent, marking.Score, marking.IsError, pointGain, isGainRank, newRank } });
+                return Json(new { status = true, data = new { marking.IsAllCorrect, marking.ResultContent, marking.Score, marking.IsError, pointGain, isGainRank, newRank, newId = marking.Id } });
             }
             catch (Exception ex)
             {

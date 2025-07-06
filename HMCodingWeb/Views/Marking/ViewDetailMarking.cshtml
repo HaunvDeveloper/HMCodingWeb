@@ -1,0 +1,279 @@
+﻿@model HMCodingWeb.Models.Marking
+@{
+    ViewData["Title"] = "Xem chi tiết chấm bài";
+}
+
+<div class="container mt-5 p-3">
+    <div class="card marking-card shadow-sm">
+        <div class="card-body">
+            <h1 class="title text-center mb-3">
+                <b>XEM CHI TIẾT CHẤM BÀI</b>
+            </h1>
+            <div class="mb-3 d-flex justify-content-between">
+                <!-- Thông tin bài nộp -->
+                <div>
+                    <h6><strong>Tên bài:</strong> @Model.Exercise.ExerciseName</h6>
+                    <h6><strong>Người làm bài:</strong> @Model.User.Fullname</h6>
+                </div>
+
+                <a class="btn btn-dark" asp-action="Index">Quay lại</a>
+            </div>
+            <hr class="border-light">
+            <div id="marking-container" class="d-flex flex-column gap-3">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status" id="loadingSpinner">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3">
+                <h5 class="text-danger">Điều lệ xem chi tiết bài chấm</h5>
+                <ul>
+                    <li>Người dùng chỉ có thể xem những testcase đã được chấm đúng.</li>
+                    <li>Những testcase không đúng sẽ hiển thị "Không được xem".</li>
+                    <li>Testcase sẽ được hiển thị với các thông tin: Input, Output, Correct Output, Status, Runtime.</li>
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Links {
+    <style>
+        
+        .marking-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            padding: 2rem;
+        }
+
+        .title {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            width: 100%;
+            text-align: center;
+            font-weight: 700;
+            user-select: none;
+        }
+
+        .border-light {
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .test-case-card {
+            background-color: #34495e;
+            border: 1px solid #3498db;
+            border-radius: 8px;
+            padding: 1rem;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+            .test-case-card.show {
+                opacity: 1;
+            }
+
+            .test-case-card label{
+                color:#fff;
+            }
+
+        .textarea-container {
+            background-color: #2c3e50;
+            border-radius: 5px;
+            padding: 0.5rem;
+        }
+
+        textarea.form-control {
+            background-color: #2c3e50;
+            border: 1px solid #3498db;
+            border-radius: 5px;
+            resize: none;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+        }
+
+            textarea.form-control:focus {
+                border-color: #2980b9;
+                box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+            }
+
+        .badge-success {
+            background-color: #28a745;
+        }
+
+        .badge-danger {
+            background-color: #e74c3c;
+        }
+
+        .text-muted {
+            color: #b0b0b0 !important;
+        }
+
+        #loadingSpinner {
+            display: none;
+        }
+
+        @@media (max-width: 768px) {
+            .marking-card
+
+        {
+            padding: 1rem;
+        }
+
+        .row-cols-1 > * {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+
+        textarea.form-control {
+            min-height: 100px;
+        }
+
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var markingId = @Model.Id;
+            loadMarking(markingId);
+        });
+
+        function loadMarking(id) {
+            $('#loadingSpinner').show();
+            $.ajax({
+                url: '/Marking/_GetViewDetailMarking',
+                method: 'GET',
+                data: { id: id },
+                success: function (res) {
+                    $('#loadingSpinner').hide();
+                    if (res.status) {
+                        renderMarking(res.data);
+                    } else {
+                        $('#marking-container').html(`
+                            <div class="alert alert-warning text-center" role="alert">
+                                ${res.error || 'Không có dữ liệu.'}
+                            </div>
+                        `);
+                    }
+                },
+                error: function () {
+                    $('#loadingSpinner').hide();
+                    $('#marking-container').html(`
+                        <div class="alert alert-danger text-center" role="alert">
+                            Đã xảy ra lỗi khi tải dữ liệu.
+                        </div>
+                    `);
+                }
+            });
+        }
+
+        function renderMarking(details) {
+            var container = $('#marking-container');
+            container.empty();
+
+            if (!details || details.length === 0) {
+                container.append(`
+                    <div class="alert alert-info text-center" role="alert">
+                        Không có dữ liệu chấm bài.
+                    </div>
+                `);
+                return;
+            }
+
+            details.forEach(function (item, index) {
+                var status;
+                if (item.isCorrect) {
+                    status = `<span class="badge badge-success">✅ Đúng</span>`;
+                } else if(item.isTimeLimitExceed){
+                    status = `<span class="badge bg-warning">❌ Quá thời gian</span>`;
+                }else if(item.isError) {
+                    status = `<span class="badge badge-danger">❌ Lỗi</span>`;
+                }
+                else {
+                    status = `<span class="badge bg-warning">❌ Sai</span>`;
+                }
+                var output = item.isError ? item.errorContent : item.output;
+                var isOverLength = item.input.length > 50 || item.output.length > 50 || item.correctOutput.length > 50;
+                var card = `
+                    <div class="test-case-card card mb-3">
+                        <div class="card-body">
+                            <h4 class="text-light">Test Case #${item.testCaseIndex}</h4>
+                            <div class="row row-cols-1 row-cols-md-3 g-3">
+                                <div class="col">
+                                    <label class="form-label">Input</label>
+                                    <div class="textarea-container">
+                                        <textarea class="form-control frm-input" rows="4" disabled>${escapeHtml(item.input)}</textarea>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <label class="form-label">Output</label>
+                                    <div class="textarea-container">
+                                        <textarea class="form-control frm-output" rows="4" disabled>${escapeHtml(output)}</textarea>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <label class="form-label">Correct Output</label>
+                                    <div class="textarea-container">
+                                        <textarea class="form-control frm-correct-output" rows="4" disabled>${escapeHtml(item.correctOutput)}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3 text-muted d-flex gap-2 align-items-center flex-wrap">
+                                <span>${status}</span>
+                                <span class="badge bg-secondary">Runtime: ${item.runTime}</span>
+                                ${isOverLength ? ` <button data-id="${item.id}" class="btn-load-full badge bg-warning btn-link me-3">Xem toàn bộ</button>` : ''}
+                               
+
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.append(card);
+            });
+            $(container).find('.test-case-card').each(function (index, card) {
+                setTimeout(() => {
+                    $(card).addClass('show');
+                }, 100 * index);
+            });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/&/g, "&amp;")
+                       .replace(/</g, "&lt;")
+                       .replace(/>/g, "&gt;")
+                       .replace(/"/g, "&quot;")
+                       .replace(/'/g, "&#039;");
+        }
+
+        $(document).on('click', '.btn-load-full', function (){
+            var btn = $(this);
+            $(btn).text('Đang tải...').prop('disabled', true);
+            $.ajax({
+                url: '/Marking/GetFullTestCase',
+                method: 'POST',
+                data: {markingDetailId: $(btn).data('id')},
+                success: function(response){
+                    if(response.status){
+                        var card = (btn).closest('.test-case-card');
+                        $(card).find('.frm-input').val(response.data.input);
+                        var output = response.data.isError ? response.data.errorContent : response.data.output;
+                        $(card).find('.frm-output').val(output);
+                        $(card).find('.frm-correct-output').val(response.data.correctOutput);
+                        $(btn).remove();
+                    }
+                    else {
+                        alert(response.error || 'Không thể tải dữ liệu.');
+                        $(btn).text('Xem toàn bộ').prop('disabled', false);
+                    }
+                },
+                error: function(){
+                    alert('Đã xảy ra lỗi khi tải dữ liệu.');
+                    $(btn).text('Xem toàn bộ').prop('disabled', false);
+                },
+            })
+        });
+    </script>
+}

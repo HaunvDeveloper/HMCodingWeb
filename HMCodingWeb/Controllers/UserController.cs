@@ -497,7 +497,7 @@ namespace HMCodingWeb.Controllers
             user.Password = password;
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
-            return RedirectToAction("Details", new { id = currentUserId });
+            return RedirectToAction("Details", "UserInfo", new { id = currentUserId });
         }
     }
 }

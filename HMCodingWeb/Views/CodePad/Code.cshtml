@@ -1,5 +1,6 @@
 ﻿@model Codepad
 @{
+    ViewData["Title"] = $"Codepad  {(Model != null ? Model.FileName : "")}"; 
     var listTheme = ViewBag.ListTheme as List<Theme>;
     var programLanguageList = ViewBag.ProgramLanguageList as List<ProgramLanguage>;
     var userInfo = ViewBag.UserInfo as User;
@@ -375,15 +376,7 @@
         });
 
 
-        document.addEventListener('keydown', function(event) {
-            if (event.ctrlKey && event.key === 's') {
-                event.preventDefault(); // Prevent browser's default save action
-                const saveAsButton = document.getElementById('save-as');
-                if (saveAsButton) {
-                    saveAsButton.click();
-                }
-            }
-        })
+
 
         document.getElementById("save-as").addEventListener("click", async function () {
             var { value: fileName } = await Swal.fire({

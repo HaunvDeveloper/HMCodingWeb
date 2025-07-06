@@ -1,0 +1,33 @@
+﻿<!-- Add Chapter Modal -->
+<div class="modal fade" id="addChapterModal" tabindex="-1" aria-labelledby="addChapterModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addChapterModalLabel">Tạo Chương mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addChapterForm" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="chapterCode" class="form-label">Mã chương</label>
+                        <input type="text" class="form-control" id="chapterCode" placeholder="Enter chapter code" required />
+                        <div class="invalid-feedback">Please enter a ChapterCode code.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="chapterName" class="form-label">Tên chương</label>
+                        <input type="text" class="form-control" id="chapterName" placeholder="Enter chapter name" required />
+                        <div class="invalid-feedback">Please enter a chapter name.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="chapterDescription" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="chapterDescription" placeholder="Enter chapter description" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveChapterBtn">Save Chapter</button>
+            </div>
+        </div>
+    </div>
+</div>

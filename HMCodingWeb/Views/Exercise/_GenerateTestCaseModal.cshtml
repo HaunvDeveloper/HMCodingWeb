@@ -1,0 +1,42 @@
+﻿<div class="modal fade" id="generateRandomModal" tabindex="-1" aria-labelledby="generateRandomModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="generateRandomModalLabel">Tạo Dữ Liệu Ngẫu Nhiên</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <form id="randomDataForm">
+                    <div class="mb-3">
+                        <label for="count" class="form-label">Số lượng số cần tạo</label>
+                        <input type="number" class="form-control" id="count" required min="1" value="10">
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="printCountCheckbox" checked>
+                        <label class="form-check-label user-select-none" for="printCountCheckbox">
+                            In ra số lượng phần tử ở dòng đầu tiên
+                        </label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Khoảng giá trị</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="minValue" required value="1">
+                            <span class="input-group-text">đến</span>
+                            <input type="number" class="form-control" id="maxValue" required value="100">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="separator" class="form-label">Ký tự phân cách</label>
+                        <input type="text" class="form-control" id="separator" value=" " placeholder="Mặc định là khoảng trắng">
+                        <small>Nhập các ký tự phân cách như khoẳng trắng hoặc ký tự \n \t...</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="generateRandomBtn">Tạo và Chèn</button>
+            </div>
+        </div>
+    </div>
+</div>
