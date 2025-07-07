@@ -52,7 +52,7 @@
                 <div class="navbar-collapse collapse" id="navbarColor01">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link @(currentController == "Home" && ViewData["currentAction"]?.ToString() == "Index" ? "active" : "")" asp-action="Index" asp-controller="Home">
+                            <a class="nav-link @(currentController == "Home" ? "active" : "")" asp-action="Index" asp-controller="Home">
                                 Trang chủ
                             </a>
                         </li>
@@ -89,7 +89,8 @@
                                 <img id="userAvatar"
                                      src="~/assets/images/avartardefault.jpg"
                                      class="rounded-circle"
-                                     alt="User Avatar" />
+                                     alt="User Avatar"
+                                     loading="lazy" />
                                 @User.FindFirst(ClaimTypes.Name)?.Value
                             </a>
                             <div class="dropdown-menu dropdown-menu-end">

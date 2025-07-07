@@ -135,8 +135,24 @@
                 {
                         "data": "avatar",
                         "render": function (data, type, row) {
-                            return data ? `<a href="/userinfo/details/${row.userId}"><img src="data:image/jpeg;base64,${data}" class="avatar-img" alt="Avatar" /></a>`
-                                        : `<a href="/userinfo/details/${row.userId}"><img src="/assets/images/avartardefault.jpg" class="avatar-img" alt="Default Avatar" /></a>`;
+                            if (!data) {
+                                return `<a href="/userinfo/details/${row.userId}">
+                                            <img src="/assets/images/avartardefault.jpg" class="avatar-img" alt="Default Avatar"  loading="lazy"/>
+                                        </a>`;
+                            }
+                            // Tạo blob URL
+                            const byteCharacters = atob(data);
+                            const byteNumbers = new Array(byteCharacters.length);
+                            for (let i = 0; i < byteCharacters.length; i++) {
+                                byteNumbers[i] = byteCharacters.charCodeAt(i);
+                            }
+                            const byteArray = new Uint8Array(byteNumbers);
+                            const blob = new Blob([byteArray], { type: 'image/jpeg' });
+                            const blobUrl = URL.createObjectURL(blob);
+
+                            return `<a href="/userinfo/details/${row.userId}">
+                                        <img src="${blobUrl}" class="avatar-img" alt="Avatar" loading="lazy"/>
+                                    </a>`;
                         },
                         "orderable": false // Avatar column is not sortable
                     },

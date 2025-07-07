@@ -3,16 +3,17 @@
 }
 
 @section Links {
-    <link rel="stylesheet" href="~/css/ranking-user-list.css?v=1.0.0"/>
+    <link rel="stylesheet" href="~/css/ranking-user-list.css?v=1.0.0" />
     <style>
-        .rank-icon-img{
+        .rank-icon-img {
             width: 70px !important;
             height: 70px !important;
         }
-        .rank-icon-img.supreme{
+
+            .rank-icon-img.supreme {
                 width: 80px !important;
                 height: 80px !important;
-        }
+            }
     </style>
 }
 
@@ -64,18 +65,35 @@
                     {
                         "data": "avatar",
                         "render": function (data, type, row) {
-                            return data ? `<a href="/userinfo/details/${row.id}"><img src="data:image/jpeg;base64,${data}" class="avatar-img" alt="Avatar" /></a>`
-                                        : `<a href="/userinfo/details/${row.id}"><img src="/assets/images/avartardefault.jpg" class="avatar-img" alt="Default Avatar" /></a>`;
+                            if (!data) {
+                                return `<a href="/userinfo/details/${row.id}">
+                                            <img src="/assets/images/avartardefault.jpg" class="avatar-img" alt="Default Avatar"  loading="lazy"/>
+                                        </a>`;
+                            }
+                            // Tạo blob URL
+                            const byteCharacters = atob(data);
+                            const byteNumbers = new Array(byteCharacters.length);
+                            for (let i = 0; i < byteCharacters.length; i++) {
+                                byteNumbers[i] = byteCharacters.charCodeAt(i);
+                            }
+                            const byteArray = new Uint8Array(byteNumbers);
+                            const blob = new Blob([byteArray], { type: 'image/jpeg' });
+                            const blobUrl = URL.createObjectURL(blob);
+
+                            return `<a href="/userinfo/details/${row.id}">
+                                        <img src="${blobUrl}" class="avatar-img" alt="Avatar" loading="lazy"/>
+                                    </a>`;
                         },
+
                         "orderable": false // Avatar column is not sortable
                     },
-                    { 
+                    {
                         "data": "username",
                         "render": function (data, type, row) {
                             return `<a href="/userinfo/details/${row.id}" class="view-detail">${data}</a>`;
                         }
                     },
-                    { 
+                    {
                         "data": "fullname",
                         "render": function (data, type, row) {
                             return `<a href="/userinfo/details/${row.id}" class="view-detail">${data}</a>`;
@@ -91,18 +109,18 @@
                             `;
                         }
                     },
-                    { 
+                    {
                         "data": "rankName",
                         "render": function (data, type, row) {
                             return `
                                 <img class="rank-icon-img ${row.rankCode}" src="/assets/rankicon/${row.rankCode}.png" alt="${data}" title="${data}" data-id="${row.rankId}"/>
-                                    
-                                
+
+
                             `;
                         },
                         "orderable": false // Rank icon column is not sortable"
                     },
-                    
+
                 ],
                 "language": {
                     "emptyTable": "Không có dữ liệu",
@@ -116,7 +134,7 @@
             });
 
 
-        
+
         });
          $(document).on('click', '.rank-icon-img', function(event,element) {
                 window.location.href = `/rank?id=` + $(this).data('id');

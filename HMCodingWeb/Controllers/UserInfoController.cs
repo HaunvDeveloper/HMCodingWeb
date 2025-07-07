@@ -102,7 +102,10 @@ namespace HMCodingWeb.Controllers
 
                 // Update fields
                 existingUser.Fullname = user.Fullname;
-                existingUser.Email = user.Email;
+                if(string.IsNullOrEmpty(existingUser.Email))
+                {
+                    existingUser.Email = user.Email;
+                }
                 existingUser.PhoneNumber = user.PhoneNumber;
                 existingUser.Birthday = user.Birthday;
                 existingUser.ProgramLanguageId = user.ProgramLanguageId;

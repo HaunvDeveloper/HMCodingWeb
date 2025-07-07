@@ -114,7 +114,6 @@ public partial class OnlineCodingWebContext : DbContext
             entity.ToTable("Chapter");
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.ChapterCode).HasMaxLength(50);
             entity.Property(e => e.ChapterName).HasMaxLength(50);
             entity.Property(e => e.Description).HasMaxLength(256);
         });

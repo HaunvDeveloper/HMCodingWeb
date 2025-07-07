@@ -624,8 +624,8 @@ namespace HMCodingWeb.Services
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = $"{GetCompilerPath("g++")}",
-                    Arguments = $" \"{model.FileName}\" -o \"{Path.ChangeExtension(model.FileName, "exe")}\" -std=c++14",
+                    FileName = "sudo",
+                    Arguments = $"-u sandbox {GetCompilerPath("g++")} \"{model.FileName}\" -o \"{Path.ChangeExtension(model.FileName, "exe")}\" -std=c++14",
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,

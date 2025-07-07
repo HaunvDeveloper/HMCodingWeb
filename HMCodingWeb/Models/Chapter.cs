@@ -7,7 +7,7 @@ public partial class Chapter
 {
     public int Id { get; set; }
 
-    public string ChapterCode { get; set; } = null!;
+    public int ChapterCode { get; set; }
 
     public string ChapterName { get; set; } = null!;
 

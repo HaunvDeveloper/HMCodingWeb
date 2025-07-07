@@ -52,7 +52,7 @@ namespace HMCodingWeb.Controllers
                 Value = x.Id.ToString(),
                 Text = x.DifficultyName
             }).ToList();
-            ViewBag.Chapters = _context.Chapters.Select(x => new SelectListItem()
+            ViewBag.Chapters = _context.Chapters.OrderBy(x => x.ChapterCode).Select(x => new SelectListItem()
             {
                 Value = x.Id.ToString(),
                 Text = x.ChapterName
@@ -343,7 +343,7 @@ namespace HMCodingWeb.Controllers
             ViewBag.AccessRole = _context.AccessRoles.ToList();
             ViewBag.Difficulty = _context.DifficultyLevels.ToList();
             ViewBag.ExerciseType = _context.ExerciseTypes.ToList();
-            ViewBag.Chapter = _context.Chapters.ToList();
+            ViewBag.Chapter = _context.Chapters.OrderBy(x => x.ChapterCode).ToList();
             ViewBag.KindMarking = new List<string> { "io", "acm" };
             ViewBag.TypeMarking = new List<string> { "Tương đối", "Chính xác" };
             ViewBag.ProgramLanguageList = _context.ProgramLanguages.ToList();
@@ -416,7 +416,7 @@ namespace HMCodingWeb.Controllers
             ViewBag.AccessRole = _context.AccessRoles.ToList();
             ViewBag.Difficulty = _context.DifficultyLevels.ToList();
             ViewBag.ExerciseType = _context.ExerciseTypes.ToList();
-            ViewBag.Chapter = _context.Chapters.ToList();
+            ViewBag.Chapter = _context.Chapters.OrderBy(x => x.ChapterCode).ToList();
             ViewBag.KindMarking = new List<string> { "io", "acm" };
             ViewBag.TypeMarking = new List<string> { "Tương đối", "Chính xác" };
             ViewBag.ProgramLanguageList = _context.ProgramLanguages.ToList();
