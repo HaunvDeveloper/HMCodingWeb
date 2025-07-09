@@ -82,7 +82,7 @@ namespace HMCodingWeb.Controllers
                 .Select(u => new
                 {
                     id = u.Id,
-                    avatar = u.AvartarImage != null ? Convert.ToBase64String(u.AvartarImage) : null,
+                    avatar = $"/api/avatar/{u.Id}",
                     username = u.Username,
                     fullname = u.Fullname ?? "N/A",
                     programLanguage = u.ProgramLanguage != null ? u.ProgramLanguage.ProgramLanguageName : "N/A",

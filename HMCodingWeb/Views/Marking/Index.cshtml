@@ -133,29 +133,14 @@
             "columns": [
                 { "data": "markingDate" },
                 {
-                        "data": "avatar",
-                        "render": function (data, type, row) {
-                            if (!data) {
-                                return `<a href="/userinfo/details/${row.userId}">
-                                            <img src="/assets/images/avartardefault.jpg" class="avatar-img" alt="Default Avatar"  loading="lazy"/>
-                                        </a>`;
-                            }
-                            // Tạo blob URL
-                            const byteCharacters = atob(data);
-                            const byteNumbers = new Array(byteCharacters.length);
-                            for (let i = 0; i < byteCharacters.length; i++) {
-                                byteNumbers[i] = byteCharacters.charCodeAt(i);
-                            }
-                            const byteArray = new Uint8Array(byteNumbers);
-                            const blob = new Blob([byteArray], { type: 'image/jpeg' });
-                            const blobUrl = URL.createObjectURL(blob);
-
-                            return `<a href="/userinfo/details/${row.userId}">
-                                        <img src="${blobUrl}" class="avatar-img" alt="Avatar" loading="lazy"/>
-                                    </a>`;
-                        },
-                        "orderable": false // Avatar column is not sortable
+                    "data": "userId",
+                    "render": function (userId, type, row) {
+                        return `<a href="/userinfo/details/${userId}">
+                                    <img src="/api/avatar/${userId}" onerror="this.onerror=null;this.src='/assets/images/avartardefault.jpg';" class="avatar-img" alt="Avatar" loading="lazy" />
+                                </a>`;
                     },
+                    "orderable": false
+                },
                 {
                     "data": "userFullname",
                     "render": function (data, type, row) {

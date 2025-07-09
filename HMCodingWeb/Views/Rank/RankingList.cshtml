@@ -65,24 +65,9 @@
                     {
                         "data": "avatar",
                         "render": function (data, type, row) {
-                            if (!data) {
-                                return `<a href="/userinfo/details/${row.id}">
-                                            <img src="/assets/images/avartardefault.jpg" class="avatar-img" alt="Default Avatar"  loading="lazy"/>
-                                        </a>`;
-                            }
-                            // Tạo blob URL
-                            const byteCharacters = atob(data);
-                            const byteNumbers = new Array(byteCharacters.length);
-                            for (let i = 0; i < byteCharacters.length; i++) {
-                                byteNumbers[i] = byteCharacters.charCodeAt(i);
-                            }
-                            const byteArray = new Uint8Array(byteNumbers);
-                            const blob = new Blob([byteArray], { type: 'image/jpeg' });
-                            const blobUrl = URL.createObjectURL(blob);
-
-                            return `<a href="/userinfo/details/${row.id}">
-                                        <img src="${blobUrl}" class="avatar-img" alt="Avatar" loading="lazy"/>
-                                    </a>`;
+                             return `<a href="/userinfo/details/${row.id}">
+                                    <img src="/api/avatar/${row.id}" onerror="this.onerror=null;this.src='/assets/images/avartardefault.jpg';" class="avatar-img" alt="Avatar" loading="lazy" />
+                                </a>`;
                         },
 
                         "orderable": false // Avatar column is not sortable

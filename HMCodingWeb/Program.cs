@@ -51,16 +51,22 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
 builder.Services.AddMemoryCache();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme,
-    options =>
+    .AddCookie(options =>
     {
         options.LoginPath = "/login";
         options.AccessDeniedPath = "/";
-        options.ExpireTimeSpan = TimeSpan.FromHours(3);
+        options.ExpireTimeSpan = TimeSpan.FromDays(3); // 3 ngày
         options.SlidingExpiration = true;
+
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Strict;
+        options.Cookie.Name = "HMCodingAuthCookie";
     });
+
 
 
 
