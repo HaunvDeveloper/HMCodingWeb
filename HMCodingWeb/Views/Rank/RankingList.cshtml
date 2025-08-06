@@ -65,8 +65,9 @@
                     {
                         "data": "avatar",
                         "render": function (data, type, row) {
+                            var avatarUrl = data || '/assets/images/avartardefault.jpg';
                              return `<a href="/userinfo/details/${row.id}">
-                                    <img src="/api/avatar/${row.id}" onerror="this.onerror=null;this.src='/assets/images/avartardefault.jpg';" class="avatar-img" alt="Avatar" loading="lazy" />
+                                    <img src="${avatarUrl}" class="avatar-img" alt="Avatar" loading="lazy" />
                                 </a>`;
                         },
 

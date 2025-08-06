@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = Model.Fullname;
+    var lastOnline = ViewBag.LastOnline as string;
     var authName = new Dictionary<string, string>
     {
         { "admin", "Quản trị viên" },
@@ -22,10 +23,10 @@
 
 @section Links {
 
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="~/css/user-details.css?v=1.0.0" />
-<link rel="stylesheet" href="~/css/rank.css?v=1.0.0" />
+    <link rel="stylesheet" href="~/css/user-details.css"  asp-append-version="true"/>
+    <link rel="stylesheet" href="~/css/rank.css" asp-append-version="true" />
 }
 
 <div id="user-detail-container" class="container">
@@ -35,21 +36,39 @@
             <div class="user-card card">
                 <div class="card-header">
                     <h3>THÔNG TIN</h3>
+                    
                 </div>
                 <div class="card-body">
-                    @if (Model.AvartarImage != null)
-                    {
-                        <img src="/api/avatar/@(Model.Id)?v=@(DateTime.Now.Ticks)"
-                        class="img-fluid rounded-circle"
-                        alt="User Avatar" />
-                    }
-                    else
-                    {
-                        <img src="~/assets/images/avartardefault.jpg"
-                        class="img-fluid rounded-circle"
-                        alt="Default Avatar" />
-                    }
+                    <div class="avatar-wrapper position-relative d-inline-block">
+                        @if (Model.AvartarImage != null)
+                        {
+                            <img src="/api/avatar/@(Model.Id)?v=@(DateTime.Now.Ticks)"
+                                 class="img-fluid rounded-circle avatar-img"
+                                 alt="User Avatar" />
+                        }
+                        else
+                        {
+                            <img src="~/assets/images/avartardefault.jpg"
+                                 class="img-fluid rounded-circle avatar-img"
+                                 alt="Default Avatar" />
+                        }
+
+                        @if (!string.IsNullOrEmpty(lastOnline) && ViewBag.LastOnline.ToString() == "Online")
+                        {
+                            <span class="online-dot"></span>
+                        }
+                        else if (!string.IsNullOrEmpty(lastOnline))
+                        {
+                            <span class="offline-badge badge bg-secondary">
+                                @lastOnline
+                            </span>
+                        }
+                    </div>
+
+
                     <h3 class="text-success">@Model.Fullname</h3>
+
+                    
 
                     <!--Authentication info-->
 

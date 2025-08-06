@@ -413,7 +413,7 @@ span.active{
     flex-direction: column;
     align-items: center;
     justify-self: center;
-    overflow: auto;
+    overflow: hidden;
 }
 #content-container {
     margin: 1rem;

@@ -52,9 +52,11 @@ namespace HMCodingWeb.Controllers
             {
                 return NotFound();
             }
-
+            
             var (currentRank, nextRank, missingPrerequisites) = await _rankingService.GetNextRankPrerequisites(id ?? 0);
 
+            var isOnline = _onlineUsersService.GetOnlineUsers().Any(u => u.UserId == id.ToString());
+            ViewBag.LastOnline = isOnline ? "Online" : TimeAgo(user.LastOnline);
             ViewBag.CurrentRank = currentRank;
             ViewBag.NextRank = nextRank;
             ViewBag.MissingPrerequisites = missingPrerequisites;
@@ -156,6 +158,27 @@ namespace HMCodingWeb.Controllers
 
             return Json(new { status = true, avatar = Convert.ToBase64String(user.AvartarImage) });
         }
+
+        private string TimeAgo(DateTime? lastOnline)
+        {
+            if (lastOnline == null)
+                return "";
+            var ts = DateTime.Now - lastOnline.Value;
+
+            if (ts.TotalSeconds < 60)
+                return $"{(int)ts.TotalSeconds} giây";
+            else if (ts.TotalMinutes < 60)
+                return $"{(int)ts.TotalMinutes} phút";
+            else if (ts.TotalHours < 24)
+                return $"{(int)ts.TotalHours} giờ";
+            else if (ts.TotalDays < 30)
+                return $"{(int)ts.TotalDays} ngày";
+            else if (ts.TotalDays < 365)
+                return $"{(int)(ts.TotalDays / 30)} tháng";
+            else
+                return $"{(int)(ts.TotalDays / 365)} năm";
+        }
+
 
     }
 }

@@ -31,16 +31,23 @@ namespace HMCodingWeb.Controllers
         }
 
         [AllowAnonymous]
-        public IActionResult Index(long exId, long uId)
+        public IActionResult Index(long exId, bool myPost)
         {
             ViewBag.ExerciseId = exId;
-            ViewBag.UserId = uId;
+            if(exId > 0)
+            {
+                ViewBag.ExerciseCode = _context.Exercises
+                    .Where(e => e.Id == exId)
+                    .Select(e => e.ExerciseCode)
+                    .FirstOrDefault() ?? "Bài tập không tồn tại";
+            }
+            ViewBag.IsMyPost = myPost ? "checked" : "";
             return View();
         }
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> _GetList(long userId = 0, long exerciseId = 0, int start = 0, int length = 25, string keyword = "", [FromForm] Dictionary<string, string>[] order = null)
+        public async Task<IActionResult> _GetList(long userId = 0, long exerciseId = 0, int start = 0, int length = 25, string keyword = "", bool isMyPost = false, bool isCorrectOnly = false, [FromForm] Dictionary<string, string>[] order = null)
         {
             var draw = Request.Form["draw"].ToString();
             var query = _context.Markings
@@ -49,11 +56,21 @@ namespace HMCodingWeb.Controllers
                 .Include(mk => mk.ProgramLanguage)
                 .AsQueryable();
 
-
-            if(userId > 0)
+            if(isMyPost)
+            {
+                long currentUserId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+                query = query.Where(mk => mk.UserId == currentUserId);
+            }
+            else if (userId > 0)
             {
                 query = query.Where(mk => mk.UserId == userId);
             }
+
+            if (isCorrectOnly)
+            {
+                query = query.Where(mk => mk.IsAllCorrect == true);
+            }
+
             if (exerciseId > 0)
             {
                 query = query.Where(mk => mk.ExerciseId == exerciseId);
@@ -78,15 +95,7 @@ namespace HMCodingWeb.Controllers
                     var columnIndex = int.Parse(order[i]["column"]);
                     var direction = order[i]["dir"].ToLower();
                     var columnName = _markingService.GetColumnName(columnIndex);
-
-                    if (i == 0)
-                    {
-                        orderedQuery = _markingService.ApplyOrder(query, columnName, direction);
-                    }
-                    else
-                    {
-                        orderedQuery = _markingService.ApplyThenOrder(orderedQuery, columnName, direction);
-                    }
+                    orderedQuery = _markingService.ApplyOrder(query, columnName, direction);
                 }
                 query = orderedQuery ?? query;
             }
@@ -107,7 +116,7 @@ namespace HMCodingWeb.Controllers
                         MarkingDate = x.MarkingDate.ToString("HH:mm:ss dd-MM-yyyy"),
                         UserName = x.User.Username,
                         UserFullname = x.User.Fullname,
-                        Avatar = $"/api/avatar/{x.UserId}",
+                        Avatar = x.User.AvartarImage != null ? $"/api/avatar/{x.UserId}" : null,
                         ExerciseName = x.Exercise.ExerciseName,
                         ExerciseCode = x.Exercise.ExerciseCode,
                         ProgramLanguageName = x.ProgramLanguage.ProgramLanguageName,
@@ -180,8 +189,24 @@ namespace HMCodingWeb.Controllers
         {
             var marking = _context.Markings
                 .Include(m => m.Exercise)
+                .Include(p => p.ProgramLanguage)
                 .Include(m => m.User)
                 .FirstOrDefault(m => m.Id == id);
+
+            long userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            string userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? string.Empty;
+            var isUserDone = _context.Markings
+                .Any(x => x.IsAllCorrect == true && x.ExerciseId == marking.ExerciseId && x.UserId == userId);
+            if (!(marking?.UserId == userId || userRole == "admin" || userRole == "teacher" || isUserDone))
+            {
+                return Unauthorized();
+            }
+            var userTheme = _context.Users
+                .Include(u => u.ThemeCode)
+                .Where(u => u.Id == userId)
+                .Select(u => u.ThemeCode.ThemeCode)
+                .FirstOrDefault();
+            ViewBag.Theme = "ace/theme/" + userTheme;
             return View(marking);
         }
 

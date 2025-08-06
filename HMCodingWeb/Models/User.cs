@@ -41,6 +41,8 @@ public partial class User
 
     public byte[]? AvartarImage { get; set; }
 
+    public DateTime? LastOnline { get; set; }
+
     public virtual ICollection<Announcement> Announcements { get; set; } = new List<Announcement>();
 
     public virtual Authority Auth { get; set; } = null!;

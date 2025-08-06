@@ -15,7 +15,7 @@
             while (!stoppingToken.IsCancellationRequested)
             {
                 var users = _onlineUsersService.GetOnlineUsers();
-                var now = DateTime.UtcNow;
+                var now = DateTime.Now;
                 var inactiveUsers = users.Where(u => (now - u.LastActive) > _inactivityTimeout).ToList();
 
                 foreach (var user in inactiveUsers)

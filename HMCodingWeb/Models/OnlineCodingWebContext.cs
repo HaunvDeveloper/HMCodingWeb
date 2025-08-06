@@ -460,6 +460,7 @@ public partial class OnlineCodingWebContext : DbContext
                 .HasMaxLength(100)
                 .IsUnicode(false);
             entity.Property(e => e.Fullname).HasMaxLength(256);
+            entity.Property(e => e.LastOnline).HasColumnType("datetime");
             entity.Property(e => e.Otp)
                 .HasMaxLength(6)
                 .IsUnicode(false)

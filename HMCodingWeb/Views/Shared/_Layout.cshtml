@@ -183,6 +183,7 @@
                     return "badge bg-secondary";
             }
         }
+
         function getTitleByAuth(auth){
             switch (auth) {
                 case "admin":
@@ -195,13 +196,16 @@
                     return "Người dùng";
             }
         }
-        // Kết nối tới SignalR Hub
+
+        const currentUserName = `@(User.FindFirst(ClaimTypes.Name)?.Value)`;
+        var listUserOnline = [];
+        
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/onlineUsersHub")
             .withAutomaticReconnect()
             .build();
 
-        // Xử lý khi nhận danh sách người dùng online
+        // Nhận danh sách người dùng online
         connection.on("ReceiveOnlineUsers", function (users) {
             const onlineUsersList = document.getElementById("onlineUsersList");
             if (users && users.length > 0) {
@@ -213,36 +217,73 @@
                         href="/userinfo/details/${user.userId}">
                         ${user.username}
                     </a>`);
-                onlineUsersList.innerHTML = userList;
+                onlineUsersList.innerHTML = userList.join(" ");
+                listUserOnline = users.map(user => user.username);
             } else {
                 onlineUsersList.textContent = "Không có";
+                listUserOnline = [];
             }
         });
-        
 
-        
-        // Bắt đầu kết nối
+        // Ping định kỳ (và khi tương tác)
+        let pingInterval;
+        let lastPingTime = 0;
+        const MIN_PING_INTERVAL = 30000; // 30 giây
+
+        function safePing() {
+            const now = Date.now();
+            
+            // Chỉ gửi Ping nếu đã đủ thời gian tối thiểu hoặc người dùng đã đăng nhập không có trong listUserOnline
+            if (now - lastPingTime >= MIN_PING_INTERVAL || (currentUserName && !listUserOnline.includes(currentUserName))) {
+                lastPingTime = now;
+                connection.invoke("Ping").catch(err => console.error("Ping lỗi:", err.toString()));
+            }
+        }
+
+        // Gọi khi kết nối thành công
         connection.start().then(function () {
-            // Gọi phương thức GetOnlineUsers khi kết nối thành công
             connection.invoke("GetOnlineUsers").catch(function (err) {
                 console.error(err.toString());
                 document.getElementById("onlineUsersList").textContent = "Lỗi khi tải danh sách người dùng";
+            });
+
+            // Ping định kỳ mỗi 60 giây
+            pingInterval = setInterval(safePing, 60000);
+
+            // Gọi Ping khi tab được mở lại
+            document.addEventListener("visibilitychange", function () {
+                if (document.visibilityState === "visible") {
+                    safePing();
+                }
+            });
+
+            // Gọi Ping khi người dùng tương tác
+            ['scroll', 'mousemove', 'keydown', 'click'].forEach(event => {
+                window.addEventListener(event, () => {
+                    safePing();
+                }, { passive: true });
             });
         }).catch(function (err) {
             console.error(err.toString());
             document.getElementById("onlineUsersList").textContent = "Lỗi kết nối SignalR";
         });
 
-        //Reconnect
+        // Reconnect
         connection.onreconnected(function () {
             console.log("Reconnected to SignalR Hub");
+
+            // Gọi lại GetOnlineUsers
             connection.invoke("GetOnlineUsers").catch(function (err) {
                 console.error(err.toString());
                 document.getElementById("onlineUsersList").textContent = "Lỗi khi tải danh sách người dùng";
             });
-        });
 
+            // Reset Ping sau reconnect
+            if (pingInterval) clearInterval(pingInterval);
+            pingInterval = setInterval(safePing, 60000);
+        });
     </script>
+
 
     @if (User.Identity?.IsAuthenticated ?? false)
     {
@@ -292,19 +333,7 @@
         </text>
     }
 
-    @if (TempData["UserLogin"] != null)
-    {
-        <script id="tempShowToast">
-            setTimeout(function () {
-                showToast("success", "Đăng nhập thành công", 3000);
-                $("#tempShowToast").remove();
-            }, 100);
-
-        </script>
-    }
-    @{
-        TempData.Remove("UserLogin");
-    }
+    
 
     @RenderSection("Scripts", required: false)
 </body>

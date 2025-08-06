@@ -43,20 +43,32 @@
 
 <div id="codepad" class="m-5 flex-center flex-column">
     <h1 class="title text-center">
-        <b>DANH&nbsp;SÁCH CHẤM&nbsp;BÀI</b>
+        <b>DANH&nbsp;SÁCH CHẤM&nbsp;BÀI <strong class="text-success">@(ViewBag.ExerciseCode)</strong></b>
     </h1>
 
     <div class="container mt-3 mb-3 table-responsive list">
+        <div class="d-flex justify-content-between mb-2">
+            <div></div>
+            <div>
+                <label class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="chkMyPost" @(ViewBag.IsMyPost)>
+                    <span class="form-check-label">Bài của tôi</span>
+                </label>
+                <label class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="chkCorrectOnly">
+                    <span class="form-check-label">Bài làm đúng</span>
+                </label>
+            </div>
+        </div>
+
         <table id="table-data" class="table table-sm table-hover table-border table-striped ml-5 mr-3">
             <thead>
                 <tr class="table-dark">
                     <th>Thời gian</th>
                     <th></th>
                     <th>Người dùng</th>
-                    <th>Mã bài</th>
                     <th>Tên bài</th>
-                    <th>Testcase Đúng</th>
-                    <th>Điểm</th>
+                    <th>Kết quả</th>
                     <th>Trạng thái</th>
                     <th>Ngôn ngữ</th>
                 </tr>
@@ -121,6 +133,10 @@
                     d.keyword = $('input[type="search"]').val();
                     d.userId = `@ViewBag.UserId` || null; // Pass userId if available`
                     d.exerciseId = `@ViewBag.ExerciseId` || null; // Pass exerciseId if available
+
+                    // Gửi thêm theo checkbox
+                    d.isMyPost = $('#chkMyPost').is(':checked');
+                    d.isCorrectOnly = $('#chkCorrectOnly').is(':checked');
                 },
                 "type": "POST",
                 "dataSrc": function (json) {
@@ -135,8 +151,9 @@
                 {
                     "data": "userId",
                     "render": function (userId, type, row) {
+                        var avatarUrl = row.avatar || '/assets/images/avartardefault.jpg'; // Fallback to default avatar if not available
                         return `<a href="/userinfo/details/${userId}">
-                                    <img src="/api/avatar/${userId}" onerror="this.onerror=null;this.src='/assets/images/avartardefault.jpg';" class="avatar-img" alt="Avatar" loading="lazy" />
+                                    <img src="${avatarUrl}" class="avatar-img" alt="Avatar" loading="lazy" />
                                 </a>`;
                     },
                     "orderable": false
@@ -144,36 +161,54 @@
                 {
                     "data": "userFullname",
                     "render": function (data, type, row) {
-                        return `<a href="/userinfo/details/${row.userId}">${data}</a>`;
+
+                        return `
+                            <a class="text-success fs-5" href="/userinfo/details/${row.userId}">${row.userName}</a><br>
+                            <small> ${data}</small>
+                            `;
                     }
-                },
-                {
-                    "data": "exerciseCode",
-                    "render": function (data, type, row) {
-                        return `<a href="/Exercise/Code/${row.exerciseId}">${data}</a>`;
-                    }
+                    ,"orderable": false
                 },
                 {
                     "data": "exerciseName",
                     "render": function (data, type, row) {
-                        return `<a href="/Exercise/Code/${row.exerciseId}">${data}</a>`;
-                    }
+                        return `
+                            <a class="text-danger fs-5" href="/exercise/code/${row.exerciseId}">${row.exerciseCode}</a><br>
+                            <small>${data}</small>
+                        `;
+                    },
+                    "orderable": false
                 },
-                { "data": "correctTestNumber" },
-                { "data": "score" },
+                { 
+                    "data": "score",
+                    "render": function (data, type, row) {
+                        if (row.status === 'Passed') {
+                            return `<b onclick="viewDetail(${row.markingId})" class="view-detail text-success">${data}</b>`;
+                        }  else if (row.status === 'Error') {
+                            return `<b onclick="viewDetail(${row.markingId})" class="view-detail text-danger">${data}</b>`;
+                        } else {
+                            return `<b onclick="viewDetail(${row.markingId})" class="view-detail text-warning">${data}</b>`;
+                        }
+                    },  
+                    "orderable": false 
+                },
                 {
                     "data": "status",
                     "render": function (data, type, row) {
                         if (data === 'Passed') {
-                            return `<b onclick="viewDetail(${row.markingId})" class="view-detail badge bg-success text-dark">${data}</b>`;
+                            return `<b onclick="viewDetail(${row.markingId})" class="view-detail badge bg-success text-dark">${data}</b><br>
+                            <b onclick="viewDetail(${row.markingId})" class="view-detail badge bg-success text-dark">${row.correctTestNumber}</b>`;
                         } else if (data === 'Error') {
-                            return `<b onclick="viewDetail(${row.markingId})" class="view-detail badge bg-danger">${data}</b>`;
+                            return `<b onclick="viewDetail(${row.markingId})" class="view-detail badge bg-danger">${data}</b><br>
+                            <b onclick="viewDetail(${row.markingId})" class="view-detail badge bg-danger">${row.correctTestNumber}</b>`;
                         } else {
-                            return `<b onclick="viewDetail(${row.markingId})" class="view-detail badge bg-warning">${data}</b>`;
+                            return `<b onclick="viewDetail(${row.markingId})" class="view-detail badge bg-warning">${data}</b><br>
+                            <b onclick="viewDetail(${row.markingId})" class="view-detail badge bg-warning">${row.correctTestNumber}</b>`;
                         }
-                    }
+                    },
+                    "orderable": false
                 },
-                { "data": "programLanguageName" }
+                { "data": "programLanguageName", "orderable": false }
             ],
             "language": {
                 "emptyTable": "Không có dữ liệu",
@@ -185,6 +220,12 @@
                 "zeroRecords": "Không tìm thấy kết quả"
             },
         });
+
+        // Khi tick vào checkbox thì reload lại bảng
+        $('#chkMyPost, #chkCorrectOnly').on('change', function () {
+            table.ajax.reload();
+        });
+
 
         // Initialize Ace Editor
         var editor = ace.edit("sourceCodeEditor");

@@ -19,8 +19,8 @@
 
 
 @section Links {
-    <link rel="stylesheet" href="~/css/exercise-code.css?v=1.0.0">
-    <link rel="stylesheet" href="~/css/button-extend.css?v=2">
+    <link rel="stylesheet" href="~/css/exercise-code.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/button-extend.css" asp-append-version="true">
 
 }
 @if (Model == null)
@@ -34,7 +34,7 @@
 }
 
 <div id="select-tab" class="">
-    <a class="text-light text-decoration-none" asp-action="Index" asp-controller="Marking" asp-route-exId="@Model.Id" asp-route-uId="@userInfo?.Id"><b>Xem các lần nộp</b></a>
+    <a class="text-light text-decoration-none" asp-action="Index" asp-controller="Marking" asp-route-exId="@Model.Id" asp-route-myPost="true"><b>Xem các lần nộp</b></a>
     <span id="view-title" class=""><b>Xem bài</b></span>
 
     <div class="checkbox-wrapper-38">
@@ -61,7 +61,7 @@
                     <p class="header-content-value">@Model.KindMarking</p>
                 </div>
                 <div class="header-content-child">
-                    <span><b>Thời gian:</b></span>
+                    <span><b>Giới hạn thời gian:</b></span>
                     <p class="header-content-value">@(Model.RuntimeLimit) giây</p>
                 </div>
                 <div class="header-content-child">
@@ -80,7 +80,7 @@
                 </div>
                 <div class="header-content-child">
                     <span><b>Dạng xuất:</b></span>
-                    <p class="header-content-value">@(!string.IsNullOrEmpty(Model.OutputFile)? Model.OutputFile : "stdout")</p>
+                    <p class="header-content-value">@(!string.IsNullOrEmpty(Model.OutputFile) ? Model.OutputFile : "stdout")</p>
                 </div>
             </div>
             @* <iframe id="content-iframe" style="width: 90%; border: none;" onload="resizeIframe(this)"></iframe> *@
@@ -791,7 +791,7 @@
                       behavior: "smooth" // thêm hiệu ứng mượt
                     });
                 }
-                
+
 
 
                 // Update progress bar
@@ -938,7 +938,7 @@
                                     block: 'center'     // 'start', 'center', 'end', 'nearest'
                                 });
                 });
-                
+
             } else {
                 addParamToCurrentUrl("tab", "view");
                 $("#view-title").addClass("active");
@@ -951,7 +951,7 @@
                                     block: 'center'     // 'start', 'center', 'end', 'nearest'
                                 });
                 });
-                
+
             }
         }
 

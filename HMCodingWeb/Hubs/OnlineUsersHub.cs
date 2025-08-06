@@ -39,10 +39,25 @@
             await base.OnDisconnectedAsync(exception);
         }
 
+        public async Task Ping()
+        {
+            var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var username = Context.User?.FindFirst(ClaimTypes.Name)?.Value;
+            var fullname = Context.User?.FindFirst(ClaimTypes.GivenName)?.Value;
+            var auth = Context.User?.FindFirst(ClaimTypes.Authentication)?.Value;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                _onlineUsersService.AddUser(userId, username, fullname, auth, Context.ConnectionId);
+            }
+        }
+
+
         public async Task GetOnlineUsers()
         {
             var users = _onlineUsersService.GetOnlineUsers();
             await Clients.Caller.SendAsync("ReceiveOnlineUsers", users.Select(u => new { u.UserId, u.Username, u.Fullname, u.Auth }));
         }
+
     }
 }
