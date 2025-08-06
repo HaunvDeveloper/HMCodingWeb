@@ -39,7 +39,7 @@ namespace HMCodingWeb.Services
                     Fullname = fullname,
                     Auth = auth,
                     ConnectionId = connectionId,
-                    LastActive = DateTime.UtcNow
+                    LastActive = DateTime.Now
                 });
                 _cache.Set(OnlineUsersKey, users, TimeSpan.FromHours(3));
                 _hubContext.Clients.All.SendAsync("ReceiveOnlineUsers", users.Select(u => new { u.UserId, u.Username, u.Fullname, u.Auth }));
@@ -48,7 +48,7 @@ namespace HMCodingWeb.Services
             {
                 // Cập nhật ConnectionId nếu người dùng đã tồn tại
                 user.ConnectionId = connectionId;
-                user.LastActive = DateTime.UtcNow;
+                user.LastActive = DateTime.Now;
                 _cache.Set(OnlineUsersKey, users, TimeSpan.FromHours(3));
                 _hubContext.Clients.All.SendAsync("ReceiveOnlineUsers", users.Select(u => new { u.UserId, u.Username, u.Fullname, u.Auth }));
             }

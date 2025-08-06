@@ -24,7 +24,7 @@ namespace HMCodingWeb.Middlewares
                 var user = users.FirstOrDefault(u => u.UserId == userId);
                 if (user != null)
                 {
-                    user.LastActive = DateTime.UtcNow;
+                    user.LastActive = DateTime.Now;
                     onlineUsersService.GetOnlineUsers(); // Cập nhật cache
                 }
                 else
