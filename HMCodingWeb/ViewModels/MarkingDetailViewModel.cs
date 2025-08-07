@@ -4,7 +4,7 @@ namespace HMCodingWeb.ViewModels
 {
     public class MarkingDetailViewModel
     {
-        public MarkingDetailViewModel(MarkingDetail markingDetail, int totalTestcase)
+        public MarkingDetailViewModel(MarkingDetail markingDetail, int totalTestcase, string sessionCode)
         {
             Id = markingDetail.Id;
             MarkingId = markingDetail.MarkingId;
@@ -16,6 +16,7 @@ namespace HMCodingWeb.ViewModels
             IsError = markingDetail.IsError;
             ErrorContent = markingDetail.ErrorContent;
             TotalTestcase = totalTestcase;
+            SessionCode = sessionCode;
         }
 
 
@@ -38,6 +39,8 @@ namespace HMCodingWeb.ViewModels
         public bool IsError { get; set; }
 
         public string? ErrorContent { get; set; }
+
+        public string SessionCode { get; set; }
 
     }
 

@@ -301,7 +301,7 @@ namespace HMCodingWeb.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Marking(long ExerciseId, int ProgramLanguageId, string SourceCode)
+        public async Task<IActionResult> Marking(long ExerciseId, int ProgramLanguageId, string SourceCode, string SessionCode)
         {
             try
             {
@@ -311,7 +311,7 @@ namespace HMCodingWeb.Controllers
                 }
                 HttpContext.Session.SetString("IsRunning", "true");
                 long userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-                var marking = await _markingService.Marking(ExerciseId, ProgramLanguageId, SourceCode, userId);
+                var marking = await _markingService.Marking(ExerciseId, ProgramLanguageId, SourceCode, userId, SessionCode);
                 HttpContext.Session.SetString("IsRunning", "false");
 
 

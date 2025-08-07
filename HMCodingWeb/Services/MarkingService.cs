@@ -122,7 +122,7 @@ namespace HMCodingWeb.Services
         }
 
 
-        public async Task<Marking> Marking(long ExerciseId, int ProgramLanguageId, string SourceCode, long userId)
+        public async Task<Marking> Marking(long ExerciseId, int ProgramLanguageId, string SourceCode, long userId, string sessionCode)
         {
             var exercise = await _context.Exercises
                 .FindAsync(ExerciseId);
@@ -196,7 +196,7 @@ namespace HMCodingWeb.Services
 
 
                 // Send test case result to client via SignalR
-                await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveTestCaseResult", new MarkingDetailViewModel(markingDetail, testCases.Count));
+                await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveTestCaseResult", new MarkingDetailViewModel(markingDetail, testCases.Count, sessionCode));
 
                 if (markingDetail.IsCorrect)
                 {
