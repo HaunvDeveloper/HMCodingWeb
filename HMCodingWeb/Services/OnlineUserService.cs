@@ -57,19 +57,7 @@ namespace HMCodingWeb.Services
             _hubContext.Clients.All.SendAsync("ReceiveOnlineUsers", users.Select(u => new { u.UserId, u.Username, u.Fullname, u.Auth }));
 
             // Cập nhật LastOnline vào database
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                var dbContext = scope.ServiceProvider.GetRequiredService<OnlineCodingWebContext>();
-                var dbUser = dbContext.Users.FirstOrDefault(u => u.Id == Convert.ToInt64(userId));
-                if (dbUser != null)
-                {
-                    if (dbUser.LastOnline < now.AddMinutes(-1))
-                    {
-                        dbUser.LastOnline = now;
-                        dbContext.SaveChanges();
-                    }
-                }
-            }
+            UpdateLastOnlineToDb(userId);
         }
 
 
@@ -79,9 +67,11 @@ namespace HMCodingWeb.Services
             var user = users.FirstOrDefault(u => u.ConnectionId == connectionId);
             if (user != null)
             {
+                UpdateLastOnlineToDb(user.UserId);
                 users.Remove(user);
                 _cache.Set(OnlineUsersKey, users, TimeSpan.FromMinutes(10));
                 _hubContext.Clients.All.SendAsync("ReceiveOnlineUsers", users.Select(u => new { u.UserId, u.Username, u.Fullname, u.Auth }));
+
             }
         }
 
@@ -91,6 +81,7 @@ namespace HMCodingWeb.Services
             var user = users.FirstOrDefault(u => u.UserId == userId);
             if (user != null)
             {
+                UpdateLastOnlineToDb(userId);
                 users.Remove(user);
                 _cache.Set(OnlineUsersKey, users, TimeSpan.FromMinutes(10));
                 _hubContext.Clients.All.SendAsync("ReceiveOnlineUsers", users.Select(u => new { u.UserId, u.Username, u.Fullname, u.Auth }));
@@ -103,6 +94,25 @@ namespace HMCodingWeb.Services
             return _cache.TryGetValue(OnlineUsersKey, out List<OnlineUser> users)
                 ? users
                 : new List<OnlineUser>();
+        }
+
+        private void UpdateLastOnlineToDb(string userId)
+        {
+            // Cập nhật LastOnline vào database
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<OnlineCodingWebContext>();
+                var dbUser = dbContext.Users.FirstOrDefault(u => u.Id == Convert.ToInt64(userId));
+                if (dbUser != null)
+                {
+                    var now = DateTime.Now;
+                    if (dbUser.LastOnline == null || dbUser.LastOnline < now.AddMinutes(-1))
+                    {
+                        dbUser.LastOnline = now;
+                        dbContext.SaveChanges();
+                    }
+                }
+            }
         }
     }
 }

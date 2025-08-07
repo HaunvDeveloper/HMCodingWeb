@@ -12,10 +12,10 @@
 
 
 #cke_ex-content {
-    min-width: 80%;
-    width: 1200px;
+    /*width: 100%;*/
+    /*width: 1200px;*/
     border: 2px solid black;
-    border-radius: 10px;
+    /*border-radius: 10px;*/
     overflow: hidden;
 }
 
