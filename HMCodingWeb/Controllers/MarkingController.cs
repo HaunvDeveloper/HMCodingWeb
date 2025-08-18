@@ -54,6 +54,7 @@ namespace HMCodingWeb.Controllers
                 .Include(mk => mk.Exercise)
                 .Include(mk => mk.User)
                 .Include(mk => mk.ProgramLanguage)
+                .Where(mk => !mk.User.IsBlock)
                 .AsQueryable();
 
             if(isMyPost)
@@ -225,7 +226,7 @@ namespace HMCodingWeb.Controllers
 
             var isUserDone = _context.Markings
                 .Any(x => x.IsAllCorrect == true && x.ExerciseId == marking.ExerciseId && x.UserId == userId);
-            var canViewAll = userRole == "admin" || userRole == "teacher" || isUserDone;
+            var canViewAll = userRole == "admin" || userRole == "teacher" || userRole== "hsgstudent" || isUserDone;
 
             var markingDetails = await _context.MarkingDetails
                 .Where(md => md.MarkingId == id)

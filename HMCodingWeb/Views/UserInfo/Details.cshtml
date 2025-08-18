@@ -99,6 +99,10 @@
                         <a asp-action="View" asp-controller="CodePad" asp-route-id="@Model.Id" class="btn rounded-2 btn-warning mt-3">
                             <i class="fa-solid fa-code me-2"></i>Xem Codepad
                         </a>
+                        <!--Chat To User button-->
+                        <a asp-action="ChatTo" asp-controller="Message" asp-route-userId="@Model.Id" class="btn rounded-2 btn-info mt-3">
+                            <i class="fa-solid fa-comment-dots me-2"></i>Chat
+                        </a>
                     }
                 </div>
             </div>

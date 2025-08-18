@@ -21,9 +21,11 @@ public partial class OnlineCodingWebContext : DbContext
 
     public virtual DbSet<Authority> Authorities { get; set; }
 
-    public virtual DbSet<Chapter> Chapters { get; set; }
+    public virtual DbSet<BoxChat> BoxChats { get; set; }
 
-    public virtual DbSet<ChatMeeting> ChatMeetings { get; set; }
+    public virtual DbSet<BoxChatMember> BoxChatMembers { get; set; }
+
+    public virtual DbSet<Chapter> Chapters { get; set; }
 
     public virtual DbSet<Codepad> Codepads { get; set; }
 
@@ -43,9 +45,9 @@ public partial class OnlineCodingWebContext : DbContext
 
     public virtual DbSet<MarkingDetail> MarkingDetails { get; set; }
 
-    public virtual DbSet<Meeting> Meetings { get; set; }
+    public virtual DbSet<Message> Messages { get; set; }
 
-    public virtual DbSet<MeetingParticipant> MeetingParticipants { get; set; }
+    public virtual DbSet<MessageReadStatus> MessageReadStatuses { get; set; }
 
     public virtual DbSet<Notification> Notifications { get; set; }
 
@@ -109,6 +111,48 @@ public partial class OnlineCodingWebContext : DbContext
             entity.Property(e => e.Description).HasMaxLength(255);
         });
 
+        modelBuilder.Entity<BoxChat>(entity =>
+        {
+            entity.ToTable("BoxChat");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Name).HasMaxLength(255);
+
+            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.BoxChats)
+                .HasForeignKey(d => d.CreatedBy)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_BoxChat_User");
+        });
+
+        modelBuilder.Entity<BoxChatMember>(entity =>
+        {
+            entity.HasKey(e => new { e.BoxChatId, e.UserId });
+
+            entity.ToTable("BoxChatMember");
+
+            entity.Property(e => e.DisplayName).HasMaxLength(255);
+            entity.Property(e => e.JoinedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.NotificationStatus)
+                .HasMaxLength(50)
+                .HasDefaultValue("all");
+            entity.Property(e => e.RoleInChat)
+                .HasMaxLength(50)
+                .HasDefaultValue("member");
+
+            entity.HasOne(d => d.BoxChat).WithMany(p => p.BoxChatMembers)
+                .HasForeignKey(d => d.BoxChatId)
+                .HasConstraintName("FK_BoxChatMember_BoxChat");
+
+            entity.HasOne(d => d.User).WithMany(p => p.BoxChatMembers)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_BoxChatMember_User");
+        });
+
         modelBuilder.Entity<Chapter>(entity =>
         {
             entity.ToTable("Chapter");
@@ -116,24 +160,6 @@ public partial class OnlineCodingWebContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.ChapterName).HasMaxLength(50);
             entity.Property(e => e.Description).HasMaxLength(256);
-        });
-
-        modelBuilder.Entity<ChatMeeting>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__ChatMeet__3214EC07F2BEA8C5");
-
-            entity.ToTable("ChatMeeting");
-
-            entity.Property(e => e.Id).ValueGeneratedNever();
-
-            entity.HasOne(d => d.Meeting).WithMany(p => p.ChatMeetings)
-                .HasForeignKey(d => d.MeetingId)
-                .HasConstraintName("FK__ChatMeeti__Meeti__0D44F85C");
-
-            entity.HasOne(d => d.SenderUser).WithMany(p => p.ChatMeetings)
-                .HasForeignKey(d => d.SenderUserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ChatMeeti__Sende__0E391C95");
         });
 
         modelBuilder.Entity<Codepad>(entity =>
@@ -326,40 +352,46 @@ public partial class OnlineCodingWebContext : DbContext
                 .HasConstraintName("FK_MarkingDetail_Marking");
         });
 
-        modelBuilder.Entity<Meeting>(entity =>
+        modelBuilder.Entity<Message>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Meeting__3214EC07FEA28227");
+            entity.ToTable("Message");
 
-            entity.ToTable("Meeting");
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.FileUrl).HasMaxLength(1000);
+            entity.Property(e => e.MessageType)
+                .HasMaxLength(50)
+                .HasDefaultValue("text");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
-            entity.Property(e => e.EndTime).HasColumnType("datetime");
-            entity.Property(e => e.StartTime).HasColumnType("datetime");
-            entity.Property(e => e.Title).HasMaxLength(200);
+            entity.HasOne(d => d.BoxChat).WithMany(p => p.Messages)
+                .HasForeignKey(d => d.BoxChatId)
+                .HasConstraintName("FK_Message_BoxChat");
 
-            entity.HasOne(d => d.HostUser).WithMany(p => p.Meetings)
-                .HasForeignKey(d => d.HostUserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Meeting__HostUse__0697FACD");
+            entity.HasOne(d => d.Sender).WithMany(p => p.Messages)
+                .HasForeignKey(d => d.SenderId)
+                .HasConstraintName("FK_Message_User");
         });
 
-        modelBuilder.Entity<MeetingParticipant>(entity =>
+        modelBuilder.Entity<MessageReadStatus>(entity =>
         {
-            entity.HasKey(e => new { e.MeetingId, e.UserId }).HasName("PK__MeetingP__38816588E471C013");
+            entity.HasKey(e => new { e.MessageId, e.UserId });
 
-            entity.ToTable("MeetingParticipant");
+            entity.ToTable("MessageReadStatus");
 
-            entity.Property(e => e.JoinedAt).HasColumnType("datetime");
-            entity.Property(e => e.Role).HasMaxLength(50);
+            entity.Property(e => e.ReadAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
 
-            entity.HasOne(d => d.Meeting).WithMany(p => p.MeetingParticipants)
-                .HasForeignKey(d => d.MeetingId)
-                .HasConstraintName("FK__MeetingPa__Meeti__09746778");
+            entity.HasOne(d => d.Message).WithMany(p => p.MessageReadStatuses)
+                .HasForeignKey(d => d.MessageId)
+                .HasConstraintName("FK_MessageReadStatus_Message");
 
-            entity.HasOne(d => d.User).WithMany(p => p.MeetingParticipants)
+            entity.HasOne(d => d.User).WithMany(p => p.MessageReadStatuses)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__MeetingPa__UserI__0A688BB1");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MessageReadStatus_User");
         });
 
         modelBuilder.Entity<Notification>(entity =>

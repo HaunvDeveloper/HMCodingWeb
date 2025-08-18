@@ -47,7 +47,9 @@ public partial class User
 
     public virtual Authority Auth { get; set; } = null!;
 
-    public virtual ICollection<ChatMeeting> ChatMeetings { get; set; } = new List<ChatMeeting>();
+    public virtual ICollection<BoxChatMember> BoxChatMembers { get; set; } = new List<BoxChatMember>();
+
+    public virtual ICollection<BoxChat> BoxChats { get; set; } = new List<BoxChat>();
 
     public virtual ICollection<Codepad> Codepads { get; set; } = new List<Codepad>();
 
@@ -57,9 +59,9 @@ public partial class User
 
     public virtual ICollection<Marking> Markings { get; set; } = new List<Marking>();
 
-    public virtual ICollection<MeetingParticipant> MeetingParticipants { get; set; } = new List<MeetingParticipant>();
+    public virtual ICollection<MessageReadStatus> MessageReadStatuses { get; set; } = new List<MessageReadStatus>();
 
-    public virtual ICollection<Meeting> Meetings { get; set; } = new List<Meeting>();
+    public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
 
     public virtual ICollection<NotificationSeenStatus> NotificationSeenStatuses { get; set; } = new List<NotificationSeenStatus>();
 

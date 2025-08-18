@@ -74,6 +74,7 @@ namespace HMCodingWeb.Services
         {
             try
             {
+                model.SourceCode = model.SourceCode?.Replace("system", ""); // Remove system calls for security reasons
                 // Check Temp Folder
                 if (!Directory.Exists("Temp"))
                 {

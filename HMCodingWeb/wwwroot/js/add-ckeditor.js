@@ -78,7 +78,7 @@ function updatePreview() {
                             font-weight: 900;
                         }
                     </style>
-                <div id="dependency">
+                <div id="dependency" style="color:black">
                     ${content || '<p>Chưa có nội dung.</p>'}
                 </div>`;
     shadowRoot.innerHTML = innerContent;

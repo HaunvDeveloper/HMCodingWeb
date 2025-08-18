@@ -67,7 +67,7 @@ namespace HMCodingWeb.Areas.Admin.Controllers
                 .Select(u => new
                 {
                     id = u.Id,
-                    avatar = u.AvartarImage != null ? Convert.ToBase64String(u.AvartarImage) : null,
+                    avatar = u.AvartarImage != null ? $"/api/avatar/{u.Id}" : null,
                     username = u.Username,
                     fullName = u.Fullname ?? "N/A",
                     phoneNo = u.PhoneNumber ?? "N/A",

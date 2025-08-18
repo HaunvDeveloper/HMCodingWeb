@@ -1,0 +1,61 @@
+﻿@* Index.cshtml *@
+<div class="container-fluid p-0 mb-0">
+    <!-- Button bar -->
+    <div class="d-flex align-items-center justify-content-between p-3 bg-info text-white">
+        <button class="btn btn-dark d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#chat-sidebar" aria-expanded="false" aria-controls="chat-sidebar">
+            <i class="fa-solid fa-bars"></i> <!-- Bootstrap Icons hamburger menu -->
+        </button>
+        <h5 class="mb-0 d-none d-md-block">Chats</h5>
+        <span class="d-md-none">Chat App</span>
+    </div>
+
+    <div class="row g-0">
+        <!-- Danh sách box -->
+        <div class="col-md-4 col-12 collapse d-md-block" id="chat-sidebar" style="height: 500px; overflow-y: auto; background-color: #f8f9fa;">
+            <ul id="chat-list" class="list-group list-group-flush p-2"></ul>
+        </div>
+
+        <!-- Khung chat -->
+        <div id="chat-container" class="col-md-8 col-12 d-flex flex-column" style="height: 500px; background-color: #fff;">
+            <div id="message-container" class="flex-grow-1 overflow-auto p-3" style="background-color: #f1f0f0;"></div>
+            <div id="typing-indicator" class="px-3 pb-2 text-muted fst-italic" style="display: none;"></div>
+            <form id="send-form" class="d-flex align-items-center p-3 border-top bg-white">
+                <textarea id="message-input"
+                          class="form-control me-2 rounded-1"
+                          placeholder="Type a message..."
+                          ></textarea>
+                <button id="btn-send" class="btn btn-primary rounded-pill" style="height:50px" type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Links {
+    <link rel="stylesheet" href="~/css/message.css" asp-append-version="true">
+}
+@section Scripts {
+
+    <script>
+        const messageInput = document.getElementById('message-input');
+
+        messageInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // Không xuống dòng
+                document.getElementById('send-form').dispatchEvent(new Event('submit')); // Gửi form
+                this.style.height = '49px';
+            }
+            // Nếu Shift + Enter thì không ngăn chặn => tự xuống dòng
+        });
+
+        $("#btn-send").on("click", function(){
+            messageInput.style.height = '49px';
+        })
+
+        messageInput.addEventListener('input', function () {
+            this.style.height = '49px'; // reset chiều cao
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px'; // tăng nhưng không vượt max-height
+        });
+    </script>
+    <script src="~/js/message-index.js" asp-append-version="true"></script>
+
+}

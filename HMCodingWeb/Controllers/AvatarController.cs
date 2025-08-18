@@ -22,10 +22,28 @@ namespace HMCodingWeb.Controllers
             var user = _context.Users.Find(userId);
             if (user == null || user.AvartarImage == null)
             {
-                return NotFound(); // hoặc trả ảnh mặc định
+                var defaultAvatarPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "assets", "images", "avartardefault.jpg");
+                var imageBytes = System.IO.File.ReadAllBytes(defaultAvatarPath);
+                return File(imageBytes, "image/jpeg"); // đổi "image/png" nếu ảnh là png
             }
 
-            return File(user.AvartarImage, "image/png"); // hoặc "image/png" tùy định dạng
+            return File(user.AvartarImage, "image/png");
+        }
+
+        [HttpGet("group/{boxId}")]
+        [ResponseCache(Duration = 10800, Location = ResponseCacheLocation.Any, NoStore = false)]
+        public IActionResult GetAvatarBox(long boxId)
+        {
+            var avatar = _context.BoxChats
+                .Where(b => b.Id == boxId)
+                .Select(b => b.AvatarGroup)
+                .FirstOrDefault();
+            if (avatar == null)
+            {
+                return NotFound(); // hoặc trả ảnh mặc định
+            }
+            // Giả sử avatar là byte[]
+            return File(avatar, "image/png"); // hoặc "image/png" tùy định dạng
         }
     }
 }

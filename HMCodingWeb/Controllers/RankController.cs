@@ -32,6 +32,7 @@ namespace HMCodingWeb.Controllers
         {
             // Base query to get users with their program language and rank
             var query = _context.Users
+                .Where(u => !u.IsBlock)
                 .Include(u => u.ProgramLanguage)
                 .Include(u => u.Rank)
                 .AsQueryable();

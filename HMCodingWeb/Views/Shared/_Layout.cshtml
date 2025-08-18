@@ -74,6 +74,17 @@
                     </ul>
                     @if (User.Identity?.IsAuthenticated ?? false)
                     {
+                        <!-- Messager icon -->
+                        <div class="nav-item dropdown p-3 position-relative">
+                            <a class="nav-link text-success" asp-action="Index" asp-controller="Message">
+                                <i class="fa-solid fa-message" style="font-size:22px; color:var(--bs-info);"></i>
+                                <span id="unread-badge"
+                                      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger text-white"
+                                      style="font-size: 12px; display:none;">
+                                </span>
+                            </a>
+                        </div>
+
                         <div class="nav-item dropdown p-3 notification-dropdown">
                             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="notificationDropdown">
                                 <i class="fa-solid fa-bell notification-bell"></i>
@@ -170,6 +181,7 @@
     <script src="~/js/site.js"></script>
     <script src="https://kit.fontawesome.com/0f2d543076.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script src="~/js/layout/receive-message.js" asp-append-version="true"></script>
     <script>
         function getClassNameByAuth(auth){
             switch (auth) {
@@ -198,6 +210,7 @@
         }
 
         const currentUserName = `@(User.FindFirst(ClaimTypes.Name)?.Value)`;
+        const currentUserId = `@(User.FindFirst(ClaimTypes.NameIdentifier)?.Value)`;
         var listUserOnline = [];
         
         const connection = new signalR.HubConnectionBuilder()
@@ -247,9 +260,6 @@
                 document.getElementById("onlineUsersList").textContent = "Lỗi khi tải danh sách người dùng";
             });
 
-            // Ping định kỳ mỗi 60 giây
-            pingInterval = setInterval(safePing, 60000);
-
             // Gọi Ping khi tab được mở lại
             document.addEventListener("visibilitychange", function () {
                 if (document.visibilityState === "visible") {
@@ -277,10 +287,6 @@
                 console.error(err.toString());
                 document.getElementById("onlineUsersList").textContent = "Lỗi khi tải danh sách người dùng";
             });
-
-            // Reset Ping sau reconnect
-            if (pingInterval) clearInterval(pingInterval);
-            pingInterval = setInterval(safePing, 60000);
         });
     </script>
 
@@ -288,9 +294,6 @@
     @if (User.Identity?.IsAuthenticated ?? false)
     {
         <script src="~/js/notification.js"></script>
-        <script>
-            
-        </script>
     }
 
 

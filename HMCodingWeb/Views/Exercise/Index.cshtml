@@ -130,6 +130,7 @@
                 const order = $(this).data('sort-order');
                 addParamToCurrentUrl('sortBy', column);
                 addParamToCurrentUrl('sortOrder', order);
+                addParamToCurrentUrl('p', 1); // Reset page to 1
                 loadListFormParams();
             });
         });

@@ -85,9 +85,12 @@
                 { "data": "id","orderable": false },
                 {
                     "data": "avatar",
-                    "render": function (data) {
-                        return data ? `<img src="data:image/jpeg;base64,${data}" class="avatar-img" alt="Avatar" />` : `<img src="/assets/images/avartardefault.jpg" class="avatar-img" alt="Default Avatar" />`;
-                    },
+                        "render": function (data, type, row) {
+                            var avatarUrl = data || '/assets/images/avartardefault.jpg';
+                             return `<a href="/userinfo/details/${row.id}">
+                                    <img src="${avatarUrl}" class="avatar-img" alt="Avatar" loading="lazy" />
+                                </a>`;
+                        },
                     "orderable": false
                 },
                 { "data": "username","orderable": false },

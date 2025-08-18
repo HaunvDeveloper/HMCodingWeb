@@ -52,6 +52,11 @@ namespace HMCodingWeb.Controllers
             {
                 return NotFound();
             }
+
+            if (user.IsBlock)
+            {
+                return NotFound();
+            }
             
             var (currentRank, nextRank, missingPrerequisites) = await _rankingService.GetNextRankPrerequisites(id ?? 0);
 
