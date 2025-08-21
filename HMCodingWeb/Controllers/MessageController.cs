@@ -4,6 +4,7 @@ using HMCodingWeb.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Caching.Memory;
 using System.Security.Claims;
 
 namespace HMCodingWeb.Controllers
@@ -13,11 +14,12 @@ namespace HMCodingWeb.Controllers
     {
         private readonly OnlineCodingWebContext _context;
         private readonly IHubContext<ChatHub> _hubContext;
-
-        public MessageController(OnlineCodingWebContext context, IHubContext<ChatHub> hubContext)
+        private readonly IMemoryCache _cache;
+        public MessageController(OnlineCodingWebContext context, IHubContext<ChatHub> hubContext, IMemoryCache cache)
         {
             _context = context;
             _hubContext = hubContext;
+            _cache = cache;
         }
 
 
@@ -37,13 +39,18 @@ namespace HMCodingWeb.Controllers
                 .Select(m => new
                 {
                     BoxChatId = m.BoxChatId,
+                    IsGroup = m.BoxChat.IsGroup,
+                    Participants = m.BoxChat.BoxChatMembers
+                        .Where(x => x.UserId != currentUserId)
+                        .Select(x => x.UserId).ToList(),
+
                     BoxName = m.BoxChat.IsGroup
                         ? (m.DisplayName ?? m.BoxChat.Name ?? "")
                         : _context.BoxChatMembers
                             .Where(x => x.BoxChatId == m.BoxChatId && x.UserId != currentUserId)
                             .Select(x => x.User.Username)
                             .FirstOrDefault() ?? "",
-
+                    
                     AvatarUrl = m.BoxChat.IsGroup
                         ? "/api/avatar/group/" + m.BoxChatId
                         : "/api/avatar/" + (
@@ -53,7 +60,6 @@ namespace HMCodingWeb.Controllers
                                 .FirstOrDefault()
                           ),
 
-                    // ✅ Tin nhắn mới nhất
                     LastMessageInfo = m.BoxChat.Messages
                         .OrderByDescending(msg => msg.CreatedAt)
                         .Select(msg => new
@@ -64,7 +70,6 @@ namespace HMCodingWeb.Controllers
                         })
                         .FirstOrDefault(),
 
-                    // ✅ Đếm số tin nhắn chưa đọc
                     UnreadCount = m.BoxChat.Messages
                         .Count(msg => !msg.MessageReadStatuses.Any(mrs => mrs.UserId == currentUserId)
                                       && msg.SenderId != currentUserId) // không tính tin mình gửi
@@ -73,6 +78,8 @@ namespace HMCodingWeb.Controllers
                 .Select(m => new BoxChatListItemVM
                 {
                     BoxChatId = m.BoxChatId,
+                    IsGroup = m.IsGroup,
+                    Participants = m.Participants,
                     BoxName = m.BoxName,
                     AvatarUrl = m.AvatarUrl,
                     LastMessage = m.LastMessageInfo?.Content ?? "",
@@ -137,6 +144,24 @@ namespace HMCodingWeb.Controllers
             var currentUserId = GetCurrentUser();
             var boxChatId = request.BoxChatId;
             var content = request.Content;
+
+            // Giới hạn độ dài tin nhắn
+            if (content.Length > 1000)
+            {
+                return BadRequest(new { error = "Message content exceeds maximum length of 1000 characters." });
+            }
+
+            // Kiểm tra user có tồn tại và có bị block không
+            var user = _context.Users.FirstOrDefault(u => u.Id == currentUserId);
+            if (user == null)
+            {
+                return Forbid();
+            }
+            if (user.IsBlock)
+            {
+                return Forbid(); // User đã bị block
+            }
+
             // Kiểm tra user có thuộc box này không
             bool isMember = _context.BoxChatMembers
                 .Any(m => m.BoxChatId == boxChatId && m.UserId == currentUserId);
@@ -152,22 +177,51 @@ namespace HMCodingWeb.Controllers
                 return BadRequest(new { error = "Message content cannot be empty." });
             }
 
+            // ======================= CHỐNG SPAM =======================
+            var cacheKey = $"messages_{currentUserId}";
+            var now = DateTime.UtcNow;
+
+            // Lấy lịch sử tin nhắn gần đây (trong 10s)
+            var history = _cache.GetOrCreate(cacheKey, entry =>
+            {
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(10);
+                return new List<DateTime>();
+            });
+
+            // Xóa những tin quá 10s
+            history.RemoveAll(t => (now - t).TotalSeconds > 10);
+
+            // Thêm tin nhắn mới vào lịch sử
+            history.Add(now);
+
+            // Nếu quá 25 tin trong 10s → block user
+            if (history.Count > 25)
+            {
+                user.IsBlock = true;
+                _context.SaveChanges();
+                return Forbid(); // chặn luôn
+            }
+
+            // Lưu lại vào cache
+            _cache.Set(cacheKey, history, TimeSpan.FromSeconds(10));
+            // ==========================================================
+
             // Tạo tin nhắn mới
             var message = new Message
             {
                 BoxChatId = boxChatId,
                 SenderId = currentUserId,
                 Content = content,
-                MessageType = "text", // Text
+                MessageType = "text",
                 CreatedAt = DateTime.Now,
                 MessageReadStatuses = new List<MessageReadStatus>
-                {
-                    new MessageReadStatus
-                    {
-                        UserId = currentUserId, // Đánh dấu là đã đọc ngay khi gửi
-                        ReadAt = DateTime.Now
-                    }
-                }
+        {
+            new MessageReadStatus
+            {
+                UserId = currentUserId,
+                ReadAt = DateTime.Now
+            }
+        }
             };
 
             _context.Messages.Add(message);
@@ -183,22 +237,26 @@ namespace HMCodingWeb.Controllers
                     .Where(u => u.Id == currentUserId)
                     .Select(u => u.Fullname)
                     .FirstOrDefault() ?? "",
-                AvatarUrl = "/api/avatar/" + currentUserId, 
+                AvatarUrl = "/api/avatar/" + currentUserId,
                 Content = message.Content,
                 CreatedAt = message.CreatedAt
             };
+
             // Gửi tin nhắn đến tất cả người dùng trong box chat
             var boxChatMembers = _context.BoxChatMembers
                 .Where(m => m.BoxChatId == boxChatId)
                 .Select(m => m.UserId)
                 .ToList();
+
             foreach (var memberId in boxChatMembers)
             {
-                await _hubContext.Clients.User(memberId.ToString()).SendAsync("ReceiveMessage", messageVm);
+                await _hubContext.Clients.User(memberId.ToString())
+                    .SendAsync("ReceiveMessage", messageVm);
             }
 
             return Json(messageVm);
         }
+
 
         public IActionResult ChatTo(long userId)
         {

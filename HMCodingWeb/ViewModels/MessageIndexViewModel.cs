@@ -17,6 +17,8 @@ namespace HMCodingWeb.ViewModels
         public DateTime LastMessageTime { get; set; } // Optional: Last message time for sorting
         public string AvatarUrl { get; set; } // Optional: URL to the avatar image
         public int UnreadCount { get; set; } // Optional: Count of unread messages
+        public bool IsGroup { get; set; } // Indicates if the chat is a group chat
+        public List<long> Participants { get; set; } // List of participant IDs in the chat
     }
 
     public class ChatBoxVM

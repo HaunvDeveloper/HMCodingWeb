@@ -1,6 +1,8 @@
 ﻿/* Sidebar */
 #chat-sidebar {
     transition: all 0.3s ease;
+    height: 500px;
+    background-color: #f8f9fa;
 }
 
 #chat-list .list-group-item {
@@ -27,6 +29,17 @@
     background-color: #e6f2ff; /* xanh nhạt */
     font-weight: bold;
 }
+.time-separator {
+    font-size: 16px;
+    font-weight: 500;
+    color: #666;
+    padding: 4px 12px;
+    border-radius: 12px;
+    margin-left: auto;
+    text-align: center;
+}
+
+
 
 
 .chat-item {
@@ -69,14 +82,23 @@
     color: white;
 }
 
+#chat-header>*{
+    cursor: pointer;
+}
+
+
 /* Message container */
 #message-container .message {
-    margin-bottom: 12px;
+    margin-bottom: 5px;
     max-width: 75%;
     display: flex;
     align-items: flex-start;
     gap: 8px;
 }
+
+
+
+
 
 #message-input {
     resize: none;
@@ -98,12 +120,48 @@
 
 #message-container .message .content {
     padding: 8px 12px;
-    border-radius: 16px;
+    border-radius: 18px;
     background-color: #fff;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     font-size: 14px;
     overflow-wrap: anywhere;
 }
+
+/* =========== CURRENT USER ============ */
+.message.current-user.single-in-group .content {
+    border-radius: 16px !important;
+}
+
+.message.current-user.first-in-group .content {
+    border-radius: 16px 16px 4px 16px !important; /* bo trên + phải + dưới trái */
+}
+
+.message.current-user.middle-in-group .content {
+    border-radius: 16px 4px 4px 16px !important; /* ít bo */
+}
+
+.message.current-user.last-in-group .content {
+    border-radius: 16px 4px 16px 16px !important; /* bo dưới + phải */
+}
+/* =========== OTHER USER ============ */
+
+.message.single-in-group .content {
+    border-radius: 16px !important;
+}
+
+.message.first-in-group .content {
+    border-radius: 16px 16px 16px 4px !important; /* bo trên + phải + dưới trái */
+}
+
+.message.middle-in-group .content {
+    border-radius: 4px 16px 16px 4px !important; /* ít bo */
+}
+
+.message.last-in-group .content {
+    border-radius: 5px 16px 16px 16px !important; /* bo dưới + phải */
+}
+
+
 
     #message-container .message .content a{
         color: black;
@@ -114,6 +172,8 @@
         background-color: #007bff;
         color: #fff;
     }
+
+
 
 #message-container .message .sender {
     font-weight: 600;
@@ -130,14 +190,21 @@
     color: #999;
     margin-top: 3px;
 }
+#chat-container {
+    position: relative;
+    
+}
+
+
+
+
 
 /* Mobile adjustments */
 @media (max-width: 767.98px) {
     #chat-sidebar {
         position: absolute;
         z-index: 1000;
-        width: 80%;
-        max-width: 300px;
+        width: 100%;
         background-color: #f8f9fa;
         box-shadow: 2px 0 5px rgba(0,0,0,0.2);
         height: 70vh !important; /* Full height minus header */
@@ -157,4 +224,6 @@
     .col-md-8 {
         width: 100%;
     }
+
+
 }

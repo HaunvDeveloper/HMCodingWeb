@@ -18,6 +18,8 @@ const connectionChatReceive = new signalR.HubConnectionBuilder()
     .withAutomaticReconnect()
     .build();
 
+const messageNotificationAudio = new Audio('/assets/audios/notification.mp3'); // đường dẫn đến file mp3/wav
+
 connectionChatReceive.start().then(async function () {
     console.log("SignalR Connected");
 }).catch(err => {
@@ -25,7 +27,10 @@ connectionChatReceive.start().then(async function () {
 });
 
 connectionChatReceive.on("ReceiveMessage", (message) => {
-    loadUnreadBoxCount();
+    if (message.senderId != currentUserId) {
+        messageNotificationAudio.play().catch(err => console.warn("Autoplay bị chặn:", err));
+        loadUnreadBoxCount();
+    }
 });
 
 loadUnreadBoxCount();

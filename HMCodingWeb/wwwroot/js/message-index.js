@@ -1,15 +1,19 @@
 ﻿let currentBoxId = parseInt(new URLSearchParams(window.location.search).get('boxChatId')) || null;
+
 // Kết nối SignalR
 const connectionChat = new signalR.HubConnectionBuilder()
     .withUrl("/chatHub")
     .withAutomaticReconnect()
     .build();
 
-connectionChat.start().then(async function() {
+connectionChat.start().then(async function () {
     console.log("SignalR Connected");
     await loadBoxChats();
     if (currentBoxId) {
         loadMessages(currentBoxId);
+    } else {
+        $('#chat-container').addClass("d-opacity-0"); // ẩn nếu không có box chat
+        $('#chat-sidebar').collapse('show'); 
     }
 }).catch(err => {
     console.error("SignalR connectionChat Error: ", err);
@@ -21,20 +25,7 @@ connectionChat.on("ReceiveMessage", (message) => {
 
     if (message.boxChatId && message.boxChatId == currentBoxId) {
         $('#typing-indicator').hide();
-        const container = document.getElementById('message-container');
-        const div = document.createElement('div');
-        div.setAttribute('data-id', message.messageId);
-        div.setAttribute('data-is-seen', message.senderId == currentUserId ? 'true' : 'false'); // Thêm thuộc tính isSeen
-        div.className = `message ${message.senderId == currentUserId ? 'current-user' : ''}`;
-        div.innerHTML = `
-        <img src="${message.avatarUrl || '/assets/images/avartardefault.jpg'}" alt="Avatar" class="avatar" onerror="this.src='/assets/images/avartardefault.jpg'" />
-        <div>
-            <div class="sender">${message.senderName}</div>
-            <div class="content">${message.content}</div>
-            <div class="time">${new Date(message.createdAt).toLocaleTimeString()}</div>
-        </div>`;
-        container.appendChild(div);
-        container.scrollTop = container.scrollHeight;
+        addNewMessage(message);
     }
 
     // Update last message bên list
@@ -43,16 +34,20 @@ connectionChat.on("ReceiveMessage", (message) => {
         chatItem.querySelector('.last-message').textContent =
             message.content.substring(0, 30) + (message.content.length > 30 ? '...' : '');
 
-        const li = chatItem.parentElement;
-        const badge = li.querySelector('.badge');
-        if (badge) {
-            const count = parseInt(badge.textContent) || 0;
-            badge.textContent = count + 1; // Tăng số lượng tin nhắn chưa đọc
-        } else {
-            const newBadge = document.createElement('span');
-            newBadge.className = 'badge bg-danger rounded-pill ms-2';
-            newBadge.textContent = '1'; // Tin nhắn đầu tiên
-            li.appendChild(newBadge);
+        if (message.boxChatId != currentBoxId) 
+        { 
+            const li = chatItem.parentElement;
+            const badge = li.querySelector('.badge');
+        
+            if (badge) {
+                const count = parseInt(badge.textContent) || 0;
+                badge.textContent = count + 1; // Tăng số lượng tin nhắn chưa đọc
+            } else {
+                const newBadge = document.createElement('span');
+                newBadge.className = 'badge bg-danger rounded-pill ms-2';
+                newBadge.textContent = '1'; // Tin nhắn đầu tiên
+                li.appendChild(newBadge);
+            }
         }
     }
 
@@ -137,6 +132,8 @@ async function loadBoxChats() {
             `);
 
             li.attr('data-id', chat.boxChatId);
+            li.attr('data-is-group', chat.isGroup ? 'true' : 'false'); 
+            li.attr('data-participants', chat.participants.join(',')); // Lưu danh sách người tham gia
             list.append(li);
         });
 
@@ -153,43 +150,252 @@ $(document).on('click', '#chat-list .list-group-item', function () {
     let boxChatId = $(this).data('id');
     loadMessages(boxChatId);
     window.history.pushState({}, '', `?boxChatId=${boxChatId}`);
-})
+});
 
-// Load tin nhắn của box
 function loadMessages(boxChatId) {
     currentBoxId = boxChatId;
+
     fetch(`/message/getmessages?boxChatId=${boxChatId}`)
         .then(res => {
             if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
             return res.json();
         })
         .then(data => {
+            renderHeader(boxChatId);
             const container = document.getElementById('message-container');
             container.innerHTML = '';
+
+            let lastTimestamp = null;
+            let lastSenderId = null;
+            let groupBuffer = []; // tạm giữ nhóm tin nhắn
+
+            function flushGroup() {
+                if (groupBuffer.length === 0) return;
+
+                // render từng msg trong nhóm
+                groupBuffer.forEach((msg, idx) => {
+                    const msgTime = new Date(msg.createdAt);
+                    let showName = idx === 0; // chỉ hiện tên ở msg đầu
+                    let showAvatar = idx === groupBuffer.length - 1; // chỉ hiện avatar ở msg cuối
+
+                    const div = document.createElement('div');
+                    div.className = `message ${msg.senderId == currentUserId ? 'current-user' : ''}`;
+                    div.setAttribute('data-id', msg.messageId);
+                    div.setAttribute('data-is-seen', msg.isSeen ? 'true' : 'false');
+                    div.setAttribute('data-time', msg.createdAt);
+                    div.setAttribute('data-sender', msg.senderId);
+
+                    if (groupBuffer.length === 1) {
+                        div.classList.add("single-in-group");
+                    } else if (idx === 0) {
+                        div.classList.add("first-in-group");
+                    } else if (idx === groupBuffer.length - 1) {
+                        div.classList.add("last-in-group");
+                    } else {
+                        div.classList.add("middle-in-group");
+                    }
+
+                    let contentHtml = textToHtml(msg.content);
+                    contentHtml = linkify(contentHtml);
+
+                    div.innerHTML = `
+                        ${showAvatar ? `<img src="${msg.avatarUrl}" alt="Avatar" class="avatar"
+                             />` : `<div class="avatar"></div>`}
+                        <div title="${msgTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}">
+                            ${showName ? `<div class="sender">${msg.senderName}</div>` : ''}
+                            <div class="content">${contentHtml}</div>
+                        </div>`;
+                    container.appendChild(div);
+                });
+
+                groupBuffer = []; // reset nhóm
+            }
+
             data.forEach(msg => {
-                const div = document.createElement('div');
-                div.className = `message ${msg.senderId == currentUserId ? 'current-user' : ''}`;
-                div.setAttribute('data-id', msg.messageId);
-                div.setAttribute('data-is-seen', msg.isSeen ? 'true' : 'false'); 
+                const msgTime = new Date(msg.createdAt);
 
-                let contentHtml = textToHtml(msg.content);
-                // Chuyển đổi link thành clickable
-                contentHtml = linkify(contentHtml);
+                // separator 15 phút
+                if (!lastTimestamp || (msgTime - lastTimestamp) > 15 * 60 * 1000) {
+                    flushGroup(); // đóng nhóm cũ
+                    addTimeDivider(container, msgTime);
+                    
+                }
 
-                div.innerHTML = `
-                    <img src="${msg.avatarUrl}" alt="Avatar" class="avatar" onerror="this.src='/assets/images/avartardefault.jpg'" />
-                    <div>
-                        <div class="sender">${msg.senderName}</div>
-                        <div class="content">${contentHtml}</div>
-                        <div class="time">${new Date(msg.createdAt).toLocaleTimeString()}</div>
-                    </div>`;
-                container.appendChild(div);
+                // Nếu cùng sender và chưa qua 15p → tiếp tục nhóm
+                if (lastSenderId !== null &&
+                    msg.senderId === lastSenderId &&
+                    lastTimestamp && (msgTime - lastTimestamp) <= 15 * 60 * 1000) {
+                    groupBuffer.push(msg);
+                } else {
+                    // flush nhóm cũ nếu khác sender
+                    flushGroup();
+                    groupBuffer.push(msg);
+                }
+
+                lastTimestamp = msgTime;
+                lastSenderId = msg.senderId;
             });
+
+            // Flush nhóm cuối cùng
+            flushGroup();
+
             container.scrollTop = container.scrollHeight;
             $('#message-input').focus();
             addObserverToMessages();
         })
         .catch(err => console.error("LoadMessages Error: ", err));
+}
+
+function isSameDay(d1, d2) {
+    return d1.getFullYear() === d2.getFullYear() &&
+        d1.getMonth() === d2.getMonth() &&
+        d1.getDate() === d2.getDate();
+}
+
+function addNewMessage(msg) {
+    const container = document.getElementById('message-container');
+    const lastMsg = container.querySelector('.message:last-of-type');
+    const lastDivider = container.querySelector('.time-divider:last-of-type');
+
+    let lastTimestamp = null;
+    let lastSenderId = null;
+
+    if (lastMsg) {
+        lastTimestamp = new Date(lastMsg.getAttribute('data-time'));
+        lastSenderId = lastMsg.classList.contains('current-user')
+            ? currentUserId
+            : lastMsg.getAttribute('data-sender');
+    }
+
+    const msgTime = new Date(msg.createdAt);
+
+    // ========== Check 15p divider ==========
+    let needDivider = false;
+    if (!lastTimestamp || (msgTime - lastTimestamp) > 15 * 60 * 1000) {
+        needDivider = true;
+    } else if (lastDivider) {
+        // Nếu qua ngày → cũng cần divider
+        const dividerTime = new Date(lastDivider.getAttribute('data-time'));
+        if (!isSameDay(dividerTime, msgTime)) {
+            needDivider = true;
+        }
+    }
+
+    if (needDivider) {
+        addTimeDivider(container, msgTime);
+    }
+
+    // ========== Kiểm tra grouping ==========
+    let isGrouped = lastSenderId &&
+        msg.senderId == lastSenderId &&
+        lastTimestamp && (msgTime - lastTimestamp) <= 15 * 60 * 1000;
+
+    // Nếu grouped → chỉnh lại avatar của tin trước đó thành rỗng
+    if (isGrouped && lastMsg) {
+        const avatarEl = lastMsg.querySelector('.avatar');
+        if (avatarEl) {
+            avatarEl.remove();
+            let newAvatar = document.createElement('div');
+            newAvatar.className = 'avatar';
+            lastMsg.insertBefore(newAvatar, lastMsg.firstChild); // Thêm vào đầu tiên
+        }
+    }
+
+    // ========== Tạo element cho message ==========
+    const div = document.createElement('div');
+    div.className = `message ${msg.senderId == currentUserId ? 'current-user' : ''}`;
+    div.setAttribute('data-id', msg.messageId);
+    div.setAttribute('data-sender', msg.senderId);
+    div.setAttribute('data-is-seen', msg.isSeen ? 'true' : 'false');
+    div.setAttribute('data-time', msg.createdAt);
+    div.setAttribute('data-is-seen', msg.senderId == currentBoxId ? "true" : "false");
+
+    // === Xác định bo góc ===
+    if (!isGrouped) {
+        div.classList.add("single-in-group");
+    } else {
+        // Nếu tin trước đó là first → sửa nó thành middle
+        if (lastMsg && (lastMsg.classList.contains("first-in-group") || lastMsg.classList.contains("last-in-group"))) {
+            lastMsg.classList.remove("first-in-group");
+            lastMsg.classList.remove("last-in-group");
+            lastMsg.classList.add("middle-in-group");
+        }
+        div.classList.add("last-in-group");
+    }
+
+
+    let contentHtml = textToHtml(msg.content);
+    contentHtml = linkify(contentHtml);
+
+    // Nếu là grouped → ẩn sender name
+    let showName = !isGrouped;
+    // Avatar chỉ hiện khi không grouped (tin đầu) hoặc là tin cuối cùng trong nhóm
+    let showAvatar = true;
+
+    div.innerHTML = `
+        ${showAvatar ? `<img src="${msg.avatarUrl}" alt="Avatar" class="avatar"
+            onerror="this.src='/assets/images/avartardefault.jpg'" />` : `<div class="avatar"></div>`}
+        <div title="${msgTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}">
+            ${showName ? `<div class="sender">${msg.senderName}</div>` : ''}
+            <div class="content">${contentHtml}</div>
+        </div>`;
+
+    container.appendChild(div);
+
+    // Scroll xuống cuối
+    container.scrollTop = container.scrollHeight;
+}
+
+
+// Hàm thêm mốc thời gian
+function addTimeDivider(container, date) {
+    const divider = document.createElement("div");
+    divider.className = "time-separator";
+
+    let text = "";
+    const now = new Date();
+    if (date.toDateString() === now.toDateString()) {
+        text = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else {
+        text = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) +
+            " " + date.toLocaleDateString();
+    }
+
+    divider.innerText = text;
+    container.appendChild(divider);
+}
+
+
+function renderHeader(boxChatId) {
+    // Add data-id to #chat-header
+    $('#chat-header').attr('data-id', boxChatId);
+    var itemBoxChat = $(`#chat-list .chat-item[data-id="${boxChatId}"]`);
+    // Add avatar to #chat-header #chat-avatar
+    const chatAvatar = $(itemBoxChat).find('img').attr("src");
+    $('#chat-header #chat-avatar').attr("src", chatAvatar);
+    // Cập nhật tên hội thoại
+    const chatName = $(itemBoxChat).find('.chat-name').text();
+    $('#chat-header #chat-username').text(chatName);
+
+    // Cập nhật trạng thái
+    let isOnline = listUserOnline.includes(chatName);
+    $('#chat-header #chat-status').html(isOnline ? '<span class="text-success">Đang online</span>' : 'Đang offline');
+    var groupItem = itemBoxChat.parent();
+    var isGroup = groupItem.data('is-group') === true || groupItem.data('is-group') === 'true';
+    if (!isGroup) {
+        $("#chat-username, #chat-status, #chat-avatar").off('click').on('click', function () {
+            // redirect đến trang profile của người dùng target="_blank""
+            let userId = groupItem.attr('data-participants'); // lấy người đầu tiên trong danh sách
+            window.open(`/userinfo/details/${userId}`, '_blank');
+        });
+    }
+    
+
+    //Close sidebar nếu đang mở
+    if ($('#chat-sidebar').hasClass('show')) {
+        $('#chat-sidebar').collapse('hide'); // dùng collapse API của Bootstrap
+    }
+
 }
 
 // Gửi tin nhắn
@@ -214,7 +420,10 @@ $('#send-form').on('submit', function (e) {
             })
         })
             .then(res => {
-                if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+                if (!res.ok) {
+                    (`HTTP error! Status: ${res.status}`);
+                    btnSend.prop('disabled', false);
+                }
                 // re-enable input field after sending message
                 messageInput.prop('disabled', false);
                 btnSend.prop('disabled', false);
@@ -223,7 +432,7 @@ $('#send-form').on('submit', function (e) {
             .then(() => {
                 messageInput.val('');
                 messageInput.focus();
-
+                
             })
             .catch(err => console.error("SendMessage Error: ", err));
     }
@@ -272,6 +481,20 @@ let seenTimeout = null;
 function flushSeenMessages() {
     if (seenQueue.size === 0) return;
     const ids = Array.from(seenQueue);
+    let quantity = ids.length;
+    // remove from badge
+    const badge = document.querySelector(`#chat-list .chat-item[data-id="${currentBoxId}"] .badge`);
+    if (badge) {
+        let count = parseInt(badge.textContent) || 0;
+        count -= quantity;
+        if (count <= 0) {
+            badge.remove();
+        } else {
+            badge.textContent = count;
+        }
+    }
+
+
     seenQueue.clear();
 
     console.log("🔼 Sending seen messages:", ids);

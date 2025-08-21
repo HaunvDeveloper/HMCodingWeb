@@ -77,18 +77,22 @@
                         <!-- Messager icon -->
                         <div class="nav-item dropdown p-3 position-relative">
                             <a class="nav-link text-success" asp-action="Index" asp-controller="Message">
-                                <i class="fa-solid fa-message" style="font-size:22px; color:var(--bs-info);"></i>
-                                <span id="unread-badge"
-                                      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger text-white"
-                                      style="font-size: 12px; display:none;">
-                                </span>
+                                <i class="fa-solid fa-message position-relative" style="font-size:22px; color:var(--bs-info);">
+                                    <span id="unread-badge"
+                                          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger text-white"
+                                          style="font-size: 12px; display:none;">
+                                    </span>
+                                </i>
+                               
                             </a>
                         </div>
 
                         <div class="nav-item dropdown p-3 notification-dropdown">
                             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="notificationDropdown">
-                                <i class="fa-solid fa-bell notification-bell"></i>
-                                <span class="notification-badge" id="unseenCount" style="display: none;">0</span>
+                                <i class="fa-solid fa-bell notification-bell position-relative">
+                                    <span class="notification-badge" id="unseenCount" style="display: none;">0</span>
+                                </i>
+                                
                             </a>
                             <div class="dropdown-menu dropdown-menu-end notification-menu">
                                 <h1 class="dropdown-header text-center text-success">Thông báo</h1>

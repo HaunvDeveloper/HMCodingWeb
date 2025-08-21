@@ -56,7 +56,7 @@
         public async Task GetOnlineUsers()
         {
             var users = _onlineUsersService.GetOnlineUsers();
-            await Clients.Caller.SendAsync("ReceiveOnlineUsers", users.Select(u => new { u.UserId, u.Username, u.Fullname, u.Auth }));
+            await Clients.Caller.SendAsync("ReceiveOnlineUsers", users.Select(u => new { u.UserId, u.Username, u.Fullname, u.Auth }).Distinct());
         }
 
     }
