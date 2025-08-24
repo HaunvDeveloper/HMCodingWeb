@@ -5,9 +5,12 @@
     <div class="row g-0"> 
         <!-- Danh sách box -->
         <div class="col-md-4 col-12 collapse d-md-block" id="chat-sidebar">
-            
+            <!--Logo-->
             <!-- Thanh search -->
-            <div class="p-2 border-bottom bg-white">
+            <div class="p-2 border-bottom bg-white d-flex gap-1 align-items-center">
+                <a href="/">
+                    <img src="/assets/icons/logo.png" alt="Logo" class="img-fluid" style="max-height: 50px;">
+                </a>
                 <input type="text" id="chat-search"
                        class="form-control form-control-sm rounded-pill"
                        placeholder="Search chats..."
@@ -16,11 +19,11 @@
             </div>
 
             <!-- Danh sách chat -->
-            <ul id="chat-list" class="list-group list-group-flush p-2 pb-5" style="overflow-y: scroll; height:calc(100% - 48px)"></ul>
+            <ul id="chat-list" class="list-group list-group-flush p-2 pb-5"></ul>
         </div>
 
         <!-- Khung chat -->
-        <div id="chat-container" class="col-md-8 col-12 d-flex flex-column" style="height: 500px; background-color: #fff;">
+        <div id="chat-container" class="col-md-8 col-12 d-flex flex-column">
             
             <!-- Header: Avatar + Tên -->
             <div id="chat-header" class="d-flex align-items-center border-bottom p-2 bg-light">
@@ -47,6 +50,13 @@
                 <textarea id="message-input"
                           class="form-control me-2 rounded-1"
                           placeholder="Type a message..."></textarea>
+                <!-- Nút emoji -->
+                <button id="btn-emoji" class="btn btn-sm btn-light fs-3 me-2" type="button" style="align-content:center; text-align:center;position:relative;">
+                    😊
+                    <emoji-picker id="emoji-picker" style="position:absolute; bottom:70px; right:-80px; display:none; z-index:999;"></emoji-picker>
+
+                </button>
+
                 <button id="btn-send" class="btn btn-primary rounded-pill" style="height:50px" type="submit">Send</button>
             </form>
         </div>
@@ -59,61 +69,24 @@
 }
 @section Scripts {
 
-    <script>
-        const messageInput = document.getElementById('message-input');
+    <script type="module">
+      import 'https://cdn.jsdelivr.net/npm/emoji-picker-element@@^1/index.js';
 
-        messageInput.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault(); // Không xuống dòng
-                document.getElementById('send-form').dispatchEvent(new Event('submit')); // Gửi form
-                this.style.height = '49px';
-            }
-            // Nếu Shift + Enter thì không ngăn chặn => tự xuống dòng
-        });
+      const emojiBtn = document.getElementById("btn-emoji");
+      const picker = document.getElementById("emoji-picker");
+      const input = document.getElementById("message-input");
 
-        $("#btn-send").on("click", function(){
-            messageInput.style.height = '49px';
-        })
+      // Toggle picker khi nhấn nút
+      emojiBtn.addEventListener("click", () => {
+        picker.style.display = picker.style.display === "none" ? "block" : "none";
+      });
 
-        messageInput.addEventListener('input', function () {
-            this.style.height = '49px'; // reset chiều cao
-            this.style.height = Math.min(this.scrollHeight, 120) + 'px'; // tăng nhưng không vượt max-height
-        });
-
-
-        $(document).on('input', '#chat-search', function () {
-            let keyword = $(this).val().toLowerCase();
-            
-            $('#chat-list li').each(function () {
-                let chatName = $(this).find('.chat-name').text().toLowerCase();
-                if (chatName.includes(keyword)) {
-                    $(this).removeClass("d-none");
-                } else {
-                    $(this).addClass("d-none");
-                }
-            });
-        });
-
+      // Khi chọn emoji → chèn vào textarea
+      picker.addEventListener("emoji-click", (event) => {
+        input.value += event.detail.unicode;
+      });
     </script>
-    <script>
-        const sendForm = document.getElementById("send-form");
 
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener("resize", adjustForKeyboard);
-            window.visualViewport.addEventListener("scroll", adjustForKeyboard);
-
-            function adjustForKeyboard() {
-                const offset = window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop;
-                sendForm.style.marginBottom = offset > 0 ? offset + "px" : "0";
-            }
-        }
-
-        messageInput.addEventListener("focus", () => {
-            setTimeout(() => {
-                messageInput.scrollIntoView({ block: "end", behavior: "smooth" });
-            }, 300); // đợi bàn phím bật xong
-        });
-    </script>
     <script src="~/js/message-index.js" asp-append-version="true"></script>
 
 }

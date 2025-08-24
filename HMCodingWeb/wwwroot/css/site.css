@@ -124,7 +124,7 @@ main#main{
 /* Header Styles */
 .navbar {
     background-color: var(--bs-primary) !important;
-    padding: 1rem 2rem;
+    padding: 5px 2rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     font-family: 'Arial', sans-serif;
 }

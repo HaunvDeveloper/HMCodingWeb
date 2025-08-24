@@ -48,7 +48,7 @@ namespace HMCodingWeb.Controllers
                         ? (m.DisplayName ?? m.BoxChat.Name ?? "")
                         : _context.BoxChatMembers
                             .Where(x => x.BoxChatId == m.BoxChatId && x.UserId != currentUserId)
-                            .Select(x => x.User.Username)
+                            .Select(x => x.User.Fullname)
                             .FirstOrDefault() ?? "",
                     
                     AvatarUrl = m.BoxChat.IsGroup
@@ -146,7 +146,7 @@ namespace HMCodingWeb.Controllers
             var content = request.Content;
 
             // Giới hạn độ dài tin nhắn
-            if (content.Length > 1000)
+            if (content.Length > 50000)
             {
                 return BadRequest(new { error = "Message content exceeds maximum length of 1000 characters." });
             }

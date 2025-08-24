@@ -1,4 +1,5 @@
 ﻿let currentBoxId = parseInt(new URLSearchParams(window.location.search).get('boxChatId')) || null;
+const messageInput = document.getElementById('message-input');
 
 // Kết nối SignalR
 const connectionChat = new signalR.HubConnectionBuilder()
@@ -146,7 +147,6 @@ async function loadBoxChats() {
 $(document).on('click', '#chat-list .list-group-item', function () {
     $('#chat-list .list-group-item').removeClass('active');
     $(this).removeClass('unread').find('.badge').remove(); // clear unread style
-    $(this).addClass('active');
     let boxChatId = $(this).data('id');
     loadMessages(boxChatId);
     window.history.pushState({}, '', `?boxChatId=${boxChatId}`);
@@ -204,6 +204,7 @@ function loadMessages(boxChatId) {
                         <div title="${msgTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}">
                             ${showName ? `<div class="sender">${msg.senderName}</div>` : ''}
                             <div class="content">${contentHtml}</div>
+                            ${idx === groupBuffer.length - 1 ? `<div class="time">${msgTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} </div>` : ``}
                         </div>`;
                     container.appendChild(div);
                 });
@@ -315,13 +316,19 @@ function addNewMessage(msg) {
         div.classList.add("single-in-group");
     } else {
         // Nếu tin trước đó là first → sửa nó thành middle
-        if (lastMsg && (lastMsg.classList.contains("first-in-group") || lastMsg.classList.contains("last-in-group"))) {
-            lastMsg.classList.remove("first-in-group");
-            lastMsg.classList.remove("last-in-group");
-            lastMsg.classList.add("middle-in-group");
+        if (lastMsg) {
+            if (lastMsg.classList.contains("single-in-group")) {
+                lastMsg.classList.remove("single-in-group");
+                lastMsg.classList.add("first-in-group");
+            }
+            else if (lastMsg.classList.contains("last-in-group")) { 
+                lastMsg.classList.remove("last-in-group");
+                lastMsg.classList.add("middle-in-group");
+            }
         }
         div.classList.add("last-in-group");
     }
+    lastMsg.querySelector('.time')?.remove(); // Xoá thời gian của tin trước đó
 
 
     let contentHtml = textToHtml(msg.content);
@@ -338,6 +345,7 @@ function addNewMessage(msg) {
         <div title="${msgTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}">
             ${showName ? `<div class="sender">${msg.senderName}</div>` : ''}
             <div class="content">${contentHtml}</div>
+            <div class="time">${msgTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} </div>
         </div>`;
 
     container.appendChild(div);
@@ -370,6 +378,7 @@ function renderHeader(boxChatId) {
     // Add data-id to #chat-header
     $('#chat-header').attr('data-id', boxChatId);
     var itemBoxChat = $(`#chat-list .chat-item[data-id="${boxChatId}"]`);
+    itemBoxChat.parent().addClass('active'); // đánh dấu hội thoại đang mở
     // Add avatar to #chat-header #chat-avatar
     const chatAvatar = $(itemBoxChat).find('img').attr("src");
     $('#chat-header #chat-avatar').attr("src", chatAvatar);
@@ -401,12 +410,17 @@ function renderHeader(boxChatId) {
 // Gửi tin nhắn
 $('#send-form').on('submit', function (e) {
     e.preventDefault();
-    const messageInput = $('#message-input');
+    let messageInputJq = $('#message-input');
     const btnSend = $('#btn-send');
-    const content = messageInput.val();
+    const content = messageInputJq.val();
+    if (!currentBoxId) {
+        alert("Vui lòng chọn hội thoại trước khi gửi tin nhắn.");
+        return;
+    }
     if (content && currentBoxId) {
+        
         //disable form to prevent multiple submissions
-        messageInput.prop('disabled', true);
+        messageInputJq.prop('disabled', true);
         btnSend.prop('disabled', true);
 
         fetch('/message/send', {
@@ -425,13 +439,13 @@ $('#send-form').on('submit', function (e) {
                     btnSend.prop('disabled', false);
                 }
                 // re-enable input field after sending message
-                messageInput.prop('disabled', false);
+                messageInputJq.prop('disabled', false);
                 btnSend.prop('disabled', false);
                 return res.json();
             })
             .then(() => {
-                messageInput.val('');
-                messageInput.focus();
+                messageInputJq.val('');
+                messageInputJq.focus();
                 
             })
             .catch(err => console.error("SendMessage Error: ", err));
@@ -531,4 +545,60 @@ const observer = new IntersectionObserver((entries) => {
 }, {
     root: messageContainer,  // rất quan trọng
     threshold: 0.2           // dễ test hơn, chỉ cần 20% lọt vào viewport
+});
+
+
+//----------------------------------------------------------------------------------------
+
+const sendForm = document.getElementById("send-form");
+
+if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", adjustForKeyboard);
+    window.visualViewport.addEventListener("scroll", adjustForKeyboard);
+
+    function adjustForKeyboard() {
+        const offset = window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop;
+        sendForm.style.marginBottom = offset > 0 ? offset + "px" : "0";
+    }
+}
+
+messageInput.addEventListener("focus", () => {
+    setTimeout(() => {
+        messageInput.scrollIntoView({ block: "end", behavior: "smooth" });
+    }, 300); // đợi bàn phím bật xong
+});
+
+
+//=============================================================================================
+
+messageInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault(); // Không xuống dòng
+        document.getElementById('send-form').dispatchEvent(new Event('submit')); // Gửi form
+        this.style.height = '49px';
+    }
+    // Nếu Shift + Enter thì không ngăn chặn => tự xuống dòng
+});
+
+$("#btn-send").on("click", function () {
+    messageInput.style.height = '49px';
+})
+
+messageInput.addEventListener('input', function () {
+    this.style.height = '49px'; // reset chiều cao
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px'; // tăng nhưng không vượt max-height
+});
+
+
+$(document).on('input', '#chat-search', function () {
+    let keyword = $(this).val().toLowerCase();
+
+    $('#chat-list li').each(function () {
+        let chatName = $(this).find('.chat-name').text().toLowerCase();
+        if (chatName.includes(keyword)) {
+            $(this).removeClass("d-none");
+        } else {
+            $(this).addClass("d-none");
+        }
+    });
 });

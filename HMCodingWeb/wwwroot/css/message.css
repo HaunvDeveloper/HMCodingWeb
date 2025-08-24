@@ -1,10 +1,20 @@
-﻿/* Sidebar */
-#chat-sidebar {
-    transition: all 0.3s ease;
-    height: 500px;
-    background-color: #f8f9fa;
+﻿#footer{
+    display: none !important;
 }
 
+
+/* Sidebar */
+#chat-sidebar {
+    transition: all 0.3s ease;
+    height: calc(100dvh - 72px);
+    background-color: #f8f9fa;
+    overflow-y:hidden;
+}
+
+#chat-list {
+    overflow-y: scroll;
+    height: calc(100dvh - 124px);
+}
 #chat-list .list-group-item {
     padding: 10px 12px;
     cursor: pointer;
@@ -13,6 +23,7 @@
     margin-bottom: 5px;
     background-color: transparent;
     transition: background-color 0.2s ease;
+
 }
 
     #chat-list .list-group-item:hover {
@@ -117,6 +128,9 @@
     border-radius: 50%;
     object-fit: cover;
 }
+#message-container .message.current-user .time {
+    text-align: right;
+}
 
 #message-container .message .content {
     padding: 8px 12px;
@@ -192,7 +206,8 @@
 }
 #chat-container {
     position: relative;
-    
+    height: calc(100dvh - 72px);
+    background-color: #fff;
 }
 
 
@@ -207,10 +222,10 @@
         width: 100%;
         background-color: #f8f9fa;
         box-shadow: 2px 0 5px rgba(0,0,0,0.2);
-        height: 70vh !important; /* Full height minus header */
+        height: calc(100dvh - 49.6px) !important; /* Full height minus header */
     }
     #chat-container {
-        height: 70vh !important; /* Full height minus header */
+        height: calc(100dvh - 49.6px) !important; /* Full height minus header */
     }
 
     #chat-sidebar:not(.show) {
@@ -225,5 +240,20 @@
         width: 100%;
     }
 
+
+    #send-form {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+    }
+
+    #message-container {
+        padding-bottom: 90px !important; /* Đảm bảo không bị che khuất bởi form gửi tin nhắn */
+    }
+
+    #typing-indicator {
+        margin-bottom: 90px !important;
+    }
 
 }
