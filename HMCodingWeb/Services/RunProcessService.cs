@@ -86,6 +86,11 @@ namespace HMCodingWeb.Services
                     Directory.CreateDirectory(userDirectory);
                 }
 
+                /**************************************************************
+                 * 
+                 *                 COMPILE AND RUN C++ CODE
+                 * 
+                 **************************************************************/
                 if (model.ProgramLanguageId == 1)
                 {
                     model.FileName = model.FileName + ".cpp";
