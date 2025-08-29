@@ -95,8 +95,8 @@
                     <div class="tab-pane fade" id="output" role="tabpanel">
                         <div id="output-div" class="io-child-div">
                             <div class="flex align-center mt-2">
-                                <span>Thời gian thực thi:</span>
-                                <input class="run-time ml-2 form-control p-2 w-50" type="text" placeholder="Thời gian thực thi (giây)" readonly>
+                                <div class="badge bg-info run-time me-3"></div>
+                                <div class="badge bg-warning memory-used"></div>
                             </div>
                             <div id="output-area" class="p-4">
                                 <div id="output-data-area">
@@ -109,8 +109,9 @@
                     <div class="tab-pane fade" id="erroralert" role="tabpanel">
                         <div id="alert-error" class="io-child-div">
                             <div class="flex align-center mt-2">
-                                <span>Thời gian thực thi:</span>
-                                <input class="run-time ml-2 form-control p-2 w-50" type="text" placeholder="Thời gian thực thi (giây)" readonly>
+                                <div class="badge bg-info run-time me-3"></div>
+                                <div class="badge bg-warning memory-used me-3"></div>
+
                             </div>
                             <div id="error" class="m-3"></div>
                         </div>
@@ -187,13 +188,20 @@
             </div>
             <div class="cfg-option px-3">
                 <div class="cfg-title">
-                    <b>Time limit:</b>
+                    <b>Time limit (s):</b>
                 </div>
                 <div class="cfg-content w-50 mr-3">
                     <input max="10" min="1" type="number" id="time-limit" class="form-control-sm w-100" value="1">
                 </div>
             </div>
-
+            <div class="cfg-option px-3">
+                <div class="cfg-title">
+                    <b>Memory limit (MB):</b>
+                </div>
+                <div class="cfg-content w-50 mr-3">
+                    <input max="512" min="1" step="0.2" type="number" id="memory-limit" class="form-control-sm w-100" value="64">
+                </div>
+            </div>
             @if (Model != null && isOwn)
             {
                 <div class="btn-group w-100" role="group">
@@ -340,7 +348,8 @@
                 "Error": null,
                 "InputFile": $("#input-file").val(),
                 "OutputFile": $("#output-file").val(),
-                "TimeLimit": ($("#time-limit").val() >= 0 ? $("#time-limit").val() : 1)
+                "TimeLimit": ($("#time-limit").val() >= 0 ? $("#time-limit").val() : 1),
+                "MemoryLimit": $("#memory-limit").val() >= 0 ? $("#memory-limit").val() : 64
             }
             $.ajax({
                 type: 'POST',
@@ -353,7 +362,6 @@
                         let tab = new bootstrap.Tab(tabTriggerEl);
                         tab.show();
                         baoloi.setValue(response.error);
-                        $(".run-time").val(response.runTime);
                         showToast("error", "Đã có lỗi xảy ra", 1500);
                     }
                     else {
@@ -364,6 +372,8 @@
                         $(".run-time").val(response.runTime);
                         showToast("success", "Đã có kết quả output", 1500);
                     }
+                    $(".run-time").text(response.runTime + " s");
+                    $(".memory-used").text(response.memoryUsed + " MB");
                     document.getElementById("run").style.display = "block";
                     document.querySelector(".loader").style.display = "none";
                 },

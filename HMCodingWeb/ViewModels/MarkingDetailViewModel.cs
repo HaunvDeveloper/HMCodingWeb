@@ -17,6 +17,8 @@ namespace HMCodingWeb.ViewModels
             ErrorContent = markingDetail.ErrorContent;
             TotalTestcase = totalTestcase;
             SessionCode = sessionCode;
+            MemoryUsed = (float)markingDetail.MemoryUsed;
+            IsMemoryLimitExceed = markingDetail.IsMemoryLimitExceed;
         }
 
 
@@ -35,6 +37,10 @@ namespace HMCodingWeb.ViewModels
         public double RunTime { get; set; }
 
         public bool IsTimeLimitExceed { get; set; }
+
+        public float MemoryUsed { get; set; }
+
+        public bool IsMemoryLimitExceed { get; set; }
 
         public bool IsError { get; set; }
 

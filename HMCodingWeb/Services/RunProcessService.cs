@@ -1,10 +1,11 @@
-﻿using System;
+﻿using HMCodingWeb.ViewModels;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
+using System;
 using System.CodeDom.Compiler;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using HMCodingWeb.ViewModels;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace HMCodingWeb.Services
@@ -123,9 +124,10 @@ namespace HMCodingWeb.Services
                     var stopwatch = new Stopwatch();
                     stopwatch.Start();
                     runProcess.Start();
+
                     var stdoutTask = runProcess.StandardOutput.ReadToEndAsync();
                     var stderrTask = runProcess.StandardError.ReadToEndAsync();
-                    var processTask = Task.CompletedTask;
+                    Task processTask = Task.CompletedTask;
 
                     if (!string.IsNullOrEmpty(model.InputFile))
                     {
@@ -136,10 +138,7 @@ namespace HMCodingWeb.Services
                         {
                             runProcess.StartInfo.Arguments = $" < {inputFilePath}";
                         }
-                        processTask = Task.Run(() =>
-                        {
-                            runProcess.WaitForExit();
-                        });
+                        processTask = Task.Run(() => runProcess.WaitForExit());
                     }
                     else if (!string.IsNullOrEmpty(model.Input))
                     {
@@ -153,7 +152,6 @@ namespace HMCodingWeb.Services
                     }
                     else
                     {
-                        // Create a task to monitor the process exit
                         processTask = Task.Run(() =>
                         {
                             runProcess.StandardInput.Close();
@@ -161,17 +159,39 @@ namespace HMCodingWeb.Services
                         });
                     }
 
+                    // === Monitor Memory Usage in parallel ===
+                    var monitorTask = Task.Run(async () =>
+                    {
+                        while (!runProcess.HasExited)
+                        {
+                            try
+                            {
+                                runProcess.Refresh();
+                                var memoryMB = runProcess.WorkingSet64 / (1024.0 * 1024.0);
+                                model.MemoryUsed = model.MemoryUsed > (float)memoryMB ? model.MemoryUsed : (float)memoryMB;
 
-                    //wating run time exit
+                                if (model.MemoryLimit.HasValue && memoryMB > model.MemoryLimit.Value)
+                                {
+                                    runProcess.Kill();
+                                    model.Error = "Memory limit exceeded";
+                                    model.IsError = true;
+                                    break;
+                                }
+                            }
+                            catch { }
+                            await Task.Delay(50); // check mỗi 50ms
+                        }
+                    });
+
+                    // === Wait with runtime limit ===
                     if (await Task.WhenAny(processTask, Task.Delay(model.TimeLimit * 1000 ?? 1000)) == processTask)
                     {
                         stopwatch.Stop();
                         model.RunTime = (float)stopwatch.Elapsed.TotalSeconds;
-                        // Process completed within time limit
+
                         if (!string.IsNullOrEmpty(model.OutputFile))
                         {
                             var outputFilePath = Path.Combine(userDirectory, model.OutputFile);
-
                             runProcess.StartInfo.RedirectStandardOutput = false;
                             runProcess.StartInfo.RedirectStandardError = false;
                             runProcess.StartInfo.Arguments += $" > {outputFilePath}";
@@ -185,21 +205,18 @@ namespace HMCodingWeb.Services
                         }
                         else
                         {
-                            // Read the output if output file is not used
                             model.Output = await stdoutTask;
                         }
 
                         var runErrors = await stderrTask;
-
-                        // Check for runtime errors
                         if (!string.IsNullOrEmpty(runErrors))
                         {
                             model.Error = runErrors;
-                            model.IsError = true; // Đánh dấu là có lỗi
+                            model.IsError = true;
                         }
-                        else
+                        else if (model.IsError != true) // không bị kill bởi memory
                         {
-                            model.IsError = false; // Không có lỗi
+                            model.IsError = false;
                         }
                     }
                     else
@@ -207,7 +224,7 @@ namespace HMCodingWeb.Services
                         try
                         {
                             runProcess.Kill();
-                            runProcess.WaitForExit(); // Ensure the process has exited
+                            runProcess.WaitForExit();
                         }
                         catch (Exception ex)
                         {
@@ -218,17 +235,30 @@ namespace HMCodingWeb.Services
 
                         stopwatch.Stop();
                         model.RunTime = (float)stopwatch.Elapsed.TotalSeconds;
-                        model.Error = "Time limit exceed";
+                        model.Error = "Time limit exceeded";
                         model.IsError = true;
                     }
-                    
+
+                    // cập nhật PeakWorkingSet64 sau khi kết thúc
+                    try
+                    {
+                        runProcess.Refresh();
+                        var peakMB = runProcess.PeakWorkingSet64 / (1024.0 * 1024.0);
+                        model.MemoryUsed = model.MemoryUsed > (float)peakMB ? model.MemoryUsed : (float)peakMB;
+                    }
+                    catch { }
                 }
+                /**************************************************************
+                 * 
+                 *                 RUN PYTHON CODE
+                 * 
+                 **************************************************************/
                 else if (model.ProgramLanguageId == 2)
                 {
                     // Python code execution logic
                     model.FileName = model.FileName + ".py";
                     var sourceFilePath = Path.Combine(userDirectory, model.FileName);
-                    await File.WriteAllTextAsync(sourceFilePath, model.SourceCode);
+                    await File.WriteAllTextAsync(sourceFilePath, model.SourceCode, Encoding.UTF8);
 
                     var runProcess = new Process
                     {
@@ -246,12 +276,14 @@ namespace HMCodingWeb.Services
                     };
 
                     runProcess.StartInfo.EnvironmentVariables["PYTHONIOENCODING"] = "utf-8";
+
                     var stopwatch = new Stopwatch();
                     stopwatch.Start();
                     runProcess.Start();
+
                     var stdoutTask = runProcess.StandardOutput.ReadToEndAsync();
                     var stderrTask = runProcess.StandardError.ReadToEndAsync();
-                    var processTask = Task.CompletedTask;
+                    Task processTask;
 
                     if (!string.IsNullOrEmpty(model.InputFile))
                     {
@@ -262,10 +294,7 @@ namespace HMCodingWeb.Services
                         {
                             runProcess.StartInfo.Arguments += $" < {inputFilePath}";
                         }
-                        processTask = Task.Run(() =>
-                        {
-                            runProcess.WaitForExit();
-                        });
+                        processTask = Task.Run(() => runProcess.WaitForExit());
                     }
                     else if (!string.IsNullOrEmpty(model.Input))
                     {
@@ -286,12 +315,36 @@ namespace HMCodingWeb.Services
                         });
                     }
 
+                    // === Monitor Memory Usage ===
+                    var monitorTask = Task.Run(async () =>
+                    {
+                        while (!runProcess.HasExited)
+                        {
+                            try
+                            {
+                                runProcess.Refresh();
+                                var memoryMB = runProcess.WorkingSet64 / (1024.0 * 1024.0);
+                                model.MemoryUsed = model.MemoryUsed > (float)memoryMB ? model.MemoryUsed : (float)memoryMB;
 
+                                if (model.MemoryLimit.HasValue && memoryMB > model.MemoryLimit.Value)
+                                {
+                                    runProcess.Kill();
+                                    model.Error = "Memory limit exceeded";
+                                    model.IsError = true;
+                                    break;
+                                }
+                            }
+                            catch { }
+                            await Task.Delay(50); // check mỗi 50ms
+                        }
+                    });
 
+                    // === Wait with runtime limit ===
                     if (await Task.WhenAny(processTask, Task.Delay(model.TimeLimit * 1000 ?? 1000)) == processTask)
                     {
                         stopwatch.Stop();
                         model.RunTime = (float)stopwatch.Elapsed.TotalSeconds;
+
                         if (!string.IsNullOrEmpty(model.OutputFile))
                         {
                             var outputFilePath = Path.Combine(userDirectory, model.OutputFile);
@@ -313,13 +366,12 @@ namespace HMCodingWeb.Services
                         }
 
                         var runErrors = await stderrTask;
-
                         if (!string.IsNullOrEmpty(runErrors))
                         {
                             model.Error = runErrors;
                             model.IsError = true;
                         }
-                        else
+                        else if (model.IsError != true) // không bị kill bởi memory
                         {
                             model.IsError = false;
                         }
@@ -340,11 +392,24 @@ namespace HMCodingWeb.Services
 
                         stopwatch.Stop();
                         model.RunTime = (float)stopwatch.Elapsed.TotalSeconds;
-                        model.Error = "Time limit exceed";
+                        model.Error = "Time limit exceeded";
                         model.IsError = true;
                     }
-                    
+
+                    // === cập nhật Peak Working Set sau khi kết thúc ===
+                    try
+                    {
+                        runProcess.Refresh();
+                        var peakMB = runProcess.PeakWorkingSet64 / (1024.0 * 1024.0);
+                        model.MemoryUsed = model.MemoryUsed > (float)peakMB ? model.MemoryUsed : (float)peakMB;
+                    }
+                    catch { }
                 }
+                /**************************************************************
+                 * 
+                 *                 COMPILE AND RUN PASCAL CODE
+                 * 
+                 **************************************************************/
                 else if (model.ProgramLanguageId == 3)
                 {
                     // Pascal code execution logic
@@ -490,6 +555,11 @@ namespace HMCodingWeb.Services
                     }
                     
                 }
+                /**************************************************************
+                 * 
+                 *                 RUN JAVASCRIPT (Node.js) CODE
+                 * 
+                 **************************************************************/
                 else if (model.ProgramLanguageId == 4)
                 {
                     // JavaScript (Node.js) execution logic

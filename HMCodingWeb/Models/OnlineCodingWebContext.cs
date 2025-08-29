@@ -256,6 +256,7 @@ public partial class OnlineCodingWebContext : DbContext
             entity.Property(e => e.ExerciseName).HasMaxLength(125);
             entity.Property(e => e.InputFile).HasMaxLength(50);
             entity.Property(e => e.KindMarking).HasMaxLength(20);
+            entity.Property(e => e.MemoryLimit).HasDefaultValue(64.0);
             entity.Property(e => e.OutputFile).HasMaxLength(50);
             entity.Property(e => e.TypeMarking).HasMaxLength(20);
 
@@ -320,6 +321,7 @@ public partial class OnlineCodingWebContext : DbContext
             entity.Property(e => e.MarkingDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.MemoryLimit).HasDefaultValue(64.0);
             entity.Property(e => e.OutputFile).HasMaxLength(50);
             entity.Property(e => e.Status).HasMaxLength(50);
             entity.Property(e => e.TimeLimit).HasDefaultValue(1.0);

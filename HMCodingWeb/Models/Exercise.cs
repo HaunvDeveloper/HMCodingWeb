@@ -27,6 +27,8 @@ public partial class Exercise
 
     public double RuntimeLimit { get; set; }
 
+    public double MemoryLimit { get; set; }
+
     public int DifficultyId { get; set; }
 
     public int ChapterId { get; set; }

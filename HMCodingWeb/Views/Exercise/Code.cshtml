@@ -62,8 +62,8 @@
                     <p class="header-content-value">@Model.ExerciseName</p>
                 </div>
                 <div class="header-content-child">
-                    <span><b>Thể loại chấm:</b></span>
-                    <p class="header-content-value">@Model.KindMarking</p>
+                    <span><b>Giới hạn bộ nhớ:</b></span>
+                    <p class="header-content-value">@(Model.MemoryLimit) MB</p>
                 </div>
                 <div class="header-content-child">
                     <span><b>Giới hạn thời gian:</b></span>
@@ -164,8 +164,8 @@
                     <div class="tab-pane fade" id="output" role="tabpanel">
                         <div id="output-div" class="io-child-div">
                             <div class="flex align-center mt-2">
-                                <span>Thời gian thực thi:</span>
-                                <input class="run-time ml-2 form-control p-2 w-50" type="text" placeholder="Thời gian thực thi (giây)" readonly>
+                                <div class="badge bg-info run-time me-3"></div>
+                                <div class="badge bg-warning memory-used"></div>
                             </div>
                             <div id="output-area" class="p-4">
                                 <div id="output-data-area">
@@ -178,8 +178,8 @@
                     <div class="tab-pane fade" id="erroralert" role="tabpanel">
                         <div id="alert-error" class="io-child-div">
                             <div class="flex align-center mt-2">
-                                <span>Thời gian thực thi:</span>
-                                <input class="run-time ml-2 form-control p-2 w-50" type="text" placeholder="Thời gian thực thi (giây)" readonly>
+                                <div class="badge bg-info run-time me-3"></div>
+                                <div class="badge bg-warning memory-used"></div>
                             </div>
                             <div id="error" class="m-3"></div>
                         </div>

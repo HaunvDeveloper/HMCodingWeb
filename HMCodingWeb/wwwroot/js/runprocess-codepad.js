@@ -59,7 +59,7 @@ document.getElementById("run").addEventListener("click", function () {
                 let tab = new bootstrap.Tab(tabTriggerEl);
                 tab.show();
                 baoloi.setValue(response.error);
-                $(".run-time").val(response.runTime);
+                
                 showToast("error", "Đã có lỗi xảy ra", 1500);
             }
             else {
@@ -67,9 +67,10 @@ document.getElementById("run").addEventListener("click", function () {
                 let tab = new bootstrap.Tab(tabTriggerEl);
                 tab.show();
                 document.getElementById("output-data").innerHTML = response.output;
-                $(".run-time").val(response.runTime);
                 showToast("success", "Đã có kết quả output", 1500);
             }
+            $(".run-time").text(response.runTime + " s");
+            $(".memory-used").text(response.memoryUsed + " MB");
             document.getElementById("run").style.display = "block";
             document.querySelector(".loader").style.display = "none";
         },

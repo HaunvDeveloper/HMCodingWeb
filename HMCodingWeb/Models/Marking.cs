@@ -37,6 +37,8 @@ public partial class Marking
 
     public string? OutputFile { get; set; }
 
+    public double MemoryLimit { get; set; }
+
     public double TimeLimit { get; set; }
 
     public TimeOnly? TimeSpent { get; set; }

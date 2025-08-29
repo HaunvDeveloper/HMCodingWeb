@@ -253,6 +253,8 @@ namespace HMCodingWeb.Controllers
                     IsCorrect = md.IsCorrect,
                     RunTime = md.RunTime.ToString("0.#######") + " s",
                     IsTimeLimitExceed = md.IsTimeLimitExceed,
+                    MemoryUsed = md.MemoryUsed.ToString("0.##") + " MB",
+                    IsMemoryLimitExceed = md.IsMemoryLimitExceed,
                     ErrorContent = md.ErrorContent,
                     IsError = md.IsError,
                 })
@@ -336,7 +338,7 @@ namespace HMCodingWeb.Controllers
                     isGainRank = obj.isGain;
                     newRank = obj.rankName;
                 }
-                return Json(new { status = true, data = new { marking.IsAllCorrect, marking.ResultContent, marking.Score, marking.IsError, pointGain, isGainRank, newRank, newId = marking.Id } });
+                return Json(new { status = true, data = new { marking.IsAllCorrect, marking.ResultContent, marking.Score, marking.IsError, marking.Status, pointGain, isGainRank, newRank, newId = marking.Id } });
             }
             catch (Exception ex)
             {

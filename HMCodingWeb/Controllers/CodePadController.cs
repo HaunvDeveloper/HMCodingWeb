@@ -222,7 +222,7 @@ namespace HMCodingWeb.Controllers
                 _runProcessService.ClearTempFolder(model.UserId);
 
                 HttpContext.Session.SetString("IsRunning", "false");
-                return Json(new { IsError = result.IsError, Error = result.Error, Output = result.Output, RunTime = model.RunTime });
+                return Json(new { IsError = result.IsError, Error = result.Error, Output = result.Output, RunTime = model.RunTime, MemoryUsed = result.MemoryUsed });
             }
             catch (Exception ex)
             {

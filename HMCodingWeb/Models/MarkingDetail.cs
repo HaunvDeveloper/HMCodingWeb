@@ -23,6 +23,10 @@ public partial class MarkingDetail
 
     public double RunTime { get; set; }
 
+    public double MemoryUsed { get; set; }
+
+    public bool IsMemoryLimitExceed { get; set; }
+
     public bool IsTimeLimitExceed { get; set; }
 
     public bool IsError { get; set; }

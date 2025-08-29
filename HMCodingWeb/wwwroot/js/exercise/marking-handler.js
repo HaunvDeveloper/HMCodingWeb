@@ -33,6 +33,8 @@ $(document).ready(function () {
         if (!testCaseResult.isCorrect) {
             if (testCaseResult.isTimeLimitExceed) {
                 failureReason = 'Vượt quá thời gian';
+            } else if (testCaseResult.isMemoryLimitExceed) {
+                failureReason = 'Vượt quá dung lượng';
             } else if (testCaseResult.isError) {
                 failureReason = 'Lỗi thực thi';
             } else {
@@ -54,6 +56,7 @@ $(document).ready(function () {
                         </div>
                         ${failureReason ? `<div class="details"><strong>Lý do:</strong> ${failureReason}</div>` : ''}
                         <div class="details"><strong>Thời gian:</strong> ${testCaseResult.runTime.toFixed(6)}s</div>
+                        ${testCaseResult.memoryUsed ? `<div class="details"><strong>Bộ nhớ sử dụng:</strong> ${testCaseResult.memoryUsed.toFixed(2)} MB</div>` : ''}
                     </div>
                 `;
         $("#test-case-results").append(resultHtml);
@@ -135,10 +138,22 @@ $(document).ready(function () {
                 },
                 success: function (response) {
                     if (response.status) {
+                        var statusContent = 'Tất cả đúng';
+                        if (!response.data.isAllCorrect) {
+                            if (response.data.status === 'TLE') {
+                                statusContent = 'Vượt quá thời gian';
+                            } else if (response.data.status === 'MLE') {
+                                statusContent = 'Vượt quá dung lượng';
+                            } else if (response.data.status === 'RE') {
+                                statusContent = 'Lỗi thực thi';
+                            } else {
+                                statusContent = 'Có test case sai';
+                            }
+                        }
                         const resultHtml = `
                                     <div class="finalresult alert ${response.data.isAllCorrect ? 'alert-success' : 'alert-warning'}">
                                         <h5>Kết quả chấm điểm:</h5>
-                                        <p><strong>Trạng thái:</strong> ${response.data.isAllCorrect ? 'Tất cả đúng' : 'Có test case sai'}</p>
+                                        <p><strong>Trạng thái:</strong> ${statusContent}</p>
                                         <p><strong>Điểm số:</strong> ${response.data.score}/100</p>
                                         ${response.data.isError ? '<p><strong>Lỗi:</strong> Có lỗi trong quá trình chạy chương trình</p>' : ''}
                                         ${response.data.pointGain ? `<p><strong>Bạn được nhận thêm:</strong> ${response.data.pointGain} điểm</p>` : ''}

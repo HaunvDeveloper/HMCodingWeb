@@ -14,5 +14,7 @@
         public string? OutputFile { get; set; }
         public int? TimeLimit { get; set; }
         public float? RunTime { get; set; }
+        public float? MemoryLimit { get; set; } // MB
+        public float? MemoryUsed { get; set; } // MB
     }
 }

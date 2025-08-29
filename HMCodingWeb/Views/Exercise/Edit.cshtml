@@ -133,8 +133,20 @@
         </div>
         <div class="header-content-child">
             <span><b>Thời gian thực thi giới hạn</b></span>
-            <input type="number" id="RuntimeLimit" class="form-control header-content-input" step="1"
-                   value="@Model.RuntimeLimit" max="10" min="1" required>
+            <div class="input-group">
+                <input type="number" id="RuntimeLimit" class="form-control header-content-input" step="1" value="@Model.RuntimeLimit" max="10"
+                       min="1" required>
+                <span class="input-group-text">giây</span>
+            </div>
+
+        </div>
+        <div class="header-content-child">
+            <span><b>Bộ nhớ thực thi giới hạn</b></span>
+            <div class="input-group">
+                <input type="number" id="MemoryLimit" class="form-control header-content-input" step="1" value="@Model.MemoryLimit" max="512"
+                       min="1" required>
+                <span class="input-group-text">MB</span>
+            </div>
         </div>
         <div class="header-content-child" style="align-items: center; gap:2rem;">
             <span class="mt-2" style="font-size: 24px;"><strong>Là bài kiểm tra:</strong></span>
@@ -534,6 +546,7 @@
                     AccessId: parseInt($("#AccessRole").val()),
                     IsExam: $("#IsExam").prop("checked"),
                     RuntimeLimit: parseInt($("#RuntimeLimit").val()),
+                    MemoryLimit: parseInt($("#MemoryLimit").val()),
                     UserCreatedId: 0,
                     ExerciseBelongTypes: getExerciseTypes(),
                     TestCases: getAllTestCases(),

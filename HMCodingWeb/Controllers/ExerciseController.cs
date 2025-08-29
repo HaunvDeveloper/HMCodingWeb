@@ -460,6 +460,7 @@ namespace HMCodingWeb.Controllers
                 exercise.AccessId = model.AccessId;
                 exercise.IsExam = model.IsExam;
                 exercise.RuntimeLimit = model.RuntimeLimit;
+                exercise.MemoryLimit = model.MemoryLimit;
                 if (model.IsExam)
                 {
                     exercise.AccessId = 1;

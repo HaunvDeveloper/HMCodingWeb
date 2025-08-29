@@ -156,6 +156,7 @@ namespace HMCodingWeb.Services
                 CorrectTestNumber = 0,
                 ResultContent = string.Empty,
                 TotalTestNumber = testCases.Count,
+                MemoryLimit = exercise.MemoryLimit,
             };
 
             
@@ -172,7 +173,8 @@ namespace HMCodingWeb.Services
                     TimeLimit = (int)model.TimeLimit,
                     Input = testCase.Input,
                     UserId = userId,
-                    FileName = $"test_{exercise.Id}_{userId}"
+                    FileName = $"test_{exercise.Id}_{userId}",
+                    MemoryLimit = (float)model.MemoryLimit,
                 }, i == 0);
 
 
@@ -189,6 +191,8 @@ namespace HMCodingWeb.Services
                     IsTimeLimitExceed = result.RunTime > model.TimeLimit || result.Error == "Time limit exceed",
                     IsCorrect = result.IsError == true ? false : MatchingResult(model.TypeMarking, result.Output, testCase.Output),
                     TestCaseIndex = testCase.Position,
+                    MemoryUsed = result.MemoryUsed ?? 0,
+                    IsMemoryLimitExceed = result.MemoryUsed > model.MemoryLimit
                 };
 
                 
@@ -206,6 +210,10 @@ namespace HMCodingWeb.Services
                 else if (markingDetail.IsTimeLimitExceed)
                 {
                     model.ResultContent += $"Test case {testCase.Position} failed due to time limit exceeded.\n";
+                }
+                else if (markingDetail.IsMemoryLimitExceed)
+                {
+                    model.ResultContent += $"Test case {testCase.Position} failed due to memory limit exceeded.\n";
                 }
                 else if (markingDetail.IsError)
                 {
@@ -239,6 +247,11 @@ namespace HMCodingWeb.Services
                 {
                     model.Status = "TLE";
                     model.ResultContent += "Some test cases exceeded the time limit.\n";
+                }
+                else if(model.MarkingDetails.Any(x => x.IsMemoryLimitExceed))
+                {
+                    model.Status = "MLE";
+                    model.ResultContent += "Some test cases exceeded the memory limit.\n";
                 }
             }
 
