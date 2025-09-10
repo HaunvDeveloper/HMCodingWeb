@@ -8,6 +8,9 @@ using System.IO;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using DinkToPdf;
+using DinkToPdf.Contracts;
+using System.Runtime.CompilerServices;
 
 namespace HMCodingWeb.Controllers
 {
@@ -21,8 +24,9 @@ namespace HMCodingWeb.Controllers
         private readonly UserPointService _userPointService;
         private readonly RankingService _rankingService;
         private readonly GenerateSampleOutputService _generateSampleOutputService;
+        private readonly IConverter _converter;
 
-        public ExerciseController(ILogger<ExerciseController> logger, OnlineCodingWebContext context, RunProcessService runProcessService, MarkingService markingService, UserPointService userPointService, RankingService rankingService, GenerateSampleOutputService generateSampleOutputService)
+        public ExerciseController(ILogger<ExerciseController> logger, OnlineCodingWebContext context, RunProcessService runProcessService, MarkingService markingService, UserPointService userPointService, RankingService rankingService, GenerateSampleOutputService generateSampleOutputService, IConverter converter)
         {
             _logger = logger;
             _context = context;
@@ -31,6 +35,7 @@ namespace HMCodingWeb.Controllers
             _userPointService = userPointService;
             _rankingService = rankingService;
             _generateSampleOutputService = generateSampleOutputService;
+            _converter = converter;
         }
         [AllowAnonymous]
         public IActionResult Index()
@@ -601,8 +606,130 @@ namespace HMCodingWeb.Controllers
             return Json(new { status = true, message = "success" });
         }
 
-        
-        
-    
+        [HttpGet]
+        public async Task<IActionResult> ExportPdf(long exerciseId)
+        {
+            var exercise = await _context.Exercises.FindAsync(exerciseId);
+
+            if (exercise == null)
+            {
+                return NotFound("Bài tập không tồn tại.");
+            }
+
+            string html = exercise.ExerciseContent ?? "<p>Không có nội dung bài tập.</p>";
+            html = await ConvertImagesToBase64Async(html);
+            // Bọc HTML đề thi (header/footer) nếu muốn
+            var wrappedHtml = $@"
+<!DOCTYPE html>
+<html lang=""vi"">
+<head>
+  <meta charset=""utf-8"">
+  <meta name=""viewport"" content=""width=device-width, initial-scale=1"">
+  <style>
+    @page {{ size: A4; margin: 20mm 15mm 20mm 15mm; }}
+    body {{ font-family: 'DejaVu Sans', Arial, Helvetica, sans-serif; font-size: 12pt; line-height: 1.4; }}
+    h1, h2, h3 {{ margin: 0 0 8px 0; }}
+    .exam-title {{ text-align:center; font-size: 18pt; font-weight:700; margin-bottom: 10px; }}
+    .meta {{ text-align:center; font-size: 10pt; margin-bottom: 16px; color:#333; }}
+    .content {{ margin-top: 10px; }}
+    .page-break {{ page-break-after: always; }}
+  </style>
+</head>
+<body>
+  <div class=""content"">
+    {html}
+  </div>
+</body>
+</html>";
+
+            // Cấu hình PDF
+            var global = new GlobalSettings
+            {
+                ColorMode = ColorMode.Color,
+                Orientation = Orientation.Portrait,
+                PaperSize = PaperKind.A4,
+                Margins = new MarginSettings { Top = 20, Bottom = 20, Left = 15, Right = 15 },
+                DocumentTitle = exercise.ExerciseCode,
+                DPI = 300
+            };
+
+            var objectSettings = new ObjectSettings
+            {
+                PagesCount = true,
+                HtmlContent = wrappedHtml,
+                WebSettings = new WebSettings
+                {
+                    DefaultEncoding = "utf-8",
+                    // Nếu cần font tiếng Việt đặc biệt, đảm bảo font có sẵn trên server.
+                    // Bạn có thể nhúng CSS @font-face trỏ tới file .ttf trong wwwroot.
+                    PrintMediaType = true,
+                    EnableIntelligentShrinking = true,
+                    LoadImages = true,
+                },
+                HeaderSettings = new HeaderSettings
+                {
+                    FontSize = 9,
+                    Left = exercise.ExerciseName ?? "Bài tập HMCoding",
+                    Right = "Trang [page]/[toPage]",
+                    Line = true,
+                    Spacing = 4
+                },
+                FooterSettings = new FooterSettings
+                {
+                    FontSize = 9,
+                    Center = "© HMCODING – Học, Luyện, Chinh phục đỉnh cao lập trình!",
+                    Line = true,
+                    Spacing = 4
+                }
+            };
+
+            var pdf = new HtmlToPdfDocument
+            {
+                GlobalSettings = global,
+                Objects = { objectSettings }
+            };
+
+            byte[] file = _converter.Convert(pdf);
+            var fileName = $"{exercise.ExerciseCode.Trim()}.pdf";
+            return File(file, "application/pdf", fileName);
+        }
+
+        private async Task<string> ConvertImagesToBase64Async(string html)
+        {
+            var httpClient = new HttpClient();
+
+            var doc = new HtmlAgilityPack.HtmlDocument();
+            doc.LoadHtml(html);
+
+            foreach (var img in doc.DocumentNode.SelectNodes("//img[@src]") ?? Enumerable.Empty<HtmlAgilityPack.HtmlNode>())
+            {
+                var src = img.GetAttributeValue("src", "");
+                try
+                {
+                    byte[] data;
+                    if (src.StartsWith("http"))
+                    {
+                        data = await httpClient.GetByteArrayAsync(src);
+                    }
+                    else
+                    {
+                        // Nếu là path local -> lấy từ wwwroot
+                        var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", src.TrimStart('/'));
+                        data = await System.IO.File.ReadAllBytesAsync(path);
+                    }
+
+                    var base64 = Convert.ToBase64String(data);
+                    var ext = Path.GetExtension(src).Trim('.').ToLower();
+                    img.SetAttributeValue("src", $"data:image/{ext};base64,{base64}");
+                }
+                catch
+                {
+                    // Nếu lỗi (ảnh không tải được) thì bỏ qua
+                }
+            }
+
+            return doc.DocumentNode.OuterHtml;
+        }
+
     }
 }

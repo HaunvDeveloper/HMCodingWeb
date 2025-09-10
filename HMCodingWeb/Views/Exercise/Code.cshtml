@@ -87,10 +87,16 @@
                     <span><b>Dạng xuất:</b></span>
                     <p class="header-content-value">@(!string.IsNullOrEmpty(Model.OutputFile) ? Model.OutputFile : "stdout")</p>
                 </div>
+                <div class="header-content-child">
+                    <a class="badge bg-info" asp-action="ExportPdf" asp-controller="Exercise" asp-route-exerciseId="@Model?.Id" target="_blank" style="text-decoration:none;">
+                        <i class="fa-solid fa-file-export"></i>
+                        Tải đề xuống</a>
+                </div>
+                
             </div>
             @* <iframe id="content-iframe" style="width: 90%; border: none;" onload="resizeIframe(this)"></iframe> *@
             <div class="p-2 " id="inner-content">@Html.Raw(Model != null ? Model.ExerciseContent : "")</div>
-
+            
         </div>
 
     </div>

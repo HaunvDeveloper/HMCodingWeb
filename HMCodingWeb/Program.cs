@@ -23,11 +23,13 @@ using HMCodingWeb.Hubs;
 using OfficeOpenXml;
 using HMCodingWeb.Middlewares;
 using Microsoft.AspNetCore.Http.Features;
+using DinkToPdf;
+using DinkToPdf.Contracts;
 
 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddSingleton<IConverter>(new SynchronizedConverter(new PdfTools()));
 builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 
 builder.Services.AddDbContext<OnlineCodingWebContext>(options =>
