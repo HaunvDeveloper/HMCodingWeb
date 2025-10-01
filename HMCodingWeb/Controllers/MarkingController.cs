@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Drawing.Printing;
+using System.Globalization;
 using System.Security.Claims;
 
 namespace HMCodingWeb.Controllers
@@ -54,7 +55,7 @@ namespace HMCodingWeb.Controllers
                 .Include(mk => mk.Exercise)
                 .Include(mk => mk.User)
                 .Include(mk => mk.ProgramLanguage)
-                .Where(mk => !mk.User.IsBlock)
+                .Where(mk => !mk.User.IsBlock && mk.Exercise.IsAccept && mk.Exercise.AccessId == 3)
                 .AsQueryable();
 
             if(isMyPost)
@@ -80,10 +81,22 @@ namespace HMCodingWeb.Controllers
             if (!string.IsNullOrEmpty(keyword))
             {
                 keyword = keyword.Trim().ToLower();
-                query = query.Where(mk => mk.Exercise.ExerciseName.ToLower().Contains(keyword) ||
-                                          mk.User.Username.ToLower().Contains(keyword) ||
-                                          mk.ProgramLanguage.ProgramLanguageName.ToLower().Contains(keyword));
-            }    
+
+                DateTime parsedDate;
+                bool isDate = DateTime.TryParseExact(keyword, "dd-MM-yyyy",
+                                                     CultureInfo.InvariantCulture,
+                                                     DateTimeStyles.None,
+                                                     out parsedDate);
+
+                query = query.Where(mk =>
+                    mk.Exercise.ExerciseName.ToLower().Contains(keyword) ||
+                    mk.Exercise.ExerciseCode.ToLower().Contains(keyword) ||
+                    mk.User.Fullname.ToLower().Contains(keyword) ||
+                    mk.User.Username.ToLower().Contains(keyword) ||
+                    mk.ProgramLanguage.ProgramLanguageName.ToLower().Contains(keyword) ||
+                    (isDate && mk.MarkingDate.Date == parsedDate.Date)
+                );
+            }
 
             var totalRecords = await query.CountAsync();
 

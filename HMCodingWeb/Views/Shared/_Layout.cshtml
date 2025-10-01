@@ -8,11 +8,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
     <meta name="keywords" content="hmcoding, hm coding, HMCoding, HM Coding, web ôn luyện thi lập trình, lập trình">
     <meta name="description" content="HM Coding - Nền tảng học lập trình trực tuyến">
     <meta name="author" content="Hậu Nguyễn và Thảo Lê">
-
     <meta name="copyright" content="Hậu Nguyễn và Thảo Lê">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="HM Coding - Nền tảng học lập trình trực tuyến">
+    <meta property="og:description" content="Rèn luyện kỹ năng lập trình với hệ thống codepad, bài tập, bảng chấm bài và xếp hạng tại HM Coding.">
+    <meta property="og:url" content="https://hmcoding.xyz/"> <!-- thay bằng domain thật -->
+    <meta property="og:site_name" content="HM Coding">
+    <meta property="og:image" content="https://hmcoding.xyz/assets/icons/logo.png">
+
 
     <link rel="stylesheet" href="~/lib/bootstrap/theme/bootstrap.css">
     <link rel="stylesheet" href="~/css/bootstrap.extend.css">
@@ -75,7 +83,7 @@
                     @if (User.Identity?.IsAuthenticated ?? false)
                     {
                         <!-- Messager icon -->
-                        <div class="nav-item dropdown p-3 position-relative">
+                        <div class="nav-item dropdown px-3 position-relative">
                             <a class="nav-link text-success" asp-action="Index" asp-controller="Message">
                                 <i class="fa-solid fa-message position-relative" style="font-size:22px; color:var(--bs-info);">
                                     <span id="unread-badge"
@@ -87,7 +95,7 @@
                             </a>
                         </div>
 
-                        <div class="nav-item dropdown p-3 notification-dropdown">
+                        <div class="nav-item dropdown px-3 notification-dropdown">
                             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="notificationDropdown">
                                 <i class="fa-solid fa-bell notification-bell position-relative">
                                     <span class="notification-badge" id="unseenCount" style="display: none;">0</span>
@@ -99,7 +107,7 @@
                                 <div id="notificationList"></div>
                             </div>
                         </div>
-                        <div class="nav-item dropdown p-3">
+                        <div class="nav-item dropdown px-3">
                             <a class="nav-link dropdown-toggle text-success @(currentController == "UserInfo" ? "active" : "")" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                                 <img id="userAvatar"
                                      src="~/assets/images/avartardefault.jpg"

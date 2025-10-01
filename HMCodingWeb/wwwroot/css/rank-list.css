@@ -52,6 +52,7 @@
 .rank-icon-img {
     margin: 0 auto 1.5rem;
     object-fit: cover;
+    cursor: pointer;
 }
 
 .rank-description {

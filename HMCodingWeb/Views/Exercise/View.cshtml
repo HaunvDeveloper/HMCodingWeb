@@ -1,0 +1,102 @@
+﻿@model HMCodingWeb.Models.Exercise
+@{
+    ViewData["Title"] = Model.ExerciseName;
+    var userCreated = ViewBag.CreatedUser as User;
+    if (userCreated == null)
+    {
+        userCreated = new User()
+        {
+            Id = Model?.UserCreatedId ?? 0,
+            Username = "Unknown"
+        };
+    }
+}
+@if (Model == null)
+{
+    <div class="container mt-5">
+        <div class="alert alert-danger" role="alert">
+            Không tìm thấy bài tập này hoặc bài tập đã bị xóa.
+        </div>
+    </div>
+    return;
+}
+@section Links {
+    <link rel="stylesheet" href="~/css/exercise-code.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/button-extend.css" asp-append-version="true">
+
+}
+
+<section id="view-content-section" class="container">
+    <div id="content-section" class="container mt-3 mb-4">
+        <div id="content-container" class="table-responsive">
+            <div id="header-content">
+                <div class="header-content-child">
+                    <span><b>Mã bài:</b></span>
+                    <p class="header-content-value">@Model.ExerciseCode</p>
+                </div>
+                <div class="header-content-child">
+                    <span><b>Tên bài:</b></span>
+                    <p class="header-content-value">@Model.ExerciseName</p>
+                </div>
+                <div class="header-content-child">
+                    <span><b>Giới hạn bộ nhớ:</b></span>
+                    <p class="header-content-value">@(Model.MemoryLimit) MB</p>
+                </div>
+                <div class="header-content-child">
+                    <span><b>Giới hạn thời gian:</b></span>
+                    <p class="header-content-value">@(Model.RuntimeLimit) giây</p>
+                </div>
+                <div class="header-content-child">
+                    <span><b>Đăng bởi:</b></span>
+                    <p class="header-content-value">
+                        <a asp-action="Details" asp-controller="UserInfo" asp-route-id="@Model.UserCreatedId"> @(userCreated.Username) </a>
+                    </p>
+                </div>
+                <div class="header-content-child">
+                    <span><b>Độ khó:</b></span>
+                    <p class="header-content-value">@(Model.Difficulty.DifficultyName)</p>
+                </div>
+                <div class="header-content-child">
+                    <span><b>Dạng nhập:</b></span>
+                    <p class="header-content-value">@(!string.IsNullOrEmpty(Model.InputFile) ? Model.InputFile : "stdin")</p>
+                </div>
+                <div class="header-content-child">
+                    <span><b>Dạng xuất:</b></span>
+                    <p class="header-content-value">@(!string.IsNullOrEmpty(Model.OutputFile) ? Model.OutputFile : "stdout")</p>
+                </div>
+                
+
+            </div>
+            @* <iframe id="content-iframe" style="width: 90%; border: none;" onload="resizeIframe(this)"></iframe> *@
+            <div class="p-2 " id="inner-content">@Html.Raw(Model != null ? Model.ExerciseContent : "")</div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+@section Scripts {
+    <script src="~/js/exercise/content-exercise.js" asp-append-version="true"></script>
+    <script>
+        setTimeout(function () {
+            Swal.fire({
+                title: 'Bạn cần đăng nhập để làm bài',
+                text: 'Hãy đăng nhập hoặc đăng ký để tiếp tục luyện tập.',
+                icon: 'warning',
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonText: 'Đăng nhập',
+                denyButtonText: 'Đăng ký',
+                cancelButtonText: 'Để sau'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/login';
+                } else if (result.isDenied) {
+                    window.location.href = '/signup';
+                }
+            });
+        }, 5000); // 10000ms = 10s
+    </script>
+}

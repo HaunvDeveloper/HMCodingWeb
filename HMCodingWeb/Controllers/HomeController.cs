@@ -22,6 +22,7 @@ namespace HMCodingWeb.Controllers
         public IActionResult Index()
         {
             ViewBag.NewExercises = _context.Exercises
+                .Where(e => e.IsAccept && e.AccessId == 3)
                 .OrderByDescending(e => e.CreatedDate)
                 .Take(10)
                 .Select(e => new Exercise

@@ -520,13 +520,39 @@ namespace HMCodingWeb.Controllers
             }
         }
 
+        [AllowAnonymous]
+        public IActionResult View(long id)
+        {
+            if(User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Code", new { id = id });
+            }
+            var exercise = _context.Exercises
+                .Include(ex => ex.Difficulty)   
+                .SingleOrDefault(ex => ex.Id == id && ex.IsAccept && ex.AccessId == 3);
+            if (exercise == null)
+            {
+                return View("Error");
+            }
+            ViewBag.CreatedUser = _context.Users.SingleOrDefault(user => user.Id == exercise.UserCreatedId);
 
+            return View(exercise);
+        }
+
+        [AllowAnonymous]
         public IActionResult Code(long? id, bool viewCode = false)
         {
+
+            if(User.Identity == null || !User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("View", new { id = id });
+            }
+
             if (id == null)
             {
                 return View("Error");
             }
+
             var exercise = _context.Exercises
                 .SingleOrDefault(ex => ex.Id == id);
             if (exercise == null)

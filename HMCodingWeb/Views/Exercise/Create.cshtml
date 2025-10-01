@@ -364,6 +364,9 @@
             let newRow = $("#row-clone").find("tr").clone();
             $("#testcase-row-list").append(newRow);
             resetIndexTable();
+            // scroll to New Row
+            var newRowAdded = $("#testcase-row-list tr").last();
+            newRowAdded[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
 
         function deleteRow(elem) {
